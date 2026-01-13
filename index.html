@@ -70,12 +70,18 @@
       background: linear-gradient(to bottom, rgba(11,11,13,.92), rgba(11,11,13,.55));
       border-bottom:1px solid var(--line);
     }
-    .brandRow{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      justify-content:space-between;
-    }
+.brandRow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  justify-content:flex-start; /* important */
+}
+.topActions{
+  margin-left:auto;           /* pushes Export CSV to the right */
+  display:flex;
+  gap:10px;
+  align-items:center
+}
     .brand{
       display:flex; align-items:center; gap:10px;
       min-width:0;
@@ -88,13 +94,15 @@
   box-shadow: 0 10px 22px rgba(0,0,0,.35);
   flex:0 0 auto;
 }
-.logo:after{ display:none; } /* remove the decorative border overlay */
-      content:"";
-      position:absolute; inset:8px 10px 10px 8px;
-      border-radius:10px;
-      border:1px solid rgba(0,0,0,.25);
-      opacity:.35;
-    }
+.logo{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background: url("logo.png") center/cover no-repeat;
+  box-shadow: 0 10px 22px rgba(0,0,0,.35);
+  flex:0 0 auto;
+}
+.logo:after{ display:none !important; }
     .titleWrap{min-width:0}
     .title{
       font-weight:700;
@@ -105,14 +113,19 @@
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
-    .subtitle{
+}
+  .subtitle{
       margin:0;
       margin-top:2px;
       font-size:12px;
       color:var(--muted);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
+      white-space:normal;        /* allow wrap */
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp: 1;     /* keep it to 1 line (clean) */
+      -webkit-box-orient: vertical;
+}
+
     .topActions{display:flex; gap:10px; align-items:center}
     .pillBtn{
       border:1px solid var(--line);
@@ -133,7 +146,9 @@
     }
 
     /* Layout */
-    .container{padding: 14px var(--pad)}
+    .container{
+  padding: 14px var(--pad);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 140px);
     .grid{
       display:grid;
       gap:12px;
