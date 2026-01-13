@@ -401,6 +401,41 @@
       box-shadow: 0 15px 40px rgba(0,0,0,.55);
     }
     .toast.show{display:block}
+    /* ===============================
+   iOS SAFARI / PWA FIXES
+   =============================== */
+
+html, body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* Prevent ghost overlays / tinted layers */
+body::before,
+body::after,
+main::before,
+main::after,
+.container::before,
+.container::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Use dynamic viewport height (fixes iOS scroll bug) */
+main {
+  min-height: 100dvh !important;
+  height: auto !important;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 180px) !important;
+}
+
+/* Ensure fixed bottom tabs don't trap scroll */
+nav,
+.tabs,
+.tab-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
   </style>
 </head>
 
