@@ -454,6 +454,46 @@ nav,
 .tab-bar {
   padding-bottom: env(safe-area-inset-bottom);
 }
+      /* ===== Header overlap fix (logo | text | export) ===== */
+.topbar, .appbar, header {
+  display: grid !important;
+  grid-template-columns: 44px 1fr auto !important;
+  align-items: center !important;
+  column-gap: 12px !important;
+}
+
+/* logo slot */
+.topbar .logo, .appbar .logo, header .logo {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+/* text slot */
+.topbar .brand, .appbar .brand, header .brand,
+.topbar .brandtext, .appbar .brandtext, header .brandtext {
+  min-width: 0 !important; /* allows wrapping/truncation */
+}
+
+.topbar .title, .appbar .title, header .title {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.topbar .subtitle, .appbar .subtitle, header .subtitle {
+  display: block !important;
+  font-size: 12px !important;
+  opacity: .85 !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;   /* allow wrap */
+  overflow: hidden !important;
+}
+
+/* export button slot */
+#exportBtn, .export, .btn-export, .pill.export {
+  justify-self: end !important;
+  white-space: nowrap !important;
+}
   </style>
 </head>
 
