@@ -3,6 +3,8 @@
 
   <head>
     <meta charset="UTF-8">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" href="logo.png">
     <title>On Pointe Prevention </title>
     <link rel="stylesheet" href="./style.css">
 
@@ -79,13 +81,14 @@
       min-width:0;
     }
     .logo{
-      width:34px;height:34px;border-radius:12px;
-      background: linear-gradient(135deg, rgba(232,226,214,.95), rgba(188,169,142,.95));
-      box-shadow: 0 10px 22px rgba(0,0,0,.3);
-      position:relative;
-      flex:0 0 auto;
-    }
-    .logo:after{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background: url("logo.png") center/cover no-repeat;
+  box-shadow: 0 10px 22px rgba(0,0,0,.35);
+  flex:0 0 auto;
+}
+.logo:after{ display:none; } /* remove the decorative border overlay */
       content:"";
       position:absolute; inset:8px 10px 10px 8px;
       border-radius:10px;
