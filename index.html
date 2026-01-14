@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0B0D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>On Pointe Prevention</title>
+
+  <!-- Icons -->
+  <link rel="icon" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
+
+  <style>
+    :root{
+      --bg:#0B0B0D;
+      --text:#F4F5F7;
+      --muted:#9AA0A6;
+      --line:rgba(255,255,255,.10);
+      --shadow: 0 16px 38px rgba(0,0,0,.35);
+      --radius:16px;
+      --radius2:22px;
+      --pad:16px;
+      --pad2:20px;
+      --ok:#39d98a;
+      --caution:#ffb020;
+      --high:#ff5c5c;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Display","SF Pro Text", Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html, body { overflow-x:hidden; overflow-y:auto; }
+
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+
+      /* blush / ballerina background */
+      background:
+        radial-gradient(900px 600px at 65% 15%, rgba(255, 214, 222, .45), transparent 60%),
+        radial-gradient(900px 700px at 25% 5%, rgba(234, 200, 210, .35), transparent 55%),
+        radial-gradient(900px 700px at 50% 110%, rgba(190, 120, 140, .20), transparent 55%),
+        linear-gradient(180deg, #2a1018 0%, #12080c 60%, #0b0b0d 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* ===== Top bar (Safari-safe blur) ===== */
+    .top{
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: calc(env(safe-area-inset-top) + 10px) var(--pad) 12px;
+
+      /* solid base + gradient (fixes iOS tinted rectangles) */
+      background-color: rgba(11,11,13,.88);
+      background-image: linear-gradient(to bottom, rgba(11,11,13,.94), rgba(11,11,13,.70));
+      border-bottom: 1px solid var(--line);
+
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+
+      transform: translateZ(0);
+      will-change: transform;
+      isolation: isolate;
+    }
+
+    /* header layout: logo | text | actions */
+    .brandRow{
+      display:grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items:center;
+      column-gap:12px;
+    }
+
+    .logo{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      background: url("logo.png") center/cover no-repeat;
+      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+    }
+    .logo:after{ display:none !important; }
+
+    .brand{ min-width:0; }
+    .title{
+      font-weight:850;
+      letter-spacing:.2px;
+      font-size:16px;
+      line-height:1.1;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .subtitle{
+      margin:0;
+      margin-top:2px;
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      line-height:1.2;
+    }
+
+    .topActions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-self:end;
+      flex-wrap:nowrap;
+    }
+
+    .pillBtn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:12px;
+      display:flex; gap:8px; align-items:center;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .pillBtn:active{transform:scale(.98)}
+    .tinyDot{
+      width:8px;height:8px;border-radius:999px;
+      background: rgba(255,255,255,.75);
+      opacity:.9;
+    }
+
+    /* ===== Layout ===== */
+    main{ min-height: 100vh; }
+    .container{
+      padding: 14px var(--pad);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 220px);
+    }
+    .grid{display:grid; gap:12px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardInner{padding: var(--pad2)}
+    .cardHeader{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      margin-bottom:10px;
+    }
+    .h{
+      margin:0;
+      font-size:14px;
+      font-weight:850;
+      letter-spacing:.2px;
+    }
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:3px;
+      line-height:1.25;
+    }
+
+    /* Status badge */
+    .badge{
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--line);
+      display:flex; align-items:center; gap:8px;
+      white-space:nowrap;
+      background: rgba(255,255,255,.04);
+      flex:0 0 auto;
+    }
+    .badgeDot{width:8px;height:8px;border-radius:999px}
+    .badge.ok .badgeDot{background:var(--ok)}
+    .badge.caution .badgeDot{background:var(--caution)}
+    .badge.high .badgeDot{background:var(--high)}
+
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+    .metric{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding:12px 12px;
+      min-width:0;
+    }
+    .metric .k{font-size:11px;color:var(--muted)}
+    .metric .v{margin-top:4px;font-size:16px;font-weight:850; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .metric .s{margin-top:3px;font-size:11px;color:rgba(255,255,255,.70)}
+
+    /* Buttons */
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding:12px 14px;
+      border-radius: 14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn.primary{ background: rgba(255,255,255,.08); }
+    .btn.danger{ border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.08); }
+    .btn:active{transform:scale(.99)}
+
+    /* Lists */
+    .list{display:grid; gap:10px; margin-top:10px}
+    .row{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .rowMain{min-width:0}
+    .rowTop{
+      display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;
+      margin-bottom:2px;
+    }
+    .rowTitle{font-weight:900; font-size:13px}
+    .rowMeta{font-size:12px;color:rgba(255,255,255,.70)}
+    .rowSub{font-size:12px;color:var(--muted); line-height:1.3}
+    .rowRight{
+      display:flex; flex-direction:column; align-items:flex-end; gap:8px;
+      flex:0 0 auto;
+    }
+    .chip{
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.12);
+      font-size:11px;
+      color: rgba(255,255,255,.88);
+      font-variant-numeric: tabular-nums;
+      white-space:nowrap;
+    }
+    .iconBtn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .iconBtn:active{transform:scale(.98)}
+
+    /* Chart */
+    canvas{
+      width:100%;
+      height:160px;
+      display:block;
+      background: rgba(255,255,255,.02);
+      border:1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    /* ===== Bottom tabs (Safari-safe blur) ===== */
+    .tabs{
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      z-index:30;
+      padding: 8px 12px calc(env(safe-area-inset-bottom) + 8px);
+
+      background-color: rgba(11,11,13,.88);
+      background-image: linear-gradient(to top, rgba(11,11,13,.94), rgba(11,11,13,.70));
+      border-top:1px solid var(--line);
+
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      transform: translateZ(0);
+      will-change: transform;
+      isolation: isolate;
+    }
+    .tabRow{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:10px;
+    }
+    .tab{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: rgba(255,255,255,.88);
+      border-radius: 16px;
+      padding:10px 10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      font-size:11px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.20);
+      color: var(--text);
+    }
+    .tab .emoji{font-size:16px; line-height:1}
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index:50;
+      padding: 12px 12px calc(env(safe-area-inset-bottom) + 120px);
+    }
+    .modalBackdrop.show{display:flex}
+    .modal{
+      width:100%;
+      max-width:520px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(18,18,24,.96), rgba(18,18,24,.90));
+      border-radius: 22px;
+      box-shadow: 0 25px 60px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .modalTop{
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .modalTitle{font-weight:900; font-size:14px; margin:0}
+    .modalBody{
+      padding: 14px 16px;
+      max-height: calc(70vh - 80px);
+      overflow:auto;
+    }
+
+    .form{display:grid; gap:14px}
+    .field{display:grid; gap:6px}
+    .labelRow{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      font-size:12px;
+      color: rgba(255,255,255,.90);
+    }
+    .val{font-variant-numeric: tabular-nums; color: rgba(255,255,255,.90); font-weight:900}
+    input[type="range"]{width:100%; accent-color: rgba(255,255,255,.85)}
+    input[type="date"], input[type="text"], input[type="email"], input[type="password"], textarea{
+      width:100%;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    textarea{min-height:70px; resize:vertical}
+    .hint{font-size:11px;color:var(--muted); line-height:1.25}
+
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom: 120px;
+      z-index:60;
+      background: rgba(18,18,24,.92);
+      border:1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: rgba(255,255,255,.92);
+      display:none;
+      box-shadow: 0 15px 40px rgba(0,0,0,.55);
+      white-space:nowrap;
+    }
+    .toast.show{display:block}
+
+    /* ===== Auth screen (matches your mock) ===== */
+    .authWrap{
+      min-height: 100vh;
+      display:grid;
+      place-items:center;
+      padding: calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 24px);
+    }
+    .authCard{
+      width:100%;
+      max-width: 420px;
+      border:1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      backdrop-filter: blur(16px);
+    }
+    .authHero{
+      padding: 18px 18px 8px;
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    .authLogo{
+      width:56px; height:56px;
+      border-radius: 18px;
+      background: url("logo.png") center/cover no-repeat;
+      box-shadow: 0 14px 30px rgba(0,0,0,.35);
+      flex:0 0 auto;
+    }
+    .authBrand h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+      font-weight:900;
+      line-height:1.1;
+    }
+    .authBrand p{
+      margin:4px 0 0;
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+      line-height:1.25;
+    }
+    .authBody{ padding: 12px 18px 18px; }
+    .authTitle{
+      margin: 10px 0 8px;
+      font-weight:900;
+      letter-spacing:.3px;
+      text-align:center;
+      font-size:18px;
+    }
+    .authSub{
+      margin: 0 0 16px;
+      text-align:center;
+      color: rgba(255,255,255,.70);
+      font-size:12px;
+    }
+    .authBtn{
+      width:100%;
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.92);
+      color: #151518;
+      padding: 14px 14px;
+      border-radius: 999px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .authBtn:active{ transform: scale(.99); }
+    .authLinkRow{
+      margin-top: 12px;
+      display:flex;
+      justify-content:center;
+      gap:8px;
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+    }
+    .authLink{
+      color: rgba(255,255,255,.92);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,.25);
+      padding-bottom:2px;
+      cursor:pointer;
+    }
+    .authMsg{
+      margin-top: 10px;
+      text-align:center;
+      font-size:12px;
+      color: rgba(255,255,255,.75);
+      min-height: 16px;
+    }
+
+    /* optional: kill blur on iOS if you ever see artifacts again */
+    /*
+    @supports (-webkit-touch-callout: none){
+      .top, .tabs{ -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+    }
+    */
+  </style>
+</head>
+
+<body>
+  <!-- AUTH SCREEN -->
+  <section id="authScreen" class="authWrap" style="display:none;">
+    <div class="authCard">
+      <div class="authHero">
+        <div class="authLogo" aria-label="On Pointe logo"></div>
+        <div class="authBrand">
+          <h1>On Pointe Prevention™</h1>
+          <p>PT-guided injury prevention, recovery, and load monitoring for dancers.</p>
+        </div>
+      </div>
+
+      <div class="authBody">
+        <div class="authTitle" id="authModeTitle">ONPOINTE LOGIN</div>
+        <div class="authSub">Your leap, safely landed.</div>
+
+        <div class="form" style="gap:12px;">
+          <div class="field">
+            <div class="labelRow"><span>Email</span></div>
+            <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
+          </div>
+          <div class="field">
+            <div class="labelRow"><span>Password</span></div>
+            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+
+          <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
+
+          <div class="authLinkRow">
+            <span id="authAltText">Don’t have an account?</span>
+            <a class="authLink" id="authToggle" href="javascript:void(0)">Create</a>
+          </div>
+
+          <div class="authLinkRow" style="margin-top:6px;">
+            <a class="authLink" id="authReset" href="javascript:void(0)" style="border-bottom-color:rgba(255,255,255,.18); color:rgba(255,255,255,.75)">Forgot password</a>
+          </div>
+
+          <div class="authMsg" id="authMsg"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="appShell" style="display:none;">
+    <div class="top">
+      <div class="brandRow">
+        <div class="logo" aria-label="On Pointe Prevention logo"></div>
+
+        <div class="brand">
+          <p class="title">On Pointe Prevention™</p>
+          <p class="subtitle" id="subtitleText">PT-guided load monitoring + conditioning</p>
+        </div>
+
+        <div class="topActions">
+          <button class="pillBtn" id="exportBtn" type="button">
+            <span class="tinyDot"></span>
+            <span>Export CSV</span>
+          </button>
+          <button class="pillBtn" id="logoutBtn" type="button" title="Logout">
+            <span class="tinyDot" style="opacity:.45"></span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div class="container" id="screen-dashboard">
+        <div class="grid">
+
+          <div class="card">
+            <div class="cardInner">
+              <div class="cardHeader">
+                <div>
+                  <p class="h">Injury Risk Snapshot</p>
+                  <div class="small">Based on acute/chronic load + recovery markers.</div>
+                </div>
+                <div class="badge ok" id="riskBadge">
+                  <span class="badgeDot"></span>
+                  <span id="riskLabel">OK</span>
+                </div>
+              </div>
+
+              <div class="metrics">
+                <div class="metric">
+                  <div class="k">ACWR</div>
+                  <div class="v" id="m_acwr">—</div>
+                  <div class="s">acute / chronic</div>
+                </div>
+                <div class="metric">
+                  <div class="k">Acute (7d avg)</div>
+                  <div class="v" id="m_acute">—</div>
+                  <div class="s">session load</div>
+                </div>
+                <div class="metric">
+                  <div class="k">Chronic (28d avg)</div>
+                  <div class="v" id="m_chronic">—</div>
+                  <div class="s">session load</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px">
+                <p class="h">Guidance</p>
+                <div class="small" id="guidanceText">Add check-ins to generate guidance.</div>
+
+                <div class="btnRow">
+                  <button class="btn primary" id="openCheckin" type="button">📝 Today’s Check-In</button>
+                  <button class="btn" id="openExercises" type="button">🩰 Exercise Library</button>
+                  <button class="btn danger" id="clearData" type="button">🗑️ Clear Data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardInner">
+              <div class="cardHeader">
+                <div>
+                  <p class="h">Trends</p>
+                  <div class="small">Last 14 sessions (session load).</div>
+                </div>
+                <div class="badge" id="trendHint">Add more check-ins for trends</div>
+              </div>
+              <canvas id="trendCanvas" width="800" height="240"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardInner">
+              <p class="h">Last 7 Days</p>
+              <div class="small">Quick view of recent entries.</div>
+              <div class="list" id="recentList"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="container" id="screen-checkin" style="display:none">
+        <div class="card">
+          <div class="cardInner">
+            <p class="h">Today’s Check-In</p>
+            <div class="small">Track load + recovery markers. Session load = minutes × RPE.</div>
+            <div class="btnRow">
+              <button class="btn primary" id="openCheckin2" type="button">📝 Open Check-In Form</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" id="screen-exercises" style="display:none">
+        <div class="card">
+          <div class="cardInner">
+            <p class="h">Exercise Library</p>
+            <div class="small">Dance-specific strength, neuromuscular control, and load-tolerance work.</div>
+            <div class="list" id="exerciseList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container" id="screen-history" style="display:none">
+        <div class="card">
+          <div class="cardInner">
+            <p class="h">History</p>
+            <div class="small">All check-ins for your account.</div>
+            <div class="list" id="historyList"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tabRow">
+        <button class="tab active" data-tab="dashboard" type="button"><div class="emoji">📊</div>Dashboard</button>
+        <button class="tab" data-tab="checkin" type="button"><div class="emoji">📝</div>Check-In</button>
+        <button class="tab" data-tab="exercises" type="button"><div class="emoji">🩰</div>Exercises</button>
+        <button class="tab" data-tab="history" type="button"><div class="emoji">🗓️</div>History</button>
+      </div>
+    </div>
+
+    <!-- Modal: Check-in -->
+    <div class="modalBackdrop" id="checkinModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle">Today’s Check-In</p>
+          <button class="iconBtn" id="closeCheckin" type="button">● Close</button>
+        </div>
+        <div class="modalBody">
+          <form class="form" id="checkinForm">
+            <div class="field">
+              <div class="labelRow"><span>Date</span></div>
+              <input type="date" id="f_date" required />
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>Dance minutes</span> <span class="val" id="v_minutes">60</span></div>
+              <input type="range" id="f_minutes" min="0" max="240" value="60" />
+              <div class="hint">Include class + rehearsal + performance time.</div>
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>RPE (0–10)</span> <span class="val" id="v_rpe">6</span></div>
+              <input type="range" id="f_rpe" min="0" max="10" step="1" value="6" />
+              <div class="hint">0 = rest, 10 = maximal effort.</div>
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>Sleep (hours)</span> <span class="val" id="v_sleep">7.0</span></div>
+              <input type="range" id="f_sleep" min="0" max="10" step="0.5" value="7" />
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>Soreness (0–10)</span> <span class="val" id="v_sore">3</span></div>
+              <input type="range" id="f_sore" min="0" max="10" step="1" value="3" />
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>Fatigue (0–10)</span> <span class="val" id="v_fatigue">4</span></div>
+              <input type="range" id="f_fatigue" min="0" max="10" step="1" value="4" />
+            </div>
+
+            <div class="field">
+              <div class="labelRow"><span>Notes (optional)</span></div>
+              <textarea id="f_notes" placeholder="Pain location, jumps, pointe work, travel, stress, etc."></textarea>
+            </div>
+
+            <div class="btnRow">
+              <button class="btn primary" type="submit">💾 Save ✓</button>
+              <button class="btn" id="cancelCheckin" type="button">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Exercise detail -->
+    <div class="modalBackdrop" id="exerciseModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle" id="exTitle">Exercise</p>
+          <button class="iconBtn" id="closeExercise" type="button">● Close</button>
+        </div>
+        <div class="modalBody" id="exBody"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">Saved</div>
+  </div>
+
+  <!-- Firebase + App logic -->
+  <script type="module">
+    /***********************
+     * FIREBASE SETUP
+     ***********************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      getDocs,
+      getDoc,
+      setDoc,
+      deleteDoc,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmgTapl6qs29Cdr_WlNOKTq_yttO9kqW8",
+      authDomain: "on-pointe-prevention.firebaseapp.com",
+      projectId: "on-pointe-prevention",
+      storageBucket: "on-pointe-prevention.firebasestorage.app",
+      messagingSenderId: "235349964683",
+      appId: "1:235349964683:web:0b1a3b3e494bd86fc0a18e"
+    };
+
+    const fbApp = initializeApp(firebaseConfig);
+    const auth = getAuth(fbApp);
+    const db = getFirestore(fbApp);
+
+    /***********************
+     * DOM HELPERS
+     ***********************/
+    const $ = (id) => document.getElementById(id);
+    const fmt1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
+    const todayISO = () => new Date().toISOString().slice(0,10);
+
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1300);
+    }
+
+    function prettyDate(iso){
+      try{
+        const d = new Date(iso + "T00:00:00");
+        return d.toLocaleDateString(undefined, { weekday:"short", month:"short", day:"numeric" });
+      }catch(e){
+        return iso;
+      }
+    }
+
+    function escapeHTML(str){
+      return String(str).replace(/[&<>"']/g, (m)=>({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    /***********************
+     * DATA MODEL (per user)
+     * Firestore:
+     * users/{uid}
+     * users/{uid}/checkins/{YYYY-MM-DD}
+     ***********************/
+    let currentUser = null;
+
+    function userDocRef(uid){ return doc(db, "users", uid); }
+    function checkinsCol(uid){ return collection(db, "users", uid, "checkins"); }
+    function checkinDoc(uid, dateISO){ return doc(db, "users", uid, "checkins", dateISO); }
+
+    async function ensureUserProfile(uid, email){
+      const ref = userDocRef(uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        await setDoc(ref, { email: email || null, createdAt: serverTimestamp() }, { merge: true });
+      }
+    }
+
+    async function loadAllCheckins(uid){
+      // orderBy needs composite? for docId order, we can just fetch all and sort client-side.
+      const snaps = await getDocs(checkinsCol(uid));
+      const arr = [];
+      snaps.forEach(s => arr.push(s.data()));
+      // ensure shape + sort desc by date
+      return arr
+        .filter(e => e && e.date)
+        .sort((a,b)=> (a.date < b.date ? 1 : -1));
+    }
+
+    async function upsertCheckin(uid, entry){
+      // doc id is date (YYYY-MM-DD)
+      const ref = checkinDoc(uid, entry.date);
+      await setDoc(ref, {
+        ...entry,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function deleteAllCheckins(uid){
+      const snaps = await getDocs(checkinsCol(uid));
+      const tasks = [];
+      snaps.forEach(s => tasks.push(deleteDoc(s.ref)));
+      await Promise.all(tasks);
+    }
+
+    /***********************
+     * CALCS
+     ***********************/
+    function sessionLoad(entry){
+      return Math.round((Number(entry.minutes)||0) * (Number(entry.rpe)||0));
+    }
+    function lastNDays(entries, days){
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - (days-1));
+      cutoff.setHours(0,0,0,0);
+      return entries.filter(e => new Date(e.date) >= cutoff);
+    }
+    function avgDailyLoad(entries, days){
+      const total = lastNDays(entries, days).reduce((s,e)=> s + sessionLoad(e), 0);
+      return total / days;
+    }
+    function computeMetrics(entries){
+      const acute = avgDailyLoad(entries, 7);
+      const chronic = avgDailyLoad(entries, 28);
+      const acwr = (chronic > 0) ? (acute / chronic) : null;
+      return { acute, chronic, acwr };
+    }
+    function riskFromACWR(acwr){
+      if(acwr === null) return { cls:"ok", label:"OK" };
+      if(acwr < 0.8) return { cls:"caution", label:"LOW" };
+      if(acwr <= 1.3) return { cls:"ok", label:"OK" };
+      if(acwr <= 1.5) return { cls:"caution", label:"CAUTION" };
+      return { cls:"high", label:"HIGH" };
+    }
+    function guidanceText(entries, metrics){
+      if(entries.length === 0) return "Add check-ins to generate guidance.";
+      const { acwr } = metrics;
+      if(acwr === null){
+        return "Not enough history for ACWR. Keep logging daily load for the next 1–2 weeks.";
+      }
+      if(acwr > 1.5){
+        return "High workload spike detected. Reduce volume/intensity for 24–72h, prioritize sleep, and avoid high-impact jumps/pointe volume until recovery improves.";
+      }
+      if(acwr > 1.3){
+        return "Moderate spike. Maintain technique work, but cap additional conditioning volume and monitor soreness/fatigue closely.";
+      }
+      if(acwr < 0.8){
+        return "Load is low relative to recent baseline. Progress gradually to avoid a sudden jump next week.";
+      }
+      return "Workload appears stable. Continue progressive conditioning and monitor recovery.";
+    }
+
+    /***********************
+     * EXERCISES
+     ***********************/
+    const EXERCISES = [
+      {
+        name: "Calf Capacity (Eccentric/Isometric)",
+        focus: "Foot/ankle load tolerance · pointe/jumps",
+        how: [
+          "Isometric: 3×30–45s single-leg calf hold (mid-range), pain ≤3/10.",
+          "Eccentric: 3×8–12 slow lowers off step, 3–4 sec down.",
+          "Progress: add load (backpack), increase range, add pogo hops when tolerated."
+        ],
+        cues: ["Tripod foot", "Control the lowering", "No collapsing arch"]
+      },
+      {
+        name: "Hip Abductor Strength (Side Plank + Clamshell)",
+        focus: "Pelvic control · single-limb stability",
+        how: [
+          "Side plank (knees or feet): 3×20–30s each side.",
+          "Clamshell: 3×12–15 slow reps, add band when easy.",
+          "Progress: lateral step-down, single-leg RDL patterns."
+        ],
+        cues: ["Ribs down", "Stack pelvis", "Control knee alignment"]
+      },
+      {
+        name: "Single-Leg Control (Step-down)",
+        focus: "Knee/hip alignment · landing mechanics",
+        how: [
+          "3×6–10 reps each side, slow 3 sec down, light tap, return.",
+          "Progress: higher step, add load, add reach patterns."
+        ],
+        cues: ["Knee over 2nd toe", "Quiet pelvis", "No trunk sway"]
+      },
+      {
+        name: "Core + Rotation Control (Dead Bug / Pallof Press)",
+        focus: "Lumbar load management",
+        how: [
+          "Dead bug: 3×6–10 controlled reps.",
+          "Pallof press: 3×10–12 each side.",
+          "Progress: longer lever arms, unstable stance."
+        ],
+        cues: ["Breathe", "Maintain neutral spine", "Slow + controlled"]
+      }
+    ];
+
+    function renderExerciseList(){
+      const el = $("exerciseList");
+      el.innerHTML = "";
+      EXERCISES.forEach((ex)=>{
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="rowMain">
+            <div class="rowTop">
+              <div class="rowTitle">${ex.name}</div>
+              <div class="rowMeta">${ex.focus}</div>
+            </div>
+            <div class="rowSub">Tap to view sets, reps, progressions.</div>
+          </div>
+          <div class="rowRight">
+            <button class="iconBtn" type="button">Open</button>
+          </div>
+        `;
+        row.querySelector("button").addEventListener("click", ()=> openExercise(ex));
+        row.addEventListener("click", (ev)=>{
+          if(ev.target.tagName.toLowerCase() !== "button") openExercise(ex);
+        });
+        el.appendChild(row);
+      });
+    }
+
+    function openExercise(ex){
+      $("exTitle").textContent = ex.name;
+      $("exBody").innerHTML = `
+        <div class="chip" style="display:inline-flex; margin-bottom:10px;">${escapeHTML(ex.focus)}</div>
+        <div style="margin:10px 0 6px; font-weight:900;">How to do it</div>
+        <div style="display:grid; gap:8px;">
+          ${ex.how.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
+        </div>
+        <div style="margin:14px 0 6px; font-weight:900;">Coaching cues</div>
+        <div style="display:grid; gap:8px;">
+          ${ex.cues.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
+        </div>
+      `;
+      $("exerciseModal").classList.add("show");
+    }
+
+    /***********************
+     * APP RENDERING
+     ***********************/
+    let cachedEntries = [];
+
+    function render(){
+      const entries = cachedEntries.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+      const metrics = computeMetrics(entries);
+
+      $("m_acute").textContent = entries.length ? Math.round(metrics.acute) : "—";
+      $("m_chronic").textContent = entries.length ? Math.round(metrics.chronic) : "—";
+      $("m_acwr").textContent = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
+
+      const risk = riskFromACWR(metrics.acwr);
+      const badge = $("riskBadge");
+      badge.classList.remove("ok","caution","high");
+      badge.classList.add(risk.cls);
+      $("riskLabel").textContent = risk.label;
+
+      $("guidanceText").textContent = guidanceText(entries, metrics);
+
+      renderRecent(entries);
+      renderHistory(entries);
+      renderChart(entries);
+    }
+
+    function renderRecent(entries){
+      const el = $("recentList");
+      el.innerHTML = "";
+      const recent = lastNDays(entries, 7).slice(0,7);
+      if(recent.length === 0){
+        el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No entries yet</div><div class="rowSub">Complete a check-in to populate your dashboard.</div></div></div>`;
+        return;
+      }
+      recent.forEach(e=>{
+        const load = sessionLoad(e);
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="rowMain">
+            <div class="rowTop">
+              <div class="rowTitle">${prettyDate(e.date)}</div>
+              <div class="rowMeta">${e.minutes} min · RPE ${e.rpe}</div>
+            </div>
+            <div class="rowSub">Sleep ${Number(e.sleep).toFixed(1)}h · Soreness ${e.sore} · Fatigue ${e.fatigue}</div>
+          </div>
+          <div class="rowRight">
+            <div class="chip">Load ${load}</div>
+          </div>
+        `;
+        el.appendChild(row);
+      });
+    }
+
+    function renderHistory(entries){
+      const el = $("historyList");
+      el.innerHTML = "";
+      if(entries.length === 0){
+        el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No saved check-ins</div><div class="rowSub">Use the Check-In tab to add your first entry.</div></div></div>`;
+        return;
+      }
+      entries.forEach(e=>{
+        const load = sessionLoad(e);
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="rowMain">
+            <div class="rowTop">
+              <div class="rowTitle">${prettyDate(e.date)}</div>
+              <div class="rowMeta">${e.minutes} min · RPE ${e.rpe}</div>
+            </div>
+            <div class="rowSub">${(e.notes||"").trim() ? escapeHTML(e.notes) : "—"}</div>
+          </div>
+          <div class="rowRight">
+            <div class="chip">Load ${load}</div>
+            <button class="iconBtn" type="button" data-edit="${e.date}">Edit</button>
+          </div>
+        `;
+        row.querySelector('[data-edit]').addEventListener("click", ()=>{
+          openCheckinModal(e);
+        });
+        el.appendChild(row);
+      });
+    }
+
+    function renderChart(entries){
+      const canvas = $("trendCanvas");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      const last14 = entries.slice().reverse().slice(-14); // chronological
+      const loads = last14.map(sessionLoad);
+
+      // grid
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "rgba(255,255,255,.10)";
+      ctx.lineWidth = 1;
+      for(let i=1;i<4;i++){
+        const y = (h/4)*i;
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+      }
+
+      if(loads.length === 0){
+        ctx.fillStyle = "rgba(255,255,255,.55)";
+        ctx.font = "14px " + getComputedStyle(document.body).fontFamily;
+        ctx.fillText("No data yet", 18, 38);
+        return;
+      }
+
+      const max = Math.max(100, ...loads);
+      const min = 0;
+
+      const padX = 18;
+      const padY = 22;
+      const plotW = w - padX*2;
+      const plotH = h - padY*2;
+
+      const x = (i)=> padX + (plotW * (loads.length===1 ? 0.5 : (i/(loads.length-1))));
+      const y = (v)=> padY + plotH * (1 - ((v - min) / (max - min)));
+
+      // line
+      ctx.strokeStyle = "rgba(255,255,255,.80)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      loads.forEach((v,i)=>{
+        const px=x(i), py=y(v);
+        if(i===0) ctx.moveTo(px,py);
+        else ctx.lineTo(px,py);
+      });
+      ctx.stroke();
+
+      // dots
+      ctx.fillStyle = "rgba(255,255,255,.90)";
+      loads.forEach((v,i)=>{
+        ctx.beginPath();
+        ctx.arc(x(i), y(v), 3, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // label
+      const latest = loads[loads.length-1];
+      ctx.fillStyle = "rgba(255,255,255,.70)";
+      ctx.font = "12px " + getComputedStyle(document.body).fontFamily;
+      ctx.fillText("Latest: " + latest, 18, 18);
+    }
+
+    /***********************
+     * MODALS + FORMS
+     ***********************/
+    function openCheckinModal(existing=null){
+      $("checkinModal").classList.add("show");
+
+      const d = existing ? existing.date : todayISO();
+      $("f_date").value = d;
+
+      $("f_minutes").value = existing ? existing.minutes : 60;
+      $("f_rpe").value     = existing ? existing.rpe : 6;
+      $("f_sleep").value   = existing ? existing.sleep : 7;
+      $("f_sore").value    = existing ? existing.sore : 3;
+      $("f_fatigue").value = existing ? existing.fatigue : 4;
+      $("f_notes").value   = existing ? (existing.notes||"") : "";
+
+      syncVals();
+    }
+    function closeCheckinModal(){ $("checkinModal").classList.remove("show"); }
+
+    function syncVals(){
+      $("v_minutes").textContent = $("f_minutes").value;
+      $("v_rpe").textContent = $("f_rpe").value;
+      $("v_sleep").textContent = Number($("f_sleep").value).toFixed(1);
+      $("v_sore").textContent = $("f_sore").value;
+      $("v_fatigue").textContent = $("f_fatigue").value;
+    }
+
+    /***********************
+     * TABS
+     ***********************/
+    function setTab(tab){
+      const screens = ["dashboard","checkin","exercises","history"];
+      screens.forEach(s=>{
+        $("screen-"+s).style.display = (s===tab) ? "" : "none";
+      });
+      document.querySelectorAll(".tab").forEach(b=>{
+        b.classList.toggle("active", b.dataset.tab === tab);
+      });
+      render();
+    }
+
+    /***********************
+     * EXPORT CSV
+     ***********************/
+    function exportCSV(){
+      const entries = cachedEntries.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+      const header = ["date","minutes","rpe","session_load","sleep_hours","soreness","fatigue","notes"];
+      const rows = entries.map(e=>{
+        const row = [
+          e.date,
+          e.minutes,
+          e.rpe,
+          sessionLoad(e),
+          Number(e.sleep).toFixed(1),
+          e.sore,
+          e.fatigue,
+          (e.notes||"").replace(/\n/g," ").replace(/"/g,'""')
+        ];
+        return row.map(x=> `"${x}"`).join(",");
+      });
+      const csv = header.join(",") + "\n" + rows.join("\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "on-pointe-prevention_checkins.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("Exported CSV");
+    }
+
+    /***********************
+     * PWA (works on Android + iOS)
+     ***********************/
+    function setupPWA(){
+      const manifest = {
+        name: "On Pointe Prevention",
+        short_name: "On Pointe",
+        start_url: "./",
+        display: "standalone",
+        background_color: "#0B0B0D",
+        theme_color: "#0B0B0D",
+        icons: [
+          { src: "logo.png", sizes: "192x192", type: "image/png" },
+          { src: "logo.png", sizes: "512x512", type: "image/png" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = url;
+      document.head.appendChild(link);
+
+      // Service worker (optional)
+      if("serviceWorker" in navigator){
+        const sw = `
+          const CACHE="opp-cache-v2";
+          const ASSETS=["./","./index.html","./logo.png"];
+          self.addEventListener("install", e=>{
+            e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));
+            self.skipWaiting();
+          });
+          self.addEventListener("activate", e=>e.waitUntil(self.clients.claim()));
+          self.addEventListener("fetch", e=>{
+            e.respondWith(
+              caches.match(e.request).then(r=> r || fetch(e.request).then(res=>{
+                const copy=res.clone();
+                caches.open(CACHE).then(c=>c.put(e.request, copy)).catch(()=>{});
+                return res;
+              }).catch(()=>r))
+            );
+          });
+        `;
+        const swURL = URL.createObjectURL(new Blob([sw], {type:"text/javascript"}));
+        navigator.serviceWorker.register(swURL).catch(()=>{});
+      }
+    }
+
+    /***********************
+     * AUTH UI
+     ***********************/
+    let authMode = "login"; // "login" | "create"
+
+    function setAuthMode(mode){
+      authMode = mode;
+      $("authModeTitle").textContent = mode === "login" ? "ONPOINTE LOGIN" : "CREATE ACCOUNT";
+      $("authPrimaryBtn").textContent = mode === "login" ? "Log in" : "Create";
+      $("authAltText").textContent = mode === "login" ? "Don’t have an account?" : "Already have an account?";
+      $("authToggle").textContent = mode === "login" ? "Create" : "Log in";
+      $("authMsg").textContent = "";
+      // password autocomplete hint
+      $("authPassword").setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
+    }
+
+    function setAuthMessage(msg){
+      $("authMsg").textContent = msg || "";
+    }
+
+    async function doAuthPrimary(){
+      const email = ($("authEmail").value || "").trim();
+      const pass = $("authPassword").value || "";
+      if(!email || !pass){
+        setAuthMessage("Enter email + password.");
+        return;
+      }
+
+      try{
+        if(authMode === "login"){
+          await signInWithEmailAndPassword(auth, email, pass);
+        }else{
+          await createUserWithEmailAndPassword(auth, email, pass);
+        }
+      }catch(err){
+        // make message nicer
+        const code = err?.code || "";
+        let m = err?.message || "Auth error";
+        if(code.includes("invalid-credential")) m = "Incorrect email or password.";
+        if(code.includes("email-already-in-use")) m = "That email is already in use. Try logging in.";
+        if(code.includes("weak-password")) m = "Password should be at least 6 characters.";
+        if(code.includes("invalid-email")) m = "Invalid email format.";
+        setAuthMessage(m);
+      }
+    }
+
+    async function doResetPassword(){
+      const email = ($("authEmail").value || "").trim();
+      if(!email){
+        setAuthMessage("Enter your email first.");
+        return;
+      }
+      try{
+        await sendPasswordResetEmail(auth, email);
+        setAuthMessage("Password reset email sent.");
+      }catch(err){
+        setAuthMessage(err?.message || "Could not send reset email.");
+      }
+    }
+
+    /***********************
+     * APP BOOT + WIRES
+     ***********************/
+    function showAuth(){
+      $("authScreen").style.display = "";
+      $("appShell").style.display = "none";
+      setAuthMode("login");
+    }
+    function showApp(){
+      $("authScreen").style.display = "none";
+      $("appShell").style.display = "";
+    }
+
+    function wireUI(){
+      // auth
+      $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
+      $("authToggle").addEventListener("click", ()=>{
+        setAuthMode(authMode === "login" ? "create" : "login");
+      });
+      $("authReset").addEventListener("click", doResetPassword);
+
+      // tabs
+      document.querySelectorAll(".tab").forEach(btn=>{
+        btn.addEventListener("click", ()=> setTab(btn.dataset.tab));
+      });
+
+      // buttons
+      $("openCheckin").addEventListener("click", ()=> openCheckinModal());
+      $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
+      $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+      $("exportBtn").addEventListener("click", exportCSV);
+
+      $("logoutBtn").addEventListener("click", async ()=>{
+        await signOut(auth);
+      });
+
+      $("clearData").addEventListener("click", async ()=>{
+        if(!currentUser) return;
+        if(confirm("Clear all check-ins for this account?")){
+          await deleteAllCheckins(currentUser.uid);
+          cachedEntries = [];
+          toast("Cleared");
+          render();
+        }
+      });
+
+      // modal close
+      $("closeCheckin").addEventListener("click", closeCheckinModal);
+      $("cancelCheckin").addEventListener("click", closeCheckinModal);
+      $("checkinModal").addEventListener("click", (e)=>{
+        if(e.target === $("checkinModal")) closeCheckinModal();
+      });
+
+      $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
+      $("exerciseModal").addEventListener("click", (e)=>{
+        if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show");
+      });
+
+      // sliders
+      ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
+        $(id).addEventListener("input", syncVals);
+      });
+
+      // save check-in (Firestore)
+      $("checkinForm").addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        if(!currentUser){
+          toast("Not logged in");
+          return;
+        }
+
+        const entry = {
+          date: $("f_date").value,
+          minutes: Number($("f_minutes").value),
+          rpe: Number($("f_rpe").value),
+          sleep: Number($("f_sleep").value),
+          sore: Number($("f_sore").value),
+          fatigue: Number($("f_fatigue").value),
+          notes: $("f_notes").value || ""
+        };
+
+        try{
+          await upsertCheckin(currentUser.uid, entry);
+          // update cache (upsert by date)
+          const idx = cachedEntries.findIndex(x=> x.date === entry.date);
+          if(idx >= 0) cachedEntries[idx] = entry;
+          else cachedEntries.push(entry);
+
+          toast("Saved ✓");
+          closeCheckinModal();
+          render();
+        }catch(err){
+          console.error(err);
+          toast("Save failed");
+        }
+      });
+    }
+
+    async function onUserSignedIn(user){
+      currentUser = user;
+      await ensureUserProfile(user.uid, user.email);
+
+      // Load their data
+      cachedEntries = await loadAllCheckins(user.uid);
+
+      // Optional: show user email in subtitle (feel free to remove)
+      $("subtitleText").textContent = "PT-guided load monitoring + conditioning";
+
+      renderExerciseList();
+      render();
+      setTab("dashboard");
+    }
+
+    /***********************
+     * INIT
+     ***********************/
+    (function init(){
+      setupPWA();
+      wireUI();
+      setAuthMode("login");
+
+      onAuthStateChanged(auth, async (user)=>{
+        if(user){
+          showApp();
+          await onUserSignedIn(user);
+        }else{
+          currentUser = null;
+          cachedEntries = [];
+          showAuth();
+        }
+      });
+    })();
+
+    /***********************
+     * IMPORTANT FIREBASE CHECKLIST (DO THIS IN CONSOLE)
+     *
+     * 1) Authentication -> Sign-in method -> Enable "Email/Password"
+     *
+     * 2) Authentication -> Settings -> Authorized domains:
+     *    - add your GitHub Pages domain (example: yourname.github.io)
+     *    - add your custom domain (onpointeprevention.com)
+     *
+     * 3) Firestore Database -> Create database (Standard) -> Start in production or test.
+     *
+     * Recommended Firestore Rules (Firestore -> Rules):
+     * -------------------------------------------------
+     * rules_version = '2';
+     * service cloud.firestore {
+     *   match /databases/{database}/documents {
+     *     match /users/{userId} {
+     *       allow read, write: if request.auth != null && request.auth.uid == userId;
+     *       match /checkins/{docId} {
+     *         allow read, write: if request.auth != null && request.auth.uid == userId;
+     *       }
+     *     }
+     *   }
+     * }
+     * -------------------------------------------------
+     *
+     ***********************/
+  </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
