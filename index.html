@@ -1201,6 +1201,11 @@
           <div class="rowRight">
             <div class="chip">${ex.source === "user" ? "Custom" : "Dancer"}</div>
             <button class="iconBtn" type="button">Open</button>
+            ${
+              ex.source === "user"
+                ? `<button class="iconBtn danger" type="button" data-delete>🗑️</button>`
+                : ``
+            }
           </div>
         `;
         row.querySelector("button").addEventListener("click", ()=> openExercise(ex));
