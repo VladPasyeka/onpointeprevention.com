@@ -1160,50 +1160,76 @@
       userExercises.forEach(ex => map.set(ex.id, ex));
       return Array.from(map.values()).sort((a,b)=> (a.name||"").localeCompare(b.name||""));
     }
+async function refreshExercises(){
+  if(!currentUser) return;
+  const userExercises = await loadUserExercises(currentUser.uid);
+  cachedExercises = mergeExerciseLibrary(userExercises);
+  renderExerciseList();
+}
 
-    function renderExerciseList(){
-      const el = $("exerciseList");
-      el.innerHTML = "";
+ function renderExerciseList(){
+  const el = $("exerciseList");
+  el.innerHTML = "";
 
-      if(!cachedExercises || cachedExercises.length === 0){
-        el.innerHTML = `
-          <div class="row">
-            <div class="rowMain">
-              <div class="rowTitle">No exercises found</div>
-              <div class="rowSub">If this is unexpected, check Firestore rules and refresh.</div>
-            </div>
-          </div>`;
-        return;
-      }
+  if(!cachedExercises || cachedExercises.length === 0){
+    el.innerHTML = `
+      <div class="row">
+        <div class="rowMain">
+          <div class="rowTitle">No exercises found</div>
+          <div class="rowSub">If this is unexpected, check Firestore rules and refresh.</div>
+        </div>
+      </div>`;
+    return;
+  }
 
-      cachedExercises.forEach((ex)=>{
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `
-          <div class="rowMain">
-            <div class="rowTop">
-              <div class="rowTitle">${escapeHTML(ex.name)}</div>
-              <div class="rowMeta">${escapeHTML(ex.focus || "")}</div>
-            </div>
-            <div class="rowSub">${escapeHTML(ex.defaultRx || "Tap to view details")}</div>
-          </div>
-          <div class="rowRight">
-            <div class="chip">${ex.source === "user" ? "Custom" : "Dancer"}</div>
-            <button class="iconBtn" type="button">Open</button>
-            ${
-              ex.source === "user"
-                ? `<button class="iconBtn danger" type="button" data-delete>🗑️</button>`
-                : ``
-            }
-          </div>
-        `;
-        row.querySelector("button").addEventListener("click", ()=> openExercise(ex));
-        row.addEventListener("click", (ev)=>{
-          if(ev.target.tagName.toLowerCase() !== "button") openExercise(ex);
-        });
-        el.appendChild(row);
+  cachedExercises.forEach((ex)=>{
+    const row = document.createElement("div");
+    row.className = "row";
+
+    row.innerHTML = `
+      <div class="rowMain">
+        <div class="rowTop">
+          <div class="rowTitle">${escapeHTML(ex.name)}</div>
+          <div class="rowMeta">${escapeHTML(ex.focus || "")}</div>
+        </div>
+        <div class="rowSub">${escapeHTML(ex.defaultRx || "Tap to view details")}</div>
+      </div>
+
+      <div class="rowRight">
+        <div class="chip">${ex.source === "user" ? "Custom" : "Dancer"}</div>
+
+        <button class="iconBtn" type="button" data-open>Open</button>
+
+        ${
+          ex.source === "user"
+            ? `<button class="iconBtn danger" type="button" data-delete>🗑️</button>`
+            : ``
+        }
+      </div>
+    `;
+
+    // Open handlers
+    const openBtn = row.querySelector("[data-open]");
+    openBtn.addEventListener("click", (ev)=>{
+      ev.stopPropagation();
+      openExercise(ex);
+    });
+
+    // Delete handler (custom only)
+    const delBtn = row.querySelector("[data-delete]");
+    if(delBtn){
+      delBtn.addEventListener("click", async (ev)=>{
+        ev.stopPropagation();
+        await deleteExercise(ex);
       });
     }
+
+    // Row click opens details (but not when clicking buttons)
+    row.addEventListener("click", ()=> openExercise(ex));
+
+    el.appendChild(row);
+  });
+}
 
     function openExercise(ex){
       const cues = Array.isArray(ex.cues) ? ex.cues : (typeof ex.cues === "string" ? ex.cues.split(",").map(s=>s.trim()).filter(Boolean) : []);
@@ -1237,20 +1263,23 @@
 async function deleteExercise(ex){
   if (!confirm("Delete this exercise?")) return;
 
-  try {
-    await deleteDoc(
-      doc(db, "users", auth.currentUser.uid, "exercises", ex.id)
-    );
+  try{
+    await deleteDoc(doc(db, "users", currentUser.uid, "exercises", ex.id));
 
     toast("Exercise deleted");
     $("exerciseModal").classList.remove("show");
-    loadExercises();
 
-  } catch (e) {
+    // reload user exercises and re-merge defaults
+    const userExercises = await loadUserExercises(currentUser.uid);
+    cachedExercises = mergeExerciseLibrary(userExercises);
+
+    renderExerciseList();
+  }catch(e){
     console.error(e);
     alert("Failed to delete exercise");
   }
 }
+
     /***********************
      * CHECK-IN EXERCISE PICKER
      * Stored in checkin.exercises = [{exerciseId, name, sets, repsOrTime, notes}]
