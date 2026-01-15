@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -1198,7 +1198,7 @@ async function refreshExercises(){
       <div class="rowRight">
         <div class="chip">${ex.source === "user" ? "Custom" : "Dancer"}</div>
 
-        <button class="iconBtn" type="button" data-open>Open</button>
+        <button class="iconBtn" type="button" data-open="${ex.id}">Open</button>
 
         ${
           ex.source === "user"
@@ -1261,25 +1261,22 @@ async function refreshExercises(){
       $("exerciseModal").classList.add("show");
     }
 async function deleteExercise(ex){
-  if (!confirm("Delete this exercise?")) return;
+  if(!currentUser) { toast("Not logged in"); return; }
+  if(!confirm("Delete this exercise?")) return;
 
   try{
     await deleteDoc(doc(db, "users", currentUser.uid, "exercises", ex.id));
-
     toast("Exercise deleted");
+
+    // optional: close detail modal if it was open
     $("exerciseModal").classList.remove("show");
 
-    // reload user exercises and re-merge defaults
-    const userExercises = await loadUserExercises(currentUser.uid);
-    cachedExercises = mergeExerciseLibrary(userExercises);
-
-    renderExerciseList();
+    await refreshExercises();
   }catch(e){
     console.error(e);
     alert("Failed to delete exercise");
   }
 }
-
     /***********************
      * CHECK-IN EXERCISE PICKER
      * Stored in checkin.exercises = [{exerciseId, name, sets, repsOrTime, notes}]
