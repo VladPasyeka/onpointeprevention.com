@@ -170,6 +170,16 @@
     .badge.caution .badgeDot{background:var(--caution)}
     .badge.high .badgeDot{background:var(--high)}
 
+    /* small help button next to badge */
+    .badgeHelpBtn{
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:900;
+      line-height:1;
+      min-width:34px;
+      text-align:center;
+    }
+
     .metrics{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -188,6 +198,7 @@
     .metric .s{margin-top:3px;font-size:11px;color:rgba(255,255,255,.70)}
 
     .btnRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+
     .btn{
       border:1px solid var(--line);
       background: rgba(255,255,255,.04);
@@ -203,6 +214,18 @@
     .btn.primary{ background: rgba(255,255,255,.08); }
     .btn.danger{ border-color: rgba(255,92,92,.35); background: rgba(255,92,92,.08); }
     .btn:active{transform:scale(.99)}
+
+    /* Bigger “main action” button on Dashboard */
+    .btn.bigPrimary{
+      width:100%;
+      justify-content:center;
+      padding:16px 16px;
+      border-radius: 18px;
+      font-size:15px;
+      font-weight:900;
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.20);
+    }
 
     .list{display:grid; gap:10px; margin-top:10px}
     .row{
@@ -601,16 +624,20 @@
       <div class="container" id="screen-dashboard">
         <div class="grid">
 
-          <div class="card">
+                   <div class="card">
             <div class="cardInner">
               <div class="cardHeader">
                 <div>
                   <p class="h">Injury Risk Snapshot</p>
-                  <div class="small">Based on acute/chronic load + recovery markers.</div>
+                  <div class="small">Based on acute/chronic load (ACWR) + recovery markers.</div>
                 </div>
-                <div class="badge ok" id="riskBadge">
-                  <span class="badgeDot"></span>
-                  <span id="riskLabel">OK</span>
+
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <div class="badge ok" id="riskBadge">
+                    <span class="badgeDot"></span>
+                    <span id="riskLabel">OK</span>
+                  </div>
+                  <button class="iconBtn" id="riskInfoBtn" type="button" aria-label="Explain injury risk">?</button>
                 </div>
               </div>
 
@@ -636,8 +663,14 @@
                 <p class="h">Guidance</p>
                 <div class="small" id="guidanceText">Add check-ins to generate guidance.</div>
 
-                <div class="btnRow">
-                  <button class="btn primary" id="openCheckin" type="button">📝 Today’s Check-In</button>
+                 <div class="btnRow" style="gap:12px;">
+                  <button
+                    class="btn primary"
+                    id="openCheckin"
+                    type="button"
+                    style="padding:16px 18px; font-size:14px; border-radius:18px; flex:1 1 220px;"
+                  >📝 Today’s Check-In</button>
+
                   <button class="btn" id="openExercises" type="button">🩰 Exercise Library</button>
                   <button class="btn danger" id="clearData" type="button">🗑️ Clear Data</button>
                 </div>
@@ -682,21 +715,61 @@
         </div>
       </div>
 
-      <!-- EXERCISES -->
-      <div class="container" id="screen-exercises" style="display:none">
-        <div class="card">
-          <div class="cardInner">
-            <div class="cardHeader" style="margin-bottom:6px;">
-              <div>
-                <p class="h">Exercise Library</p>
-                <div class="small">Select exercises to build a dancer-specific plan.</div>
-              </div>
-              <button class="mutedBtn" id="openAddExercise" type="button">＋ Add Exercise</button>
-            </div>
-            <div class="list" id="exerciseList"></div>
+<!-- EXERCISES -->
+<div class="container" id="screen-exercises" style="display:none">
+  <div class="grid">
+
+    <!-- Routines -->
+    <div class="card">
+      <div class="cardInner">
+        <div class="cardHeader" style="margin-bottom:10px;">
+          <div>
+            <p class="h">Routines</p>
+            <div class="small">Save warm-ups, prehab, recovery, strength blocks. Apply them to Today’s Check-In in one tap.</div>
+          </div>
+          <button class="mutedBtn" id="newRoutineBtn" type="button">＋ New Routine</button>
+        </div>
+
+        <div class="list" id="routineList"></div>
+      </div>
+    </div>
+
+    <!-- Exercise Library -->
+    <div class="card">
+      <div class="cardInner">
+        <div class="cardHeader" style="margin-bottom:10px;">
+          <div>
+            <p class="h">Exercise Library</p>
+            <div class="small">Search, filter by category, favorite, and build a dancer-specific plan.</div>
+          </div>
+          <button class="mutedBtn" id="openAddExercise" type="button">＋ Add Exercise</button>
+        </div>
+
+        <!-- Controls -->
+        <div style="display:grid; gap:10px; margin-bottom:10px;">
+          <input
+            type="text"
+            id="exSearch"
+            placeholder="Search exercises (name, focus, prescription...)"
+            style="width:100%;"
+            autocomplete="off"
+          />
+
+          <!-- Category chips -->
+          <div id="categoryChips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="mutedBtn" id="toggleFavorites" type="button">⭐ Favorites: Off</button>
+            <button class="mutedBtn" id="clearSearch" type="button">Clear Search</button>
           </div>
         </div>
+
+        <div class="list" id="exerciseList"></div>
       </div>
+    </div>
+
+  </div>
+</div>
 
       <!-- HISTORY -->
       <div class="container" id="screen-history" style="display:none">
@@ -761,6 +834,43 @@
               <input type="range" id="f_fatigue" min="0" max="10" step="1" value="4" />
             </div>
 
+            <!-- Dancer-specific toggles -->
+            <div class="field">
+              <div class="labelRow"><span>Dancer markers</span><span class="hint" style="margin:0;">Optional, but makes guidance smarter</span></div>
+
+              <div style="display:grid; gap:10px;">
+                <label class="toggleLine" for="f_pointe" style="cursor:pointer;">
+                  <strong>🩰 Pointe work</strong>
+                  <span>
+                    <input id="f_pointe" type="checkbox" style="transform:scale(1.15); margin-left:10px;" />
+                  </span>
+                </label>
+
+                <label class="toggleLine" for="f_partner" style="cursor:pointer;">
+                  <strong>🤝 Partnering</strong>
+                  <span>
+                    <input id="f_partner" type="checkbox" style="transform:scale(1.15); margin-left:10px;" />
+                  </span>
+                </label>
+
+                <div class="toggleLine" style="cursor:default;">
+                  <strong>⬆️ Jump volume</strong>
+                  <span>
+                    <select
+                      id="f_jumps"
+                      style="background: rgba(255,255,255,.04); border:1px solid var(--line); color: var(--text); border-radius: 12px; padding: 10px 10px; font-size: 12px; outline: none;"
+                    >
+                      <option value="0">None</option>
+                      <option value="1">Moderate</option>
+                      <option value="2">High</option>
+                    </select>
+                  </span>
+                </div>
+              </div>
+
+              <div class="hint">These do not change load math — they help you interpret spikes (tech week, heavy jumps, pointe, etc.).</div>
+            </div>
+
             <div class="field">
               <div class="labelRow"><span>Notes (optional)</span></div>
               <textarea id="f_notes" placeholder="Pain location, jumps, pointe work, travel, stress, etc."></textarea>
@@ -775,12 +885,18 @@
                 <span class="hint" style="margin:0;">Pick from library + log sets/reps</span>
               </div>
 
-              <div class="toggleLine" id="toggleExercisePicker">
-                <div>
-                  <strong>Choose exercises</strong>
-                  <div><span id="pickedCount">0 selected</span></div>
+               <div style="display:flex; gap:10px; align-items:stretch; flex-wrap:wrap;">
+                <div class="toggleLine" id="toggleExercisePicker" style="flex:1 1 220px;">
+                  <div>
+                    <strong>Choose exercises</strong>
+                    <div><span id="pickedCount">0 selected</span></div>
+                  </div>
+                  <div class="chip" style="opacity:.9;">Add</div>
                 </div>
-                <div class="chip" style="opacity:.9;">Add</div>
+
+                <button class="mutedBtn" id="openRoutinePicker" type="button" style="flex:0 0 auto;">
+                  ➕ Add Routine
+                </button>
               </div>
 
               <div id="exercisePicker" style="display:none; margin-top:10px;">
@@ -811,47 +927,125 @@
       </div>
     </div>
 
-    <!-- Modal: Add Exercise -->
-    <div class="modalBackdrop" id="addExerciseModal">
+<!-- Modal: Add Exercise -->
+<div class="modalBackdrop" id="addExerciseModal">
+  <div class="modal">
+    <div class="modalTop">
+      <p class="modalTitle">Add Exercise</p>
+      <button class="iconBtn" id="closeAddExercise" type="button">● Close</button>
+    </div>
+    <div class="modalBody">
+      <form class="form" id="addExerciseForm">
+        <div class="field">
+          <div class="labelRow"><span>Name</span></div>
+          <input type="text" id="ae_name" placeholder="e.g., Intrinsic Foot (Short Foot)" required />
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Category</span></div>
+          <select id="ae_category" style="width:100%; background: rgba(255,255,255,.04); border:1px solid var(--line); color: var(--text); border-radius: 14px; padding: 12px 12px; font-size: 14px; outline: none;">
+            <option value="Foot/Ankle">Foot/Ankle</option>
+            <option value="Hip/Core">Hip/Core</option>
+            <option value="Strength">Strength</option>
+            <option value="Plyometrics">Plyometrics</option>
+            <option value="Mobility">Mobility</option>
+            <option value="Turnout/Technique">Turnout/Technique</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Focus / why</span></div>
+          <input type="text" id="ae_focus" placeholder="e.g., arch control · pointe tolerance" required />
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Default prescription</span></div>
+          <input type="text" id="ae_presc" placeholder="e.g., 3×10, slow tempo" required />
+          <div class="hint">This becomes the default sets/reps shown in check-in.</div>
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>How to do it (optional)</span></div>
+          <textarea id="ae_how" placeholder="Technique cues, setup, progressions..."></textarea>
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Coaching cues (optional)</span></div>
+          <input type="text" id="ae_cues" placeholder="Comma-separated, e.g., tripod foot, ribs down, slow tempo" />
+        </div>
+
+        <div class="btnRow">
+          <button class="btn primary" type="submit">＋ Add</button>
+          <button class="btn" id="cancelAddExercise" type="button">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    <!-- Modal: Risk Info -->
+    <div class="modalBackdrop" id="riskInfoModal">
       <div class="modal">
         <div class="modalTop">
-          <p class="modalTitle">Add Exercise</p>
-          <button class="iconBtn" id="closeAddExercise" type="button">● Close</button>
+          <p class="modalTitle">Injury Risk: How to read this</p>
+          <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
+        </div>
+        <div class="modalBody" id="riskInfoBody"></div>
+      </div>
+    </div>
+
+    <!-- Modal: Routine Picker (apply to today) -->
+    <div class="modalBackdrop" id="routinePickerModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle">Add Routine to Today</p>
+          <button class="iconBtn" id="closeRoutinePicker" type="button">● Close</button>
         </div>
         <div class="modalBody">
-          <form class="form" id="addExerciseForm">
+          <div class="small" style="margin-bottom:10px;">This adds all exercises from a routine into today’s selected list (won’t remove what you already picked).</div>
+          <div class="list" id="routinePickerList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Routine Editor -->
+    <div class="modalBackdrop" id="routineEditorModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle" id="routineEditorTitle">Routine</p>
+          <button class="iconBtn" id="closeRoutineEditor" type="button">● Close</button>
+        </div>
+        <div class="modalBody">
+          <div class="form">
             <div class="field">
               <div class="labelRow"><span>Name</span></div>
-              <input type="text" id="ae_name" placeholder="e.g., Intrinsic Foot (Short Foot)" required />
+              <input type="text" id="r_name" placeholder="e.g., Pointe Prehab Warm-Up" autocomplete="off" />
+              <div class="hint">Keep it short so it’s easy to pick on iPhone.</div>
             </div>
 
             <div class="field">
-              <div class="labelRow"><span>Focus / why</span></div>
-              <input type="text" id="ae_focus" placeholder="e.g., arch control · pointe tolerance" required />
-            </div>
-
-            <div class="field">
-              <div class="labelRow"><span>Default prescription</span></div>
-              <input type="text" id="ae_presc" placeholder="e.g., 3×10, slow tempo" required />
-              <div class="hint">This becomes the default sets/reps shown in check-in.</div>
-            </div>
-
-            <div class="field">
-              <div class="labelRow"><span>How to do it (optional)</span></div>
-              <textarea id="ae_how" placeholder="Technique cues, setup, progressions..."></textarea>
-            </div>
-
-            <div class="field">
-              <div class="labelRow"><span>Coaching cues (optional)</span></div>
-              <input type="text" id="ae_cues" placeholder="Comma-separated, e.g., tripod foot, ribs down, slow tempo" />
+              <div class="labelRow"><span>Pick exercises</span><span class="hint" style="margin:0;">Tap Add/Remove</span></div>
+              <div class="pickWrap" id="routineExercisePicker"></div>
             </div>
 
             <div class="btnRow">
-              <button class="btn primary" type="submit">＋ Add</button>
-              <button class="btn" id="cancelAddExercise" type="button">Close</button>
+              <button class="btn primary" id="saveRoutineBtn" type="button">💾 Save Routine</button>
+              <button class="btn danger" id="deleteRoutineBtn" type="button" style="display:none;">🗑️ Delete</button>
             </div>
-          </form>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal: Risk Explanation -->
+    <div class="modalBackdrop" id="riskInfoModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle">Injury Risk — How it works</p>
+          <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
+        </div>
+        <div class="modalBody" id="riskInfoBody"></div>
       </div>
     </div>
 
@@ -931,139 +1125,224 @@
       }
     }
 
-    /***********************
-     * DATA CACHE
-     ***********************/
-    let cachedCheckins = [];
-    let cachedExercises = []; // merged defaults + user custom (and stored in Firestore)
+/***********************
+ * DATA CACHE
+ ***********************/
+let cachedCheckins = [];
+let cachedExercises = []; // merged defaults + user custom (and stored in Firestore)
+
+// exercise UI state
+let selectedCategory = "All";
+let exSearchQuery = "";
+let showFavoritesOnly = false;
+
+// favorites (per user)
+let favoriteExerciseIds = new Set();
+function favKey(uid){ return "opp_favs_" + uid; }
+function loadFavorites(uid){
+  try{
+    const raw = localStorage.getItem(favKey(uid)) || "[]";
+    const arr = JSON.parse(raw);
+    favoriteExerciseIds = new Set(Array.isArray(arr) ? arr : []);
+  }catch(e){
+    favoriteExerciseIds = new Set();
+  }
+}
+function saveFavorites(uid){
+  try{
+    localStorage.setItem(favKey(uid), JSON.stringify(Array.from(favoriteExerciseIds)));
+  }catch(e){}
+}
+function isFav(exId){ return favoriteExerciseIds.has(exId); }
+function toggleFav(exId){
+  if(isFav(exId)) favoriteExerciseIds.delete(exId);
+  else favoriteExerciseIds.add(exId);
+  if(currentUser) saveFavorites(currentUser.uid);
+}
+
+/***********************
+ * ROUTINES (per user, localStorage)
+ ***********************/
+let cachedRoutines = []; // [{id, name, exerciseIds:[]}]
+let routineEditingId = null;
+let routineSelectedIds = new Set();
+
+function routinesKey(uid){ return "opp_routines_" + uid; }
+function loadRoutines(uid){
+  try{
+    const raw = localStorage.getItem(routinesKey(uid)) || "[]";
+    const arr = JSON.parse(raw);
+    cachedRoutines = Array.isArray(arr) ? arr : [];
+  }catch(e){
+    cachedRoutines = [];
+  }
+}
+function saveRoutines(uid){
+  try{
+    localStorage.setItem(routinesKey(uid), JSON.stringify(cachedRoutines || []));
+  }catch(e){}
+}
+function makeRoutineId(){
+  return "rt_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+}
+function getRoutineById(id){
+  return (cachedRoutines || []).find(r=> r && r.id === id) || null;
+}
+function upsertRoutine(uid, routine){
+  const r = routine || {};
+  if(!r.id) r.id = makeRoutineId();
+  if(!r.name) r.name = "Routine";
+  if(!Array.isArray(r.exerciseIds)) r.exerciseIds = [];
+
+  const idx = (cachedRoutines || []).findIndex(x=> x.id === r.id);
+  if(idx >= 0) cachedRoutines[idx] = r;
+  else cachedRoutines.push(r);
+
+  cachedRoutines.sort((a,b)=> (a.name||"").localeCompare(b.name||""));
+  saveRoutines(uid);
+}
+function deleteRoutineById(uid, id){
+  cachedRoutines = (cachedRoutines || []).filter(r=> r.id !== id);
+  saveRoutines(uid);
+}
 
     /***********************
      * DEFAULT (DANCER-SPECIFIC) EXERCISES
      * Each has a defaultRx string that we can pre-fill in check-in.
      ***********************/
-    const DEFAULT_EXERCISES = [
-      {
-        id:"default_calf_iso_ecc",
-        source:"default",
-        name:"Calf Capacity (Isometric + Eccentric)",
-        focus:"Achilles/pointe/jumps · ankle load tolerance",
-        defaultRx:"Isometric 3×30–45s + Eccentric 3×8–12 (3–4s down)",
-        how:[
-          "Isometric: single-leg calf hold mid-range, pain ≤3/10.",
-          "Eccentric: slow lower off a step, use both legs to rise if needed.",
-          "Progress: add load (backpack) → bigger range → pogo hops."
-        ],
-        cues:["Tripod foot","Control the lowering","No collapsing arch"]
-      },
-      {
-        id:"default_foot_intrinsic",
-        source:"default",
-        name:"Intrinsic Foot (Short Foot / Doming)",
-        focus:"Arch control · turnout/pointe alignment",
-        defaultRx:"3×8–12 holds (5–8s) or 3×10 slow reps",
-        how:[
-          "Gently draw the ball of foot toward heel without curling toes.",
-          "Start seated → progress to standing → single-leg → relevé."
-        ],
-        cues:["Toes long","Weight evenly through tripod","Small controlled movement"]
-      },
-      {
-        id:"default_tib_post",
-        source:"default",
-        name:"Tibialis Posterior + Inversion Control",
-        focus:"Medial ankle support · pronation control",
-        defaultRx:"3×12–15 banded inversion (slow) or 3×30s isometric",
-        how:[
-          "Band around forefoot, pull inward slowly, control return.",
-          "Keep knee stacked; don’t rotate hip to cheat."
-        ],
-        cues:["Move at ankle","Slow eccentric","Maintain arch"]
-      },
-      {
-        id:"default_hip_abd",
-        source:"default",
-        name:"Hip Abductors (Side Plank + Clamshell)",
-        focus:"Pelvic control · single-limb stability",
-        defaultRx:"Side plank 3×20–30s + Clamshell 3×12–15",
-        how:[
-          "Side plank knees → feet as tolerated.",
-          "Clamshell: slow reps, add band when easy."
-        ],
-        cues:["Ribs down","Stack pelvis","Control knee alignment"]
-      },
-      {
-        id:"default_stepdown",
-        source:"default",
-        name:"Step-Down (Single-Leg Control)",
-        focus:"Knee/hip alignment · landing mechanics",
-        defaultRx:"3×6–10 each side (3s down)",
-        how:[
-          "Slow lower, light heel tap, return—no bounce.",
-          "Progress: higher step, add load, add reach."
-        ],
-        cues:["Knee over 2nd toe","Quiet pelvis","No trunk sway"]
-      },
-      {
-        id:"default_single_leg_rdl",
-        source:"default",
-        name:"Single-Leg RDL (Hinge Control)",
-        focus:"Hamstrings/glutes · hip hinge for jumps & decel",
-        defaultRx:"3×6–10 each side (slow tempo)",
-        how:[
-          "Hinge at hip, slight knee bend, keep pelvis square.",
-          "Progress: add load, reach to targets, tempo."
-        ],
-        cues:["Long spine","Hips square","Feel hamstrings"]
-      },
-      {
-        id:"default_jump_landing",
-        source:"default",
-        name:"Landing Mechanics (Drop Landing / Stick)",
-        focus:"Impact control · plyometric readiness",
-        defaultRx:"3×3–6 reps (stick 2–3s), 60–90s rest",
-        how:[
-          "Step off low box, land quietly, hold position.",
-          "Progress: higher box → repeated hops → directional."
-        ],
-        cues:["Quiet landing","Knee tracks over toes","Abs engaged"]
-      },
-      {
-        id:"default_core_pallof",
-        source:"default",
-        name:"Core Anti-Rotation (Dead Bug / Pallof)",
-        focus:"Lumbar load management · spotting/turns",
-        defaultRx:"Dead bug 3×6–10 + Pallof 3×10–12 each side",
-        how:[
-          "Dead bug: keep ribs down and pelvis neutral.",
-          "Pallof: press out, don’t rotate."
-        ],
-        cues:["Breathe","Slow + controlled","No rib flare"]
-      },
-      {
-        id:"default_thoracic",
-        source:"default",
-        name:"Thoracic Mobility (Open Books / Foam Roll)",
-        focus:"Upper body lines · port de bras · spotting",
-        defaultRx:"2–3×6–10 per side or 3×45–60s",
-        how:[
-          "Open books: rotate through upper back, not low back.",
-          "Foam roll: gentle extensions over roller."
-        ],
-        cues:["Move through T-spine","Neck relaxed","Control range"]
-      },
-      {
-        id:"default_turnout_iso",
-        source:"default",
-        name:"Turnout Control (Hip ER Isometric)",
-        focus:"Deep hip ER · turnout without pronation",
-        defaultRx:"3×20–30s holds each side",
-        how:[
-          "Seated: press knee outward against band/towel without moving pelvis.",
-          "Progress to standing turnout holds in parallel → first."
-        ],
-        cues:["Pelvis neutral","No arch collapse","Feel deep hip"]
-      }
-    ];
+const DEFAULT_EXERCISES = [
+  {
+    id:"default_calf_iso_ecc",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Calf Capacity (Isometric + Eccentric)",
+    focus:"Achilles/pointe/jumps · ankle load tolerance",
+    defaultRx:"Isometric 3×30–45s + Eccentric 3×8–12 (3–4s down)",
+    how:[
+      "Isometric: single-leg calf hold mid-range, pain ≤3/10.",
+      "Eccentric: slow lower off a step, use both legs to rise if needed.",
+      "Progress: add load (backpack) → bigger range → pogo hops."
+    ],
+    cues:["Tripod foot","Control the lowering","No collapsing arch"]
+  },
+  {
+    id:"default_foot_intrinsic",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Intrinsic Foot (Short Foot / Doming)",
+    focus:"Arch control · turnout/pointe alignment",
+    defaultRx:"3×8–12 holds (5–8s) or 3×10 slow reps",
+    how:[
+      "Gently draw the ball of foot toward heel without curling toes.",
+      "Start seated → progress to standing → single-leg → relevé."
+    ],
+    cues:["Toes long","Weight evenly through tripod","Small controlled movement"]
+  },
+  {
+    id:"default_tib_post",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Tibialis Posterior + Inversion Control",
+    focus:"Medial ankle support · pronation control",
+    defaultRx:"3×12–15 banded inversion (slow) or 3×30s isometric",
+    how:[
+      "Band around forefoot, pull inward slowly, control return.",
+      "Keep knee stacked; don’t rotate hip to cheat."
+    ],
+    cues:["Move at ankle","Slow eccentric","Maintain arch"]
+  },
+  {
+    id:"default_hip_abd",
+    source:"default",
+    category:"Hip/Core",
+    name:"Hip Abductors (Side Plank + Clamshell)",
+    focus:"Pelvic control · single-limb stability",
+    defaultRx:"Side plank 3×20–30s + Clamshell 3×12–15",
+    how:[
+      "Side plank knees → feet as tolerated.",
+      "Clamshell: slow reps, add band when easy."
+    ],
+    cues:["Ribs down","Stack pelvis","Control knee alignment"]
+  },
+  {
+    id:"default_stepdown",
+    source:"default",
+    category:"Strength",
+    name:"Step-Down (Single-Leg Control)",
+    focus:"Knee/hip alignment · landing mechanics",
+    defaultRx:"3×6–10 each side (3s down)",
+    how:[
+      "Slow lower, light heel tap, return—no bounce.",
+      "Progress: higher step, add load, add reach."
+    ],
+    cues:["Knee over 2nd toe","Quiet pelvis","No trunk sway"]
+  },
+  {
+    id:"default_single_leg_rdl",
+    source:"default",
+    category:"Strength",
+    name:"Single-Leg RDL (Hinge Control)",
+    focus:"Hamstrings/glutes · hip hinge for jumps & decel",
+    defaultRx:"3×6–10 each side (slow tempo)",
+    how:[
+      "Hinge at hip, slight knee bend, keep pelvis square.",
+      "Progress: add load, reach to targets, tempo."
+    ],
+    cues:["Long spine","Hips square","Feel hamstrings"]
+  },
+  {
+    id:"default_jump_landing",
+    source:"default",
+    category:"Plyometrics",
+    name:"Landing Mechanics (Drop Landing / Stick)",
+    focus:"Impact control · plyometric readiness",
+    defaultRx:"3×3–6 reps (stick 2–3s), 60–90s rest",
+    how:[
+      "Step off low box, land quietly, hold position.",
+      "Progress: higher box → repeated hops → directional."
+    ],
+    cues:["Quiet landing","Knee tracks over toes","Abs engaged"]
+  },
+  {
+    id:"default_core_pallof",
+    source:"default",
+    category:"Hip/Core",
+    name:"Core Anti-Rotation (Dead Bug / Pallof)",
+    focus:"Lumbar load management · spotting/turns",
+    defaultRx:"Dead bug 3×6–10 + Pallof 3×10–12 each side",
+    how:[
+      "Dead bug: keep ribs down and pelvis neutral.",
+      "Pallof: press out, don’t rotate."
+    ],
+    cues:["Breathe","Slow + controlled","No rib flare"]
+  },
+  {
+    id:"default_thoracic",
+    source:"default",
+    category:"Mobility",
+    name:"Thoracic Mobility (Open Books / Foam Roll)",
+    focus:"Upper body lines · port de bras · spotting",
+    defaultRx:"2–3×6–10 per side or 3×45–60s",
+    how:[
+      "Open books: rotate through upper back, not low back.",
+      "Foam roll: gentle extensions over roller."
+    ],
+    cues:["Move through T-spine","Neck relaxed","Control range"]
+  },
+  {
+    id:"default_turnout_iso",
+    source:"default",
+    category:"Turnout/Technique",
+    name:"Turnout Control (Hip ER Isometric)",
+    focus:"Deep hip ER · turnout without pronation",
+    defaultRx:"3×20–30s holds each side",
+    how:[
+      "Seated: press knee outward against band/towel without moving pelvis.",
+      "Progress to standing turnout holds in parallel → first."
+    ],
+    cues:["Pelvis neutral","No arch collapse","Feel deep hip"]
+  }
+];
 
     /***********************
      * CHECKINS: load + metrics
@@ -1081,36 +1360,79 @@
       const total = lastNDays(entries, days).reduce((s,e)=> s + sessionLoad(e), 0);
       return total / days;
     }
-    function computeMetrics(entries){
-      const acute = avgDailyLoad(entries, 7);
-      const chronic = avgDailyLoad(entries, 28);
-      const acwr = (chronic > 0) ? (acute / chronic) : null;
-      return { acute, chronic, acwr };
+function computeMetrics(entries){
+  // Standard approach: 7d avg and 28d avg.
+  // BUT early on, dividing by 28 when you only have a few entries makes chronic tiny,
+  // which inflates ACWR and shows "HIGH" too often.
+  const acute = avgDailyLoad(entries, 7);
+  const chronic = avgDailyLoad(entries, 28);
+
+  // Require meaningful history before calculating ACWR
+  // - at least 10 entries OR at least 14 days since first entry
+  // - and chronic must not be extremely tiny
+  let acwr = null;
+
+  if(entries && entries.length){
+    const sorted = entries.slice().sort((a,b)=> (a.date < b.date ? -1 : 1));
+    const first = new Date(sorted[0].date + "T00:00:00");
+    const last = new Date(sorted[sorted.length-1].date + "T00:00:00");
+    const spanDays = Math.round((last - first) / (1000*60*60*24)) + 1;
+
+    const enoughHistory = (entries.length >= 10) || (spanDays >= 14);
+
+    // If chronic is too low, ACWR becomes meaningless noise
+    const chronicOk = (chronic >= 10);
+
+    if(enoughHistory && chronicOk){
+      acwr = acute / chronic;
     }
-    function riskFromACWR(acwr){
-      if(acwr === null) return { cls:"ok", label:"OK" };
-      if(acwr < 0.8) return { cls:"caution", label:"LOW" };
-      if(acwr <= 1.3) return { cls:"ok", label:"OK" };
-      if(acwr <= 1.5) return { cls:"caution", label:"CAUTION" };
-      return { cls:"high", label:"HIGH" };
-    }
-    function guidanceText(entries, metrics){
-      if(entries.length === 0) return "Add check-ins to generate guidance.";
-      const { acwr } = metrics;
-      if(acwr === null){
-        return "Not enough history for ACWR. Keep logging daily load for the next 1–2 weeks.";
-      }
-      if(acwr > 1.5){
-        return "High workload spike detected. Reduce volume/intensity for 24–72h, prioritize sleep, and avoid high-impact jumps/pointe volume until recovery improves.";
-      }
-      if(acwr > 1.3){
-        return "Moderate spike. Maintain technique work, but cap additional conditioning volume and monitor soreness/fatigue closely.";
-      }
-      if(acwr < 0.8){
-        return "Load is low relative to recent baseline. Progress gradually to avoid a sudden jump next week.";
-      }
-      return "Workload appears stable. Continue progressive conditioning and monitor recovery.";
-    }
+  }
+
+  return { acute, chronic, acwr };
+}
+function riskFromACWR(acwr, entriesCount = 0){
+  // Not enough history → do not flag risk
+  if(entriesCount < 10){
+    return { cls:"ok", label:"BASELINE" };
+  }
+
+  if(acwr === null) return { cls:"ok", label:"BASELINE" };
+  if(acwr < 0.8) return { cls:"caution", label:"LOW" };
+  if(acwr <= 1.3) return { cls:"ok", label:"OK" };
+  if(acwr <= 1.5) return { cls:"caution", label:"CAUTION" };
+  return { cls:"high", label:"HIGH" };
+}
+function guidanceText(entries, metrics){
+  if(!entries || entries.length === 0){
+    return "Add check-ins to start building your personal load baseline.";
+  }
+
+  // Baseline-building phase
+  if(entries.length < 10){
+    return "Building your baseline. Early risk signals can look high until the app learns your normal training rhythm. Log consistently for ~2 weeks.";
+  }
+
+  const acwr = metrics && typeof metrics.acwr === "number" ? metrics.acwr : null;
+
+  if(acwr === null){
+    return "Keep logging daily to refine your baseline. Prioritize sleep and recovery on heavy days.";
+  }
+
+  if(acwr > 1.5){
+    return "Recent load is much higher than your baseline. Protect the next 24–72h: avoid adding extra jumps or pointe volume.";
+  }
+
+  if(acwr > 1.3){
+    return "Moderate increase in load. Keep rehearsal quality high and trim extra volume if fatigue rises.";
+  }
+
+  if(acwr < 0.8){
+    return "Load is lower than your recent norm. Progress gradually to avoid a sudden spike.";
+  }
+
+  return "Load looks steady. Keep progressing and support recovery basics.";
+}
+
 
     /***********************
      * FIRESTORE CRUD
@@ -1162,13 +1484,33 @@
     }
 async function refreshExercises(){
   if(!currentUser) return;
+
   const userExercises = await loadUserExercises(currentUser.uid);
   cachedExercises = mergeExerciseLibrary(userExercises);
+
+  // Keep UI consistent after refresh:
+  // - If the currently-selected category no longer exists, fall back to All
+  if(selectedCategory && selectedCategory !== "All"){
+    let exists = false;
+    for(let i=0;i<cachedExercises.length;i++){
+      const cat = cachedExercises[i].category || "Other";
+      if(cat === selectedCategory){ exists = true; break; }
+    }
+    if(!exists) selectedCategory = "All";
+  }
+
+  // Rebuild chips if the container exists (wireUI defines the renderer)
+  if(typeof window.__opp_renderCategoryChips === "function"){
+    window.__opp_renderCategoryChips();
+  }
+
   renderExerciseList();
 }
 
- function renderExerciseList(){
+function renderExerciseList(){
   const el = $("exerciseList");
+  if(!el) return;
+
   el.innerHTML = "";
 
   if(!cachedExercises || cachedExercises.length === 0){
@@ -1182,84 +1524,162 @@ async function refreshExercises(){
     return;
   }
 
-  cachedExercises.forEach((ex)=>{
+  const q = (exSearchQuery || "").trim().toLowerCase();
+
+  let list = cachedExercises.slice();
+
+  if(selectedCategory && selectedCategory !== "All"){
+    list = list.filter(ex => (ex.category || "Other") === selectedCategory);
+  }
+
+  if(showFavoritesOnly){
+    list = list.filter(ex => isFav(ex.id));
+  }
+
+  if(q){
+    list = list.filter(ex=>{
+      const hay = [
+        ex.name || "",
+        ex.category || "",
+        ex.focus || "",
+        ex.defaultRx || "",
+        (Array.isArray(ex.cues) ? ex.cues.join(" ") : (ex.cues || "")),
+        (Array.isArray(ex.how) ? ex.how.join(" ") : (ex.how || ""))
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  list.sort((a,b)=>{
+    const af = isFav(a.id) ? 0 : 1;
+    const bf = isFav(b.id) ? 0 : 1;
+    if(af !== bf) return af - bf;
+    return (a.name || "").localeCompare(b.name || "");
+  });
+
+  if(list.length === 0){
+    el.innerHTML = `
+      <div class="row">
+        <div class="rowMain">
+          <div class="rowTitle">No matches</div>
+          <div class="rowSub">Try changing category, search, or Favorites.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  for(let i=0;i<list.length;i++){
+    const ex = list[i];
     const row = document.createElement("div");
     row.className = "row";
+
+    const favOn = isFav(ex.id);
+    const cat = ex.category || "Other";
 
     row.innerHTML = `
       <div class="rowMain">
         <div class="rowTop">
-          <div class="rowTitle">${escapeHTML(ex.name)}</div>
-          <div class="rowMeta">${escapeHTML(ex.focus || "")}</div>
+          <div class="rowTitle">${escapeHTML(ex.name || "Exercise")}</div>
+          <div class="rowMeta">${escapeHTML(cat)} · ${escapeHTML(ex.focus || "")}</div>
         </div>
         <div class="rowSub">${escapeHTML(ex.defaultRx || "Tap to view details")}</div>
       </div>
 
       <div class="rowRight">
-        <div class="chip">${ex.source === "user" ? "Custom" : "Dancer"}</div>
+        <button class="iconBtn" type="button" data-fav="${ex.id}">
+          ${favOn ? "⭐" : "☆"}
+        </button>
 
         <button class="iconBtn" type="button" data-open="${ex.id}">Open</button>
 
         ${
           ex.source === "user"
-            ? `<button class="iconBtn danger" type="button" data-delete>🗑️</button>`
+            ? `<button class="iconBtn danger" type="button" data-delete="${ex.id}">🗑️</button>`
             : ``
         }
       </div>
     `;
 
-    // Open handlers
-    const openBtn = row.querySelector("[data-open]");
-    openBtn.addEventListener("click", (ev)=>{
-      ev.stopPropagation();
-      openExercise(ex);
-    });
-
-    // Delete handler (custom only)
-    const delBtn = row.querySelector("[data-delete]");
-    if(delBtn){
-      delBtn.addEventListener("click", async (ev)=>{
+    const favBtn = row.querySelector(`[data-fav="${ex.id}"]`);
+    if(favBtn){
+      favBtn.addEventListener("click", (ev)=>{
         ev.stopPropagation();
-        await deleteExercise(ex);
+        toggleFav(ex.id);
+        renderExerciseList();
       });
     }
 
-    // Row click opens details (but not when clicking buttons)
-    row.addEventListener("click", ()=> openExercise(ex));
+    const openBtn = row.querySelector(`[data-open="${ex.id}"]`);
+    if(openBtn){
+      openBtn.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        openExercise(ex);
+      });
+    }
 
-    el.appendChild(row);
-  });
+    if(ex.source === "user"){
+      const delBtn = row.querySelector(`[data-delete="${ex.id}"]`);
+      if(delBtn){
+        delBtn.addEventListener("click", async (ev)=>{
+          ev.stopPropagation();
+          await deleteExercise(ex);
+        });
+      }
+    }
+
+    row.addEventListener("click", ()=> openExercise(ex));
+    frag.appendChild(row);
+  }
+
+  el.appendChild(frag);
 }
 
-    function openExercise(ex){
-      const cues = Array.isArray(ex.cues) ? ex.cues : (typeof ex.cues === "string" ? ex.cues.split(",").map(s=>s.trim()).filter(Boolean) : []);
-      const how = Array.isArray(ex.how) ? ex.how : (typeof ex.how === "string" ? ex.how.split("\n").map(s=>s.trim()).filter(Boolean) : []);
+function openExercise(ex){
+  const cues = Array.isArray(ex.cues)
+    ? ex.cues
+    : (typeof ex.cues === "string" ? ex.cues.split(",").map(s=>s.trim()).filter(Boolean) : []);
 
-      $("exTitle").textContent = ex.name || "Exercise";
-      $("exBody").innerHTML = `
-        <div class="chip" style="display:inline-flex; margin-bottom:10px;">${escapeHTML(ex.focus || "")}</div>
-        ${ex.defaultRx ? `<div class="rowSub" style="margin-top:4px;"><strong style="color:rgba(255,255,255,.9)">Default:</strong> ${escapeHTML(ex.defaultRx)}</div>` : ""}
+  const how = Array.isArray(ex.how)
+    ? ex.how
+    : (typeof ex.how === "string" ? ex.how.split("\n").map(s=>s.trim()).filter(Boolean) : []);
 
-        ${how.length ? `
-          <div style="margin:14px 0 6px; font-weight:900;">How to do it</div>
-          <div style="display:grid; gap:8px;">
-            ${how.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
-          </div>
-        ` : ""}
+  const cat = ex.category || "Other";
+  const focus = ex.focus || "";
 
-        ${cues.length ? `
-          <div style="margin:14px 0 6px; font-weight:900;">Coaching cues</div>
-          <div style="display:grid; gap:8px;">
-            ${cues.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
-          </div>
-        ` : ""}
+  $("exTitle").textContent = ex.name || "Exercise";
+  $("exBody").innerHTML = `
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+      <div class="chip" style="display:inline-flex;">${escapeHTML(cat)}</div>
+      ${focus ? `<div class="chip" style="display:inline-flex; opacity:.85;">${escapeHTML(focus)}</div>` : ``}
+    </div>
 
-        <div style="margin-top:16px;">
-          <div class="hint">Use this exercise inside your check-in to log sets/reps.</div>
-        </div>
-      `;
-      $("exerciseModal").classList.add("show");
-    }
+    ${ex.defaultRx ? `
+      <div class="rowSub" style="margin-top:4px;">
+        <strong style="color:rgba(255,255,255,.9)">Default:</strong> ${escapeHTML(ex.defaultRx)}
+      </div>` : ""}
+
+    ${how.length ? `
+      <div style="margin:14px 0 6px; font-weight:900;">How to do it</div>
+      <div style="display:grid; gap:8px;">
+        ${how.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
+      </div>` : ""}
+
+    ${cues.length ? `
+      <div style="margin:14px 0 6px; font-weight:900;">Coaching cues</div>
+      <div style="display:grid; gap:8px;">
+        ${cues.map(x=>`<div class="rowSub">• ${escapeHTML(x)}</div>`).join("")}
+      </div>` : ""}
+
+    <div style="margin-top:16px;">
+      <div class="hint">Use this exercise inside your check-in to log sets/reps.</div>
+    </div>
+  `;
+
+  $("exerciseModal").classList.add("show");
+}
+
 async function deleteExercise(ex){
   if(!currentUser) { toast("Not logged in"); return; }
   if(!confirm("Delete this exercise?")) return;
@@ -1399,92 +1819,183 @@ async function deleteExercise(ex){
     /***********************
      * UI RENDER (dashboard/history)
      ***********************/
-    function render(){
-      const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
-      const metrics = computeMetrics(entries);
+function render(){
+  const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+  const metrics = computeMetrics(entries);
 
-      $("m_acute").textContent = entries.length ? Math.round(metrics.acute) : "—";
-      $("m_chronic").textContent = entries.length ? Math.round(metrics.chronic) : "—";
-      $("m_acwr").textContent = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
+  $("m_acute").textContent = entries.length ? Math.round(metrics.acute) : "—";
+  $("m_chronic").textContent = entries.length ? Math.round(metrics.chronic) : "—";
+  $("m_acwr").textContent = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
 
-      const risk = riskFromACWR(metrics.acwr);
-      const badge = $("riskBadge");
-      badge.classList.remove("ok","caution","high");
-      badge.classList.add(risk.cls);
-      $("riskLabel").textContent = risk.label;
+  const risk = riskFromACWR(metrics.acwr);
+  const badge = $("riskBadge");
+  badge.classList.remove("ok","caution","high");
+  badge.classList.add(risk.cls);
+  $("riskLabel").textContent = risk.label;
 
-      $("guidanceText").textContent = guidanceText(entries, metrics);
+  $("guidanceText").textContent = guidanceText(entries, metrics);
 
-      renderRecent(entries);
-      renderHistory(entries);
-      renderChart(entries);
-    }
+  renderRecent(entries);
+  renderHistory(entries);
+  renderChart(entries);
 
-    function renderRecent(entries){
-      const el = $("recentList");
-      el.innerHTML = "";
-      const recent = lastNDays(entries, 7).slice(0,7);
-      if(recent.length === 0){
-        el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No entries yet</div><div class="rowSub">Complete a check-in to populate your dashboard.</div></div></div>`;
-        return;
-      }
-      recent.forEach(e=>{
-        const load = sessionLoad(e);
-        const exCount = Array.isArray(e.exercises) ? e.exercises.length : 0;
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `
-          <div class="rowMain">
-            <div class="rowTop">
-              <div class="rowTitle">${prettyDate(e.date)}</div>
-              <div class="rowMeta">${e.minutes} min · RPE ${e.rpe}</div>
-            </div>
-            <div class="rowSub">Sleep ${Number(e.sleep).toFixed(1)}h · Soreness ${e.sore} · Fatigue ${e.fatigue}${exCount ? ` · Exercises ${exCount}` : ""}</div>
+  // Build risk explainer content (lightweight)
+  const acute = entries.length ? Math.round(metrics.acute) : null;
+  const chronic = entries.length ? Math.round(metrics.chronic) : null;
+  const acwrText = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
+
+  const why = (metrics.acwr === null)
+    ? `ACWR is hidden until there’s enough history (so it doesn’t falsely show HIGH). Keep logging for ~2 weeks.`
+    : `ACWR compares your last 7 days vs your last 28 days. Big spikes can increase risk when recovery is limited.`;
+
+  const thresholds = `
+    <div class="rowSub" style="margin-top:10px;">
+      <strong>Thresholds used:</strong><br/>
+      • LOW: &lt; 0.8<br/>
+      • OK: 0.8–1.3<br/>
+      • CAUTION: 1.3–1.5<br/>
+      • HIGH: &gt; 1.5
+    </div>
+  `;
+
+  $("riskInfoBody").innerHTML = `
+    <div class="rowSub">
+      <strong>What you’re seeing:</strong> the badge is an estimate based on training load trends, not a diagnosis.
+    </div>
+
+    <div class="rowSub" style="margin-top:10px;">
+      <strong>Training load:</strong> minutes × RPE (0–10). This is your session load.
+    </div>
+
+    <div class="rowSub" style="margin-top:10px;">
+      <strong>Acute load (7d avg):</strong> ${acute === null ? "—" : acute}<br/>
+      <strong>Chronic load (28d avg):</strong> ${chronic === null ? "—" : chronic}<br/>
+      <strong>ACWR:</strong> ${acwrText}
+    </div>
+
+    <div class="rowSub" style="margin-top:10px;">
+      ${escapeHTML(why)}
+    </div>
+
+    ${thresholds}
+
+    <div class="rowSub" style="margin-top:12px;">
+      <strong>How to use it:</strong><br/>
+      • If HIGH: reduce extra jumps/pointe volume for 24–72h, prioritize sleep, keep quality high.<br/>
+      • If CAUTION: avoid stacking hard days; add recovery buffers.<br/>
+      • If LOW: progress gradually to avoid a sudden spike next week.
+    </div>
+
+    <div class="hint" style="margin-top:14px;">
+      Tip: ACWR needs consistent logging. Missing days can make it less stable.
+    </div>
+  `;
+}
+
+function renderRecent(entries){
+  const el = $("recentList");
+  if(!el) return;
+
+  const recent = lastNDays(entries || [], 7).slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+
+  if(recent.length === 0){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No entries yet</div><div class="rowSub">Complete a check-in to populate your dashboard.</div></div></div>`;
+    return;
+  }
+
+  // Build once (lighter than creating/appendChild per row)
+  let html = "";
+  for(let i=0;i<recent.length;i++){
+    const e = recent[i];
+    const load = sessionLoad(e);
+    const exCount = Array.isArray(e.exercises) ? e.exercises.length : 0;
+
+    const sleepNum = Number(e.sleep);
+    const sleepText = isFinite(sleepNum) ? sleepNum.toFixed(1) : "—";
+
+    html += `
+      <div class="row">
+        <div class="rowMain">
+          <div class="rowTop">
+            <div class="rowTitle">${prettyDate(e.date)}</div>
+            <div class="rowMeta">${e.minutes} min · RPE ${e.rpe}</div>
           </div>
-          <div class="rowRight">
-            <div class="chip">Load ${load}</div>
+          <div class="rowSub">
+            Sleep ${sleepText}h · Soreness ${e.sore} · Fatigue ${e.fatigue}${exCount ? ` · Exercises ${exCount}` : ``}
           </div>
-        `;
-        el.appendChild(row);
-      });
-    }
+        </div>
+        <div class="rowRight">
+          <div class="chip">Load ${load}</div>
+        </div>
+      </div>
+    `;
+  }
 
-    function renderHistory(entries){
-      const el = $("historyList");
-      el.innerHTML = "";
-      if(entries.length === 0){
-        el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No saved check-ins</div><div class="rowSub">Use the Check-In tab to add your first entry.</div></div></div>`;
-        return;
-      }
+  el.innerHTML = html;
+}
 
-      entries.forEach(e=>{
-        const load = sessionLoad(e);
-        const ex = Array.isArray(e.exercises) ? e.exercises : [];
-        const exLine = ex.length
-          ? `Exercises: ${ex.slice(0,3).map(x=>escapeHTML(x.name)).join(", ")}${ex.length>3 ? "…" : ""}`
-          : "Exercises: —";
+function renderHistory(entries){
+  const el = $("historyList");
+  el.innerHTML = "";
 
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `
-          <div class="rowMain">
-            <div class="rowTop">
-              <div class="rowTitle">${prettyDate(e.date)}</div>
-              <div class="rowMeta">${e.minutes} min · RPE ${e.rpe} · Load ${load}</div>
-            </div>
-            <div class="rowSub">${exLine}</div>
-            <div class="rowSub" style="margin-top:4px;">${(e.notes||"").trim() ? escapeHTML(e.notes) : "—"}</div>
-          </div>
-          <div class="rowRight">
-            <button class="iconBtn" type="button" data-edit="${e.date}">Edit</button>
-          </div>
-        `;
-        row.querySelector('[data-edit]').addEventListener("click", ()=>{
-          openCheckinModal(e);
-        });
-        el.appendChild(row);
-      });
-    }
+  if(!entries || entries.length === 0){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No saved check-ins</div><div class="rowSub">Use the Check-In tab to add your first entry.</div></div></div>`;
+    return;
+  }
+
+  const jumpsLabel = (n)=>{
+    const v = Number(n || 0);
+    if(v <= 0) return "Jumps: None";
+    if(v === 1) return "Jumps: Moderate";
+    return "Jumps: High";
+  };
+
+  entries.forEach(e=>{
+    const load = sessionLoad(e);
+    const ex = Array.isArray(e.exercises) ? e.exercises : [];
+    const exLine = ex.length
+      ? `Exercises: ${ex.slice(0,3).map(x=>escapeHTML(x.name)).join(", ")}${ex.length>3 ? "…" : ""}`
+      : "Exercises: —";
+
+    // dancer toggles (safe defaults if missing)
+    const pointe = !!e.pointe;
+    const partner = !!e.partner;
+    const jumps = Number(e.jumps || 0);
+
+    const chips = [];
+    if(pointe) chips.push("🩰 Pointe");
+    if(partner) chips.push("🤝 Partnering");
+    chips.push(`⬆️ ${jumpsLabel(jumps)}`);
+
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="rowMain">
+        <div class="rowTop">
+          <div class="rowTitle">${prettyDate(e.date)}</div>
+          <div class="rowMeta">${e.minutes} min · RPE ${e.rpe} · Load ${load}</div>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+          ${chips.map(c=>`<div class="chip">${c}</div>`).join("")}
+        </div>
+
+        <div class="rowSub" style="margin-top:8px;">${exLine}</div>
+        <div class="rowSub" style="margin-top:4px;">${(e.notes||"").trim() ? escapeHTML(e.notes) : "—"}</div>
+      </div>
+
+      <div class="rowRight">
+        <button class="iconBtn" type="button" data-edit="${e.date}">Edit</button>
+      </div>
+    `;
+
+    row.querySelector('[data-edit]').addEventListener("click", ()=>{
+      openCheckinModal(e);
+    });
+
+    el.appendChild(row);
+  });
+}
 
     function renderChart(entries){
       const canvas = $("trendCanvas");
@@ -1541,28 +2052,35 @@ async function deleteExercise(ex){
     /***********************
      * MODALS
      ***********************/
-    function openCheckinModal(existing=null){
-      $("checkinModal").classList.add("show");
+function openCheckinModal(existing=null){
+  $("checkinModal").classList.add("show");
 
-      const d = existing ? existing.date : todayISO();
-      $("f_date").value = d;
+  const d = existing ? existing.date : todayISO();
+  $("f_date").value = d;
 
-      $("f_minutes").value = existing ? existing.minutes : 60;
-      $("f_rpe").value     = existing ? existing.rpe : 6;
-      $("f_sleep").value   = existing ? existing.sleep : 7;
-      $("f_sore").value    = existing ? existing.sore : 3;
-      $("f_fatigue").value = existing ? existing.fatigue : 4;
-      $("f_notes").value   = existing ? (existing.notes||"") : "";
+  $("f_minutes").value = existing ? existing.minutes : 60;
+  $("f_rpe").value     = existing ? existing.rpe : 6;
+  $("f_sleep").value   = existing ? existing.sleep : 7;
+  $("f_sore").value    = existing ? existing.sore : 3;
+  $("f_fatigue").value = existing ? existing.fatigue : 4;
+  $("f_notes").value   = existing ? (existing.notes||"") : "";
 
-      // exercise picks
-      setCheckinPicked(Array.isArray(existing?.exercises) ? existing.exercises : []);
+  // NEW dancer markers (safe defaults if missing)
+  $("f_pointe").checked = !!(existing && existing.pointe);
+  $("f_partner").checked = !!(existing && existing.partner);
 
-      // keep picker collapsed by default
-      $("exercisePicker").style.display = "none";
+  const jumpsVal = (existing && typeof existing.jumps !== "undefined") ? Number(existing.jumps) : 0;
+  $("f_jumps").value = String(isNaN(jumpsVal) ? 0 : Math.max(0, Math.min(2, jumpsVal)));
 
-      syncVals();
-      renderExercisePicker();
-    }
+  // exercise picks
+  setCheckinPicked(Array.isArray(existing?.exercises) ? existing.exercises : []);
+
+  // keep picker collapsed by default
+  $("exercisePicker").style.display = "none";
+
+  syncVals();
+  renderExercisePicker();
+}
 
     function closeCheckinModal(){ $("checkinModal").classList.remove("show"); }
 
@@ -1582,54 +2100,311 @@ async function deleteExercise(ex){
       $("ae_how").value = "";
       $("ae_cues").value = "";
     }
-    function closeAddExerciseModal(){ $("addExerciseModal").classList.remove("show"); }
+function closeAddExerciseModal(){ $("addExerciseModal").classList.remove("show"); }
+
+/***********************
+ * ROUTINES UI
+ ***********************/
+function renderRoutineList(){
+  const el = $("routineList");
+  if(!el) return;
+  el.innerHTML = "";
+
+  if(!currentUser){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">Not logged in</div><div class="rowSub">Log in to use routines.</div></div></div>`;
+    return;
+  }
+
+  if(!cachedRoutines || cachedRoutines.length === 0){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No routines yet</div><div class="rowSub">Tap “New Routine” to save a warm-up, prehab, recovery, etc.</div></div></div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  for(let i=0;i<cachedRoutines.length;i++){
+    const r = cachedRoutines[i];
+    const count = Array.isArray(r.exerciseIds) ? r.exerciseIds.length : 0;
+
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="rowMain">
+        <div class="rowTop">
+          <div class="rowTitle">${escapeHTML(r.name || "Routine")}</div>
+          <div class="rowMeta">${count} exercise${count===1?"":"s"}</div>
+        </div>
+        <div class="rowSub">Apply this routine in Today’s Check-In.</div>
+      </div>
+      <div class="rowRight">
+        <button class="iconBtn" type="button" data-use="${r.id}">Use</button>
+        <button class="iconBtn" type="button" data-edit="${r.id}">Edit</button>
+      </div>
+    `;
+
+    row.querySelector(`[data-use="${r.id}"]`).addEventListener("click", ()=>{
+      applyRoutineToToday(r.id);
+      toast("Routine added ✓");
+      setTab("checkin");
+      openCheckinModal(null);
+      // picker stays collapsed; user can open to view
+    });
+
+    row.querySelector(`[data-edit="${r.id}"]`).addEventListener("click", ()=>{
+      showRoutineEditor(r.id);
+    });
+
+    frag.appendChild(row);
+  }
+
+  el.appendChild(frag);
+}
+
+function renderRoutinePickerList(){
+  const el = $("routinePickerList");
+  if(!el) return;
+  el.innerHTML = "";
+
+  if(!currentUser){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">Not logged in</div><div class="rowSub">Log in to use routines.</div></div></div>`;
+    return;
+  }
+
+  if(!cachedRoutines || cachedRoutines.length === 0){
+    el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No routines yet</div><div class="rowSub">Create one in the Exercises tab.</div></div></div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  for(let i=0;i<cachedRoutines.length;i++){
+    const r = cachedRoutines[i];
+    const count = Array.isArray(r.exerciseIds) ? r.exerciseIds.length : 0;
+
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="rowMain">
+        <div class="rowTop">
+          <div class="rowTitle">${escapeHTML(r.name || "Routine")}</div>
+          <div class="rowMeta">${count} exercise${count===1?"":"s"}</div>
+        </div>
+        <div class="rowSub">Tap to add to today.</div>
+      </div>
+      <div class="rowRight">
+        <button class="iconBtn" type="button" data-add="${r.id}">Add</button>
+      </div>
+    `;
+
+    row.querySelector(`[data-add="${r.id}"]`).addEventListener("click", ()=>{
+      applyRoutineToToday(r.id);
+      toast("Routine added ✓");
+      $("routinePickerModal").classList.remove("show");
+    });
+
+    frag.appendChild(row);
+  }
+
+  el.appendChild(frag);
+}
+
+function showRoutineEditor(routineIdOrNull){
+  const modal = $("routineEditorModal");
+  if(!modal) return;
+
+  const existing = routineIdOrNull ? getRoutineById(routineIdOrNull) : null;
+  routineEditingId = existing ? existing.id : null;
+  routineSelectedIds = new Set(existing ? (existing.exerciseIds || []) : []);
+  $("routineEditorTitle").textContent = existing ? "Edit Routine" : "New Routine";
+  $("r_name").value = existing ? (existing.name || "") : "";
+
+  $("deleteRoutineBtn").style.display = existing ? "" : "none";
+
+  renderRoutineExercisePicker();
+  modal.classList.add("show");
+}
+
+function renderRoutineExercisePicker(){
+  const wrap = $("routineExercisePicker");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+
+  if(!cachedExercises || cachedExercises.length === 0){
+    wrap.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No exercises yet</div><div class="rowSub">Add exercises first, then build a routine.</div></div></div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+
+  for(let i=0;i<cachedExercises.length;i++){
+    const ex = cachedExercises[i];
+    const selected = routineSelectedIds.has(ex.id);
+
+    const row = document.createElement("div");
+    row.className = "pickRow";
+    row.innerHTML = `
+      <div class="pickMain">
+        <p class="pickTitle">${escapeHTML(ex.name || "Exercise")}</p>
+        <p class="pickMeta">${escapeHTML(ex.category || "Other")} · ${escapeHTML(ex.defaultRx || ex.focus || "")}</p>
+      </div>
+      <div class="pickRight">
+        <button class="iconBtn" type="button" data-toggle="${ex.id}">
+          ${selected ? "Remove" : "Add"}
+        </button>
+      </div>
+    `;
+
+    row.querySelector(`[data-toggle="${ex.id}"]`).addEventListener("click", ()=>{
+      if(routineSelectedIds.has(ex.id)) routineSelectedIds.delete(ex.id);
+      else routineSelectedIds.add(ex.id);
+      renderRoutineExercisePicker();
+    });
+
+    frag.appendChild(row);
+  }
+
+  wrap.appendChild(frag);
+}
+
+function saveRoutineFromEditor(){
+  if(!currentUser) { toast("Not logged in"); return; }
+
+  const name = ($("r_name").value || "").trim();
+  const ids = Array.from(routineSelectedIds);
+
+  if(!name){
+    toast("Add a routine name");
+    return;
+  }
+  if(ids.length === 0){
+    toast("Pick at least 1 exercise");
+    return;
+  }
+
+  const routine = {
+    id: routineEditingId || makeRoutineId(),
+    name,
+    exerciseIds: ids
+  };
+
+  upsertRoutine(currentUser.uid, routine);
+  $("routineEditorModal").classList.remove("show");
+  renderRoutineList();
+  toast("Routine saved ✓");
+}
+
+function deleteRoutineFromEditor(){
+  if(!currentUser) return;
+  if(!routineEditingId) return;
+
+  if(!confirm("Delete this routine?")) return;
+
+  deleteRoutineById(currentUser.uid, routineEditingId);
+  routineEditingId = null;
+  routineSelectedIds = new Set();
+  $("routineEditorModal").classList.remove("show");
+  renderRoutineList();
+  toast("Routine deleted");
+}
+
+function applyRoutineToToday(routineId){
+  const r = getRoutineById(routineId);
+  if(!r || !Array.isArray(r.exerciseIds)) return;
+
+  const picked = getCheckinPicked();
+  const pickedIds = new Set(picked.map(x=>x.exerciseId));
+
+  for(let i=0;i<r.exerciseIds.length;i++){
+    const exId = r.exerciseIds[i];
+    if(pickedIds.has(exId)) continue;
+
+    const ex = (cachedExercises || []).find(x=> x.id === exId);
+    if(!ex) continue;
+
+    const suggestion = parseDefaultRxToSuggestion(ex.defaultRx);
+    picked.push({
+      exerciseId: ex.id,
+      name: ex.name,
+      sets: suggestion.sets,
+      repsOrTime: suggestion.repsOrTime,
+      notes: ""
+    });
+    pickedIds.add(exId);
+  }
+
+  setCheckinPicked(picked);
+  // If picker is open, refresh it so user sees additions
+  const panel = $("exercisePicker");
+  if(panel && panel.style.display !== "none"){
+    renderExercisePicker();
+  }
+}
 
     /***********************
      * TABS
      ***********************/
-    function setTab(tab){
-      const screens = ["dashboard","checkin","exercises","history"];
-      screens.forEach(s=> $("screen-"+s).style.display = (s===tab) ? "" : "none");
-      document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.tab === tab));
-      // keep lists fresh
-      if(tab === "exercises") renderExerciseList();
-      render();
-    }
+function setTab(tab){
+  const screens = ["dashboard","checkin","exercises","history"];
+  screens.forEach(s=> $("screen-"+s).style.display = (s===tab) ? "" : "none");
+  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.tab === tab));
+
+  // Only render what’s needed (less lag on iPhone)
+  if(tab === "dashboard"){
+    render();
+  }else if(tab === "history"){
+    const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+    renderHistory(entries);
+  }else if(tab === "exercises"){
+    renderRoutineList();
+    renderExerciseList();
+  }
+  // checkin tab doesn't need re-render
+}
 
     /***********************
      * CSV
      ***********************/
-    function exportCSV(){
-      const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
-      const header = ["date","minutes","rpe","session_load","sleep_hours","soreness","fatigue","notes","exercises"];
-      const rows = entries.map(e=>{
-        const ex = Array.isArray(e.exercises) ? e.exercises : [];
-        const exText = ex.map(x=> `${x.name} (${x.sets}x${x.repsOrTime})`).join("; ");
-        const row = [
-          e.date,
-          e.minutes,
-          e.rpe,
-          sessionLoad(e),
-          Number(e.sleep).toFixed(1),
-          e.sore,
-          e.fatigue,
-          (e.notes||"").replace(/\n/g," ").replace(/"/g,'""'),
-          exText.replace(/"/g,'""')
-        ];
-        return row.map(x=> `"${x}"`).join(",");
-      });
-      const csv = header.join(",") + "\n" + rows.join("\n");
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "on-pointe-prevention_checkins.csv";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast("Exported CSV");
-    }
+function exportCSV(){
+  const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+  const header = [
+    "date","minutes","rpe","session_load",
+    "sleep_hours","soreness","fatigue",
+    "pointe","partnering","jumps",
+    "notes","exercises"
+  ];
+
+  const rows = entries.map(e=>{
+    const ex = Array.isArray(e.exercises) ? e.exercises : [];
+    const exText = ex.map(x=> `${x.name} (${x.sets}x${x.repsOrTime})`).join("; ");
+    const row = [
+      e.date,
+      e.minutes,
+      e.rpe,
+      sessionLoad(e),
+      Number(e.sleep).toFixed(1),
+      e.sore,
+      e.fatigue,
+      e.pointe ? "yes" : "no",
+      e.partner ? "yes" : "no",
+      Number(e.jumps || 0),
+      (e.notes||"").replace(/\n/g," ").replace(/"/g,'""'),
+      exText.replace(/"/g,'""')
+    ];
+    return row.map(x=> `"${x}"`).join(",");
+  });
+
+  const csv = header.join(",") + "\n" + rows.join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "on-pointe-prevention_checkins.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("Exported CSV");
+}
 
     /***********************
      * PWA (Android + iOS)
@@ -1728,159 +2503,248 @@ async function deleteExercise(ex){
     /***********************
      * BOOT PER USER
      ***********************/
-    async function onUserSignedIn(user){
-      currentUser = user;
-      await ensureUserProfile(user.uid, user.email);
+async function onUserSignedIn(user){
+  currentUser = user;
+  await ensureUserProfile(user.uid, user.email);
 
-      // load user checkins
-      cachedCheckins = await loadAllCheckins(user.uid);
+  // Load local user preferences FIRST
+  loadFavorites(user.uid);
+  loadRoutines(user.uid);
 
-      // load custom exercises + merge with defaults
-      const userExercises = await loadUserExercises(user.uid);
-      cachedExercises = mergeExerciseLibrary(userExercises);
+  // load user checkins
+  cachedCheckins = await loadAllCheckins(user.uid);
 
-      renderExerciseList();
-      render();
-      setTab("dashboard");
-    }
+  // load custom exercises + merge with defaults
+  const userExercises = await loadUserExercises(user.uid);
+  cachedExercises = mergeExerciseLibrary(userExercises);
+
+  renderExerciseList();
+  renderRoutineList();
+  render();
+  setTab("dashboard");
+}
 
     /***********************
      * EVENTS / WIRES
      ***********************/
-    function wireUI(){
-      // auth
-      $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
-      $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
-      $("authReset").addEventListener("click", doResetPassword);
+function wireUI(){
+  // helper: build category chips
+  function getAllCategories(){
+    const set = new Set(["All"]);
+    (cachedExercises || []).forEach(ex => set.add(ex.category || "Other"));
+    return Array.from(set);
+  }
 
-      // tabs
-      document.querySelectorAll(".tab").forEach(btn=>{
-        btn.addEventListener("click", ()=> setTab(btn.dataset.tab));
+  function renderCategoryChips(){
+    const wrap = $("categoryChips");
+    if(!wrap) return;
+
+    const cats = getAllCategories();
+    wrap.innerHTML = "";
+
+    cats.forEach(cat=>{
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mutedBtn";
+      btn.textContent = cat;
+
+      const active = (selectedCategory === cat);
+      btn.style.borderColor = active ? "rgba(255,255,255,.22)" : "rgba(255,255,255,.12)";
+      btn.style.background = active ? "rgba(255,255,255,.08)" : "rgba(255,255,255,.02)";
+      btn.style.color = active ? "rgba(255,255,255,.95)" : "rgba(255,255,255,.85)";
+
+      btn.addEventListener("click", ()=>{
+        selectedCategory = cat;
+        renderCategoryChips();
+        renderExerciseList();
       });
 
-      // buttons
-      $("openCheckin").addEventListener("click", ()=> openCheckinModal());
-      $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
-      $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+      wrap.appendChild(btn);
+    });
+  }
 
-      $("exportBtn").addEventListener("click", exportCSV);
+  // auth
+  $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
+  $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
+  $("authReset").addEventListener("click", doResetPassword);
 
-      $("logoutBtn").addEventListener("click", async ()=>{ await signOut(auth); });
+  // tabs
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      setTab(btn.dataset.tab);
+      if(btn.dataset.tab === "exercises"){
+        renderCategoryChips();
+        renderExerciseList();
+      }
+    });
+  });
 
-      $("clearData").addEventListener("click", async ()=>{
-        if(!currentUser) return;
-        if(confirm("Clear all check-ins for this account?")){
-          await deleteAllCheckins(currentUser.uid);
-          cachedCheckins = [];
-          toast("Cleared");
-          render();
-        }
-      });
+  // buttons
+  $("openCheckin").addEventListener("click", ()=> openCheckinModal());
+  $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
+  $("openExercises").addEventListener("click", ()=> setTab("exercises"));
 
-      // check-in modal close
-      $("closeCheckin").addEventListener("click", closeCheckinModal);
-      $("cancelCheckin").addEventListener("click", closeCheckinModal);
-      $("checkinModal").addEventListener("click", (e)=>{ if(e.target === $("checkinModal")) closeCheckinModal(); });
+  $("exportBtn").addEventListener("click", exportCSV);
+  $("logoutBtn").addEventListener("click", async ()=>{ await signOut(auth); });
 
-      // exercise modal close
-      $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
-      $("exerciseModal").addEventListener("click", (e)=>{ if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show"); });
-
-      // add-exercise modal
-      $("openAddExercise").addEventListener("click", openAddExerciseModal);
-      $("closeAddExercise").addEventListener("click", closeAddExerciseModal);
-      $("cancelAddExercise").addEventListener("click", closeAddExerciseModal);
-      $("addExerciseModal").addEventListener("click", (e)=>{ if(e.target === $("addExerciseModal")) closeAddExerciseModal(); });
-
-      // check-in picker toggle
-      $("toggleExercisePicker").addEventListener("click", ()=>{
-        const panel = $("exercisePicker");
-        const open = panel.style.display !== "none";
-        panel.style.display = open ? "none" : "";
-        if(!open) renderExercisePicker();
-      });
-
-      // sliders
-      ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
-        $(id).addEventListener("input", syncVals);
-      });
-
-      // save check-in
-      $("checkinForm").addEventListener("submit", async (e)=>{
-        e.preventDefault();
-        if(!currentUser){ toast("Not logged in"); return; }
-
-        const entry = {
-          date: $("f_date").value,
-          minutes: Number($("f_minutes").value),
-          rpe: Number($("f_rpe").value),
-          sleep: Number($("f_sleep").value),
-          sore: Number($("f_sore").value),
-          fatigue: Number($("f_fatigue").value),
-          notes: $("f_notes").value || "",
-          exercises: getCheckinPicked()  // <-- NEW
-        };
-
-        try{
-          await upsertCheckin(currentUser.uid, entry);
-
-          // upsert cache
-          const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
-          if(idx >= 0) cachedCheckins[idx] = entry;
-          else cachedCheckins.push(entry);
-
-          toast("Saved ✓");
-          closeCheckinModal();
-          render();
-        }catch(err){
-          console.error(err);
-          toast("Save failed");
-        }
-      });
-
-      // add custom exercise
-      $("addExerciseForm").addEventListener("submit", async (e)=>{
-        e.preventDefault();
-        if(!currentUser){ toast("Not logged in"); return; }
-
-        const name = ($("ae_name").value || "").trim();
-        const focus = ($("ae_focus").value || "").trim();
-        const defaultRx = ($("ae_presc").value || "").trim();
-        const howText = ($("ae_how").value || "").trim();
-        const cuesText = ($("ae_cues").value || "").trim();
-
-        if(!name || !focus || !defaultRx){
-          toast("Fill name + focus + default");
-          return;
-        }
-
-        const ex = {
-          id: makeId(),
-          source: "user",
-          name,
-          focus,
-          defaultRx,
-          how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
-          cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
-        };
-
-        try{
-          await addUserExercise(currentUser.uid, ex);
-          cachedExercises = mergeExerciseLibrary([ ...cachedExercises.filter(x=>x.source==="user"), ex ]);
-          // note: mergeExerciseLibrary expects ONLY user exercises, but we pass only user ones
-          // to keep it clean:
-          const userOnly = cachedExercises.filter(x=>x.source==="user");
-          cachedExercises = mergeExerciseLibrary(userOnly);
-
-          renderExerciseList();
-          toast("Exercise added");
-          closeAddExerciseModal();
-        }catch(err){
-          console.error(err);
-          toast("Add failed");
-        }
-      });
+  $("clearData").addEventListener("click", async ()=>{
+    if(!currentUser) return;
+    if(confirm("Clear all check-ins for this account?")){
+      await deleteAllCheckins(currentUser.uid);
+      cachedCheckins = [];
+      toast("Cleared");
+      render();
     }
+  });
+
+  // check-in modal close
+  $("closeCheckin").addEventListener("click", closeCheckinModal);
+  $("cancelCheckin").addEventListener("click", closeCheckinModal);
+  $("checkinModal").addEventListener("click", (e)=>{ if(e.target === $("checkinModal")) closeCheckinModal(); });
+
+  // exercise modal close
+  $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
+  $("exerciseModal").addEventListener("click", (e)=>{ if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show"); });
+
+  // add-exercise modal
+  $("openAddExercise").addEventListener("click", ()=>{
+    openAddExerciseModal();
+    const cat = $("ae_category");
+    if(cat) cat.value = "Foot/Ankle";
+  });
+  $("closeAddExercise").addEventListener("click", closeAddExerciseModal);
+  $("cancelAddExercise").addEventListener("click", closeAddExerciseModal);
+  $("addExerciseModal").addEventListener("click", (e)=>{ if(e.target === $("addExerciseModal")) closeAddExerciseModal(); });
+
+  // check-in picker toggle
+  $("toggleExercisePicker").addEventListener("click", ()=>{
+    const panel = $("exercisePicker");
+    const open = panel.style.display !== "none";
+    panel.style.display = open ? "none" : "";
+    if(!open) renderExercisePicker();
+  });
+
+  // sliders
+  ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
+    $(id).addEventListener("input", syncVals);
+  });
+
+  // search + favorites (Exercises tab)
+  const searchEl = $("exSearch");
+  const favBtn = $("toggleFavorites");
+  const clearBtn = $("clearSearch");
+
+  if(searchEl){
+    searchEl.addEventListener("input", ()=>{
+      exSearchQuery = searchEl.value || "";
+      renderExerciseList();
+    });
+  }
+
+  if(favBtn){
+    favBtn.addEventListener("click", ()=>{
+      showFavoritesOnly = !showFavoritesOnly;
+      favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
+      renderExerciseList();
+    });
+  }
+
+  if(clearBtn){
+    clearBtn.addEventListener("click", ()=>{
+      exSearchQuery = "";
+      if(searchEl) searchEl.value = "";
+      selectedCategory = "All";
+      renderCategoryChips();
+      renderExerciseList();
+    });
+  }
+
+  // save check-in
+  $("checkinForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    const entry = {
+      date: $("f_date").value,
+      minutes: Number($("f_minutes").value),
+      rpe: Number($("f_rpe").value),
+      sleep: Number($("f_sleep").value),
+      sore: Number($("f_sore").value),
+      fatigue: Number($("f_fatigue").value),
+
+      // NEW dancer markers
+      pointe: !!$("f_pointe").checked,
+      partner: !!$("f_partner").checked,
+      jumps: Number($("f_jumps").value || 0),
+
+      notes: $("f_notes").value || "",
+      exercises: getCheckinPicked()
+    };
+
+    try{
+      await upsertCheckin(currentUser.uid, entry);
+
+      const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
+      if(idx >= 0) cachedCheckins[idx] = entry;
+      else cachedCheckins.push(entry);
+
+      toast("Saved ✓");
+      closeCheckinModal();
+      render();
+    }catch(err){
+      console.error(err);
+      toast("Save failed");
+    }
+  });
+
+  // add custom exercise (now includes category)
+  $("addExerciseForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    const name = ($("ae_name").value || "").trim();
+    const category = ($("ae_category")?.value || "Other").trim();
+    const focus = ($("ae_focus").value || "").trim();
+    const defaultRx = ($("ae_presc").value || "").trim();
+    const howText = ($("ae_how").value || "").trim();
+    const cuesText = ($("ae_cues").value || "").trim();
+
+    if(!name || !focus || !defaultRx){
+      toast("Fill name + focus + default");
+      return;
+    }
+
+    const ex = {
+      id: makeId(),
+      source: "user",
+      category,
+      name,
+      focus,
+      defaultRx,
+      how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
+      cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
+    };
+
+    try{
+      await addUserExercise(currentUser.uid, ex);
+
+      const userExercises = await loadUserExercises(currentUser.uid);
+      cachedExercises = mergeExerciseLibrary(userExercises);
+
+      renderCategoryChips();
+      renderExerciseList();
+
+      toast("Exercise added");
+      closeAddExerciseModal();
+    }catch(err){
+      console.error(err);
+      toast("Add failed");
+    }
+  });
+
+  // initial chips
+  renderCategoryChips();
+}
 
     /***********************
      * INIT
