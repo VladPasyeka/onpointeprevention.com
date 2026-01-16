@@ -2563,12 +2563,12 @@ function wireUI(){
     });
   }
 
-  // auth
+  /* ---------- AUTH ---------- */
   $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
   $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
   $("authReset").addEventListener("click", doResetPassword);
 
-  // tabs
+  /* ---------- TABS ---------- */
   document.querySelectorAll(".tab").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       setTab(btn.dataset.tab);
@@ -2579,7 +2579,7 @@ function wireUI(){
     });
   });
 
-  // buttons
+  /* ---------- MAIN BUTTONS ---------- */
   $("openCheckin").addEventListener("click", ()=> openCheckinModal());
   $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
   $("openExercises").addEventListener("click", ()=> setTab("exercises"));
@@ -2597,16 +2597,60 @@ function wireUI(){
     }
   });
 
-  // check-in modal close
+  /* ---------- RISK INFO MODAL (iOS SAFE) ---------- */
+  const openRiskBtn = $("riskInfoBtn");
+  const closeRiskBtn = $("closeRiskInfo");
+  const riskModal = $("riskInfoModal");
+
+  function openRiskModal(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    riskModal.classList.add("show");
+  }
+
+  function closeRiskModal(e){
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    riskModal.classList.remove("show");
+  }
+
+  if(openRiskBtn){
+    openRiskBtn.addEventListener("click", openRiskModal, { passive:false });
+    openRiskBtn.addEventListener("touchend", openRiskModal, { passive:false });
+  }
+
+  if(closeRiskBtn){
+    closeRiskBtn.addEventListener("click", closeRiskModal);
+    closeRiskBtn.addEventListener("touchend", closeRiskModal);
+  }
+
+  if(riskModal){
+    riskModal.addEventListener("click", (e)=>{
+      if(e.target === riskModal) closeRiskModal(e);
+    });
+    riskModal.addEventListener("touchend", (e)=>{
+      if(e.target === riskModal) closeRiskModal(e);
+    });
+  }
+
+  /* ---------- CHECK-IN MODAL ---------- */
   $("closeCheckin").addEventListener("click", closeCheckinModal);
   $("cancelCheckin").addEventListener("click", closeCheckinModal);
-  $("checkinModal").addEventListener("click", (e)=>{ if(e.target === $("checkinModal")) closeCheckinModal(); });
+  $("checkinModal").addEventListener("click", (e)=>{
+    if(e.target === $("checkinModal")) closeCheckinModal();
+  });
 
-  // exercise modal close
+  /* ---------- EXERCISE MODAL ---------- */
   $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
-  $("exerciseModal").addEventListener("click", (e)=>{ if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show"); });
+  $("exerciseModal").addEventListener("click", (e)=>{
+    if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show");
+  });
 
-  // add-exercise modal
+  /* ---------- ADD EXERCISE MODAL ---------- */
   $("openAddExercise").addEventListener("click", ()=>{
     openAddExerciseModal();
     const cat = $("ae_category");
@@ -2614,9 +2658,11 @@ function wireUI(){
   });
   $("closeAddExercise").addEventListener("click", closeAddExerciseModal);
   $("cancelAddExercise").addEventListener("click", closeAddExerciseModal);
-  $("addExerciseModal").addEventListener("click", (e)=>{ if(e.target === $("addExerciseModal")) closeAddExerciseModal(); });
+  $("addExerciseModal").addEventListener("click", (e)=>{
+    if(e.target === $("addExerciseModal")) closeAddExerciseModal();
+  });
 
-  // check-in picker toggle
+  /* ---------- EXERCISE PICKER ---------- */
   $("toggleExercisePicker").addEventListener("click", ()=>{
     const panel = $("exercisePicker");
     const open = panel.style.display !== "none";
@@ -2624,12 +2670,12 @@ function wireUI(){
     if(!open) renderExercisePicker();
   });
 
-  // sliders
+  /* ---------- SLIDERS ---------- */
   ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
     $(id).addEventListener("input", syncVals);
   });
 
-  // search + favorites (Exercises tab)
+  /* ---------- SEARCH + FAVORITES ---------- */
   const searchEl = $("exSearch");
   const favBtn = $("toggleFavorites");
   const clearBtn = $("clearSearch");
@@ -2659,7 +2705,7 @@ function wireUI(){
     });
   }
 
-  // save check-in
+  /* ---------- SAVE CHECK-IN ---------- */
   $("checkinForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     if(!currentUser){ toast("Not logged in"); return; }
@@ -2672,7 +2718,6 @@ function wireUI(){
       sore: Number($("f_sore").value),
       fatigue: Number($("f_fatigue").value),
 
-      // NEW dancer markers
       pointe: !!$("f_pointe").checked,
       partner: !!$("f_partner").checked,
       jumps: Number($("f_jumps").value || 0),
@@ -2697,7 +2742,7 @@ function wireUI(){
     }
   });
 
-  // add custom exercise (now includes category)
+  /* ---------- ADD CUSTOM EXERCISE ---------- */
   $("addExerciseForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     if(!currentUser){ toast("Not logged in"); return; }
@@ -2742,7 +2787,7 @@ function wireUI(){
     }
   });
 
-  // initial chips
+  /* ---------- INITIAL ---------- */
   renderCategoryChips();
 }
 
