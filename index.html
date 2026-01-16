@@ -671,6 +671,7 @@
                     style="padding:16px 18px; font-size:14px; border-radius:18px; flex:1 1 220px;"
                   >📝 Today’s Check-In</button>
 
+                  <button class="btn" id="restDayBtn" type="button">🛌 Rest Day</button>
                   <button class="btn" id="openExercises" type="button">🩰 Exercise Library</button>
                   <button class="btn danger" id="clearData" type="button">🗑️ Clear Data</button>
                 </div>
@@ -792,7 +793,76 @@
         <button class="tab" data-tab="history" type="button"><div class="emoji">🗓️</div>History</button>
       </div>
     </div>
+<!-- Modal: Rest Day -->
+<div class="modalBackdrop" id="restModal">
+  <div class="modal">
+    <div class="modalTop">
+      <p class="modalTitle">Rest Day</p>
+      <button class="iconBtn" id="closeRest" type="button">● Close</button>
+    </div>
 
+    <div class="modalBody">
+      <div class="small" style="margin-bottom:12px;">
+        Marks <strong>today</strong> as a rest day (minutes 0, RPE 0). Still log recovery + pain so your trends stay clinically useful.
+      </div>
+
+      <form class="form" id="restForm">
+        <div class="field">
+          <div class="labelRow"><span>Reason</span></div>
+          <select id="restReason" style="width:100%; background: rgba(255,255,255,.04); border:1px solid var(--line); color: var(--text); border-radius: 14px; padding: 12px 12px; font-size: 14px; outline: none;">
+            <option value="Deload / planned recovery">Deload / planned recovery</option>
+            <option value="Performance day">Performance day</option>
+            <option value="Travel / schedule chaos">Travel / schedule chaos</option>
+            <option value="High soreness / pain flare">High soreness / pain flare</option>
+            <option value="Illness / low energy">Illness / low energy</option>
+            <option value="Mental recovery / stress">Mental recovery / stress</option>
+            <option value="Cross-training day">Cross-training day</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- NEW: pain tracking -->
+        <div class="field">
+          <div class="labelRow"><span>Pain intensity (0–10)</span> <span class="val" id="rv_pain">0</span></div>
+          <input type="range" id="r_pain" min="0" max="10" step="1" value="0" />
+          <div class="hint">0 = none. Optional but very useful for flare-ups.</div>
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Pain location (optional)</span></div>
+          <input type="text" id="restPainLocation" placeholder="e.g., left Achilles, anterior hip, low back, 2nd met head..." autocomplete="off" />
+          <div class="hint">Keep it short. This is not medical advice—just tracking.</div>
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Sleep (hours)</span> <span class="val" id="rv_sleep">7.0</span></div>
+          <input type="range" id="r_sleep" min="0" max="10" step="0.5" value="7" />
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Soreness (0–10)</span> <span class="val" id="rv_sore">3</span></div>
+          <input type="range" id="r_sore" min="0" max="10" step="1" value="3" />
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Fatigue (0–10)</span> <span class="val" id="rv_fatigue">4</span></div>
+          <input type="range" id="r_fatigue" min="0" max="10" step="1" value="4" />
+        </div>
+
+        <div class="field">
+          <div class="labelRow"><span>Notes (optional)</span></div>
+          <textarea id="restNotes" placeholder="Type details here (e.g., calf tightness after rehearsal, flight day, deload week, PT advice...)"></textarea>
+          <div class="hint">Saved into today’s notes and exported in CSV.</div>
+        </div>
+
+        <div class="btnRow">
+          <button class="btn primary" type="submit">💾 Save Rest Day ✓</button>
+          <button class="btn" id="cancelRest" type="button">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
     <!-- Modal: Check-in -->
     <div class="modalBackdrop" id="checkinModal">
       <div class="modal">
@@ -2833,6 +2903,42 @@ function wireUI(){
     });
   }
 
+  // ---- Rest Day modal helpers ----
+  function syncRestVals(){
+    const p = $("r_pain");
+    const s = $("r_sleep");
+    const so = $("r_sore");
+    const f = $("r_fatigue");
+    if(p) $("rv_pain").textContent = p.value;
+    if(s) $("rv_sleep").textContent = Number(s.value).toFixed(1);
+    if(so) $("rv_sore").textContent = so.value;
+    if(f) $("rv_fatigue").textContent = f.value;
+  }
+
+  function openRestModal(prefill){
+    $("restModal").classList.add("show");
+
+    $("restReason").value = "Deload / planned recovery";
+    $("restNotes").value = "";
+    $("restPainLocation").value = "";
+
+    // Prefill recovery markers from today's existing check-in if present, else defaults
+    const baseSleep = (prefill && prefill.sleep != null) ? Number(prefill.sleep) : 7;
+    const baseSore  = (prefill && prefill.sore != null) ? Number(prefill.sore) : 3;
+    const baseFat   = (prefill && prefill.fatigue != null) ? Number(prefill.fatigue) : 4;
+
+    $("r_pain").value = 0;
+    $("r_sleep").value = isNaN(baseSleep) ? 7 : baseSleep;
+    $("r_sore").value = isNaN(baseSore) ? 3 : baseSore;
+    $("r_fatigue").value = isNaN(baseFat) ? 4 : baseFat;
+
+    syncRestVals();
+  }
+
+  function closeRestModal(){
+    $("restModal").classList.remove("show");
+  }
+
   // auth
   $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
   $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
@@ -2853,6 +2959,87 @@ function wireUI(){
   $("openCheckin").addEventListener("click", ()=> openCheckinModal());
   $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
   $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+
+  // ✅ Rest Day button (expects an element with id="restDayBtn" to exist)
+  const restBtn = $("restDayBtn");
+  if(restBtn){
+    restBtn.addEventListener("click", ()=>{
+      if(!currentUser){ toast("Not logged in"); return; }
+
+      const date = todayISO();
+      const existing = cachedCheckins.find(x=> x.date === date);
+
+      if(existing){
+        const ok = confirm("You already have a check-in saved for today. Replace it with a Rest Day (minutes 0, RPE 0)?");
+        if(!ok) return;
+      }
+
+      openRestModal(existing || null);
+    });
+  }
+
+  // Rest modal close
+  $("closeRest").addEventListener("click", closeRestModal);
+  $("cancelRest").addEventListener("click", closeRestModal);
+  $("restModal").addEventListener("click", (e)=>{ if(e.target === $("restModal")) closeRestModal(); });
+
+  // Rest modal sliders
+  ["r_pain","r_sleep","r_sore","r_fatigue"].forEach(id=>{
+    const el = $(id);
+    if(el) el.addEventListener("input", syncRestVals);
+  });
+
+  // Rest day save
+  $("restForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    const date = todayISO();
+    const reason = ($("restReason").value || "Other").trim();
+    const extra = ($("restNotes").value || "").trim();
+
+    const pain = Number($("r_pain").value);
+    const painLoc = ($("restPainLocation").value || "").trim();
+
+    const sleep = Number($("r_sleep").value);
+    const sore = Number($("r_sore").value);
+    const fatigue = Number($("r_fatigue").value);
+
+    const painLine = (pain > 0 || painLoc)
+      ? ` Pain: ${isNaN(pain) ? 0 : pain}/10${painLoc ? ` @ ${painLoc}` : ""}.`
+      : "";
+
+    const notes = extra
+      ? `Rest day — ${reason}.${painLine} ${extra}`.trim()
+      : `Rest day — ${reason}.${painLine}`.trim();
+
+    const entry = {
+      date,
+      minutes: 0,
+      rpe: 0,
+      sleep: isNaN(sleep) ? 7 : sleep,
+      sore: isNaN(sore) ? 3 : sore,
+      fatigue: isNaN(fatigue) ? 4 : fatigue,
+      notes: notes,
+      exercises: []
+    };
+
+    try{
+      await upsertCheckin(currentUser.uid, entry);
+
+      const idx = cachedCheckins.findIndex(x=> x.date === date);
+      if(idx >= 0) cachedCheckins[idx] = entry;
+      else cachedCheckins.push(entry);
+
+      toast("Rest Day saved ✓");
+      closeRestModal();
+      render();
+      setTab("dashboard");
+    }catch(err){
+      console.error(err);
+      toast("Save failed");
+    }
+  });
 
   $("exportBtn").addEventListener("click", exportCSV);
   $("logoutBtn").addEventListener("click", async ()=>{ await signOut(auth); });
@@ -2923,38 +3110,9 @@ function wireUI(){
     clearBtn.addEventListener("click", ()=>{
       exSearchQuery = "";
       if(searchEl) searchEl.value = "";
+      selectedCategory = "All";
+      renderCategoryChips();
       renderExerciseList();
-    });
-  }
-
-  // ✅ Risk info modal (works on iPhone)
-  function openRiskInfo(){
-    const m = $("riskInfoModal");
-    if(!m) return;
-    m.classList.add("show");
-  }
-  function closeRiskInfo(){
-    const m = $("riskInfoModal");
-    if(!m) return;
-    m.classList.remove("show");
-  }
-
-  const riskBtn = $("riskInfoBtn");
-  if(riskBtn){
-    riskBtn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      openRiskInfo();
-    });
-  }
-
-  const closeRisk = $("closeRiskInfo");
-  if(closeRisk) closeRisk.addEventListener("click", closeRiskInfo);
-
-  const riskModal = $("riskInfoModal");
-  if(riskModal){
-    riskModal.addEventListener("click", (e)=>{
-      if(e.target === riskModal) closeRiskInfo();
     });
   }
 
@@ -2990,7 +3148,7 @@ function wireUI(){
     }
   });
 
-  // add custom exercise (now includes category)
+  // add custom exercise
   $("addExerciseForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     if(!currentUser){ toast("Not logged in"); return; }
