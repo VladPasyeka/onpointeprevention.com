@@ -985,15 +985,19 @@
 </div>
 
     <!-- Modal: Risk Info -->
-    <div class="modalBackdrop" id="riskInfoModal">
-      <div class="modal">
-        <div class="modalTop">
-          <p class="modalTitle">Injury Risk: How to read this</p>
-          <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
-        </div>
-        <div class="modalBody" id="riskInfoBody"></div>
+    <div class="modalBackdrop" id="riskInfoModal" style="align-items:center; padding: 12px 12px calc(env(safe-area-inset-bottom) + 12px);">
+  <div class="modal">
+    <div class="modalTop">
+      <p class="modalTitle">Injury Risk: How to read this</p>
+      <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
+    </div>
+    <div class="modalBody">
+      <div id="riskInfoBody" class="rowSub" style="line-height:1.35;">
+        Loading…
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Modal: Routine Picker (apply to today) -->
     <div class="modalBackdrop" id="routinePickerModal">
@@ -1628,16 +1632,30 @@ function computeMetrics(entries){
 
   return { acute, chronic, acwr };
 }
-function riskFromACWR(acwr, entriesCount = 0){
-  // Not enough history → do not flag risk
-  if(entriesCount < 10){
+function riskFromACWR(acwr, entriesCount){
+  const n = Number(entriesCount || 0);
+
+  // Not enough data → baseline phase
+  if(n < 10){
     return { cls:"ok", label:"BASELINE" };
   }
 
-  if(acwr === null) return { cls:"ok", label:"BASELINE" };
-  if(acwr < 0.8) return { cls:"caution", label:"LOW" };
-  if(acwr <= 1.3) return { cls:"ok", label:"OK" };
-  if(acwr <= 1.5) return { cls:"caution", label:"CAUTION" };
+  if(acwr === null || !isFinite(acwr)){
+    return { cls:"ok", label:"BASELINE" };
+  }
+
+  if(acwr < 0.8){
+    return { cls:"caution", label:"LOW" };
+  }
+
+  if(acwr <= 1.3){
+    return { cls:"ok", label:"OK" };
+  }
+
+  if(acwr <= 1.5){
+    return { cls:"caution", label:"CAUTION" };
+  }
+
   return { cls:"high", label:"HIGH" };
 }
 function guidanceText(entries, metrics){
@@ -2065,7 +2083,8 @@ function render(){
   $("m_chronic").textContent = entries.length ? Math.round(metrics.chronic) : "—";
   $("m_acwr").textContent = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
 
-  const risk = riskFromACWR(metrics.acwr);
+  // ✅ FIX: pass entries.length so BASELINE isn’t stuck forever
+  const risk = riskFromACWR(metrics.acwr, entries.length);
   const badge = $("riskBadge");
   badge.classList.remove("ok","caution","high");
   badge.classList.add(risk.cls);
@@ -2077,57 +2096,70 @@ function render(){
   renderHistory(entries);
   renderChart(entries);
 
-  // Build risk explainer content (lightweight)
-  const acute = entries.length ? Math.round(metrics.acute) : null;
-  const chronic = entries.length ? Math.round(metrics.chronic) : null;
-  const acwrText = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
+  // ---- Risk info popup content (safe no-op if modal not present)
+  const body = $("riskInfoBody");
+  if(body){
+    const acwrText = (metrics.acwr === null) ? "—" : fmt1(metrics.acwr);
+    const acuteText = entries.length ? Math.round(metrics.acute) : "—";
+    const chronicText = entries.length ? Math.round(metrics.chronic) : "—";
 
-  const why = (metrics.acwr === null)
-    ? `ACWR is hidden until there’s enough history (so it doesn’t falsely show HIGH). Keep logging for ~2 weeks.`
-    : `ACWR compares your last 7 days vs your last 28 days. Big spikes can increase risk when recovery is limited.`;
+    let msg = "";
+    if(entries.length < 10){
+      msg =
+        `You’re in BASELINE mode (less than 10 check-ins). ` +
+        `Keep logging so the app can learn your normal training pattern.`;
+    }else if(metrics.acwr === null){
+      msg =
+        `Not enough history for ACWR yet. ACWR needs more consistent data to compare short-term vs longer-term load.`;
+    }else{
+      msg =
+        `ACWR compares your last 7 days vs your last 28 days. ` +
+        `It’s a load trend signal—not a diagnosis.`;
+    }
 
-  const thresholds = `
-    <div class="rowSub" style="margin-top:10px;">
-      <strong>Thresholds used:</strong><br/>
-      • LOW: &lt; 0.8<br/>
-      • OK: 0.8–1.3<br/>
-      • CAUTION: 1.3–1.5<br/>
-      • HIGH: &gt; 1.5
-    </div>
-  `;
+    body.innerHTML = `
+      <div class="rowSub">
+        <strong>What this badge means</strong><br/>
+        It’s an estimate of <em>load-related injury risk</em> based on training-load trends.
+      </div>
 
-  $("riskInfoBody").innerHTML = `
-    <div class="rowSub">
-      <strong>What you’re seeing:</strong> the badge is an estimate based on training load trends, not a diagnosis.
-    </div>
+      <div class="rowSub" style="margin-top:10px;">
+        <strong>How load is calculated</strong><br/>
+        Session Load = minutes × RPE (0–10)
+      </div>
 
-    <div class="rowSub" style="margin-top:10px;">
-      <strong>Training load:</strong> minutes × RPE (0–10). This is your session load.
-    </div>
+      <div class="rowSub" style="margin-top:10px;">
+        <strong>Your current numbers</strong><br/>
+        Acute (7d avg): <strong style="color:rgba(255,255,255,.92)">${acuteText}</strong><br/>
+        Chronic (28d avg): <strong style="color:rgba(255,255,255,.92)">${chronicText}</strong><br/>
+        ACWR: <strong style="color:rgba(255,255,255,.92)">${acwrText}</strong>
+      </div>
 
-    <div class="rowSub" style="margin-top:10px;">
-      <strong>Acute load (7d avg):</strong> ${acute === null ? "—" : acute}<br/>
-      <strong>Chronic load (28d avg):</strong> ${chronic === null ? "—" : chronic}<br/>
-      <strong>ACWR:</strong> ${acwrText}
-    </div>
+      <div class="rowSub" style="margin-top:10px;">
+        <strong>Thresholds used</strong><br/>
+        LOW: &lt; 0.8<br/>
+        OK: 0.8–1.3<br/>
+        CAUTION: 1.3–1.5<br/>
+        HIGH: &gt; 1.5
+      </div>
 
-    <div class="rowSub" style="margin-top:10px;">
-      ${escapeHTML(why)}
-    </div>
+      <div class="rowSub" style="margin-top:10px;">
+        <strong>Interpretation</strong><br/>
+        ${escapeHTML(msg)}
+      </div>
 
-    ${thresholds}
+      <div class="rowSub" style="margin-top:10px;">
+        <strong>What to do</strong><br/>
+        HIGH: reduce extra jumps/pointe volume 24–72h, prioritize sleep, keep technique quality high.<br/>
+        CAUTION: avoid stacking hard days; add recovery buffers.<br/>
+        LOW: progress gradually to avoid a sudden spike next week.
+      </div>
 
-    <div class="rowSub" style="margin-top:12px;">
-      <strong>How to use it:</strong><br/>
-      • If HIGH: reduce extra jumps/pointe volume for 24–72h, prioritize sleep, keep quality high.<br/>
-      • If CAUTION: avoid stacking hard days; add recovery buffers.<br/>
-      • If LOW: progress gradually to avoid a sudden spike next week.
-    </div>
-
-    <div class="hint" style="margin-top:14px;">
-      Tip: ACWR needs consistent logging. Missing days can make it less stable.
-    </div>
-  `;
+      <div class="hint" style="margin-top:12px;">
+        Missing days can make ACWR less stable. Consistency improves accuracy.
+      </div>
+    `;
+  }
 }
 
 function renderRecent(entries){
@@ -2766,28 +2798,6 @@ async function onUserSignedIn(user){
      * EVENTS / WIRES
      ***********************/
 function wireUI(){
-  // iPhone-safe tap binding (prevents click + touchend double-fire)
-  function bindTap(el, handler){
-    if(!el) return;
-    let last = 0;
-
-    const wrapped = (e)=>{
-      const now = Date.now();
-      if(now - last < 450) return;
-      last = now;
-      try{
-        if(e){
-          e.preventDefault?.();
-          e.stopPropagation?.();
-        }
-      }catch(_){}
-      handler(e);
-    };
-
-    el.addEventListener("click", wrapped, { passive:false });
-    el.addEventListener("touchend", wrapped, { passive:false });
-  }
-
   // helper: build category chips
   function getAllCategories(){
     const set = new Set(["All"]);
@@ -2802,8 +2812,7 @@ function wireUI(){
     const cats = getAllCategories();
     wrap.innerHTML = "";
 
-    for(let i=0;i<cats.length;i++){
-      const cat = cats[i];
+    cats.forEach(cat=>{
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "mutedBtn";
@@ -2821,38 +2830,34 @@ function wireUI(){
       });
 
       wrap.appendChild(btn);
-    }
+    });
   }
 
-  // expose for refreshExercises() to rebuild chips without duplicating logic
-  window.__opp_renderCategoryChips = renderCategoryChips;
+  // auth
+  $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
+  $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
+  $("authReset").addEventListener("click", doResetPassword);
 
-  /* ---------- AUTH ---------- */
-  bindTap($("authPrimaryBtn"), doAuthPrimary);
-  bindTap($("authToggle"), ()=> setAuthMode(authMode === "login" ? "create" : "login"));
-  bindTap($("authReset"), doResetPassword);
-
-  /* ---------- TABS ---------- */
+  // tabs
   document.querySelectorAll(".tab").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       setTab(btn.dataset.tab);
       if(btn.dataset.tab === "exercises"){
         renderCategoryChips();
         renderExerciseList();
-        renderRoutineList();
       }
     });
   });
 
-  /* ---------- MAIN BUTTONS ---------- */
-  bindTap($("openCheckin"), ()=> openCheckinModal());
-  bindTap($("openCheckin2"), ()=> openCheckinModal());
-  bindTap($("openExercises"), ()=> setTab("exercises"));
+  // buttons
+  $("openCheckin").addEventListener("click", ()=> openCheckinModal());
+  $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
+  $("openExercises").addEventListener("click", ()=> setTab("exercises"));
 
-  bindTap($("exportBtn"), exportCSV);
-  bindTap($("logoutBtn"), async ()=>{ await signOut(auth); });
+  $("exportBtn").addEventListener("click", exportCSV);
+  $("logoutBtn").addEventListener("click", async ()=>{ await signOut(auth); });
 
-  bindTap($("clearData"), async ()=>{
+  $("clearData").addEventListener("click", async ()=>{
     if(!currentUser) return;
     if(confirm("Clear all check-ins for this account?")){
       await deleteAllCheckins(currentUser.uid);
@@ -2862,143 +2867,39 @@ function wireUI(){
     }
   });
 
-  /* ---------- RISK INFO MODAL (iOS SAFE) ---------- */
-  const openRiskBtn = $("riskInfoBtn");
-  const closeRiskBtn = $("closeRiskInfo");
-  const riskModal = $("riskInfoModal");
+  // check-in modal close
+  $("closeCheckin").addEventListener("click", closeCheckinModal);
+  $("cancelCheckin").addEventListener("click", closeCheckinModal);
+  $("checkinModal").addEventListener("click", (e)=>{ if(e.target === $("checkinModal")) closeCheckinModal(); });
 
-  function openRiskModal(e){
-    if(e){
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if(riskModal) riskModal.classList.add("show");
-  }
+  // exercise modal close
+  $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
+  $("exerciseModal").addEventListener("click", (e)=>{ if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show"); });
 
-  function closeRiskModal(e){
-    if(e){
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if(riskModal) riskModal.classList.remove("show");
-  }
-
-  bindTap(openRiskBtn, openRiskModal);
-  bindTap(closeRiskBtn, closeRiskModal);
-
-  if(riskModal){
-    riskModal.addEventListener("click", (e)=>{
-      if(e.target === riskModal) closeRiskModal(e);
-    });
-    riskModal.addEventListener("touchend", (e)=>{
-      if(e.target === riskModal) closeRiskModal(e);
-    }, { passive:false });
-  }
-
-  /* ---------- CHECK-IN MODAL ---------- */
-  bindTap($("closeCheckin"), ()=> closeCheckinModal());
-  bindTap($("cancelCheckin"), ()=> closeCheckinModal());
-  const checkinModal = $("checkinModal");
-  if(checkinModal){
-    checkinModal.addEventListener("click", (e)=>{
-      if(e.target === checkinModal) closeCheckinModal();
-    });
-  }
-
-  /* ---------- EXERCISE MODAL ---------- */
-  bindTap($("closeExercise"), ()=> $("exerciseModal").classList.remove("show"));
-  const exModal = $("exerciseModal");
-  if(exModal){
-    exModal.addEventListener("click", (e)=>{
-      if(e.target === exModal) exModal.classList.remove("show");
-    });
-  }
-
-  /* ---------- ADD EXERCISE MODAL ---------- */
-  bindTap($("openAddExercise"), ()=>{
+  // add-exercise modal
+  $("openAddExercise").addEventListener("click", ()=>{
     openAddExerciseModal();
     const cat = $("ae_category");
     if(cat) cat.value = "Foot/Ankle";
   });
-  bindTap($("closeAddExercise"), closeAddExerciseModal);
-  bindTap($("cancelAddExercise"), closeAddExerciseModal);
+  $("closeAddExercise").addEventListener("click", closeAddExerciseModal);
+  $("cancelAddExercise").addEventListener("click", closeAddExerciseModal);
+  $("addExerciseModal").addEventListener("click", (e)=>{ if(e.target === $("addExerciseModal")) closeAddExerciseModal(); });
 
-  const addExModal = $("addExerciseModal");
-  if(addExModal){
-    addExModal.addEventListener("click", (e)=>{
-      if(e.target === addExModal) closeAddExerciseModal();
-    });
-  }
-
-  /* ---------- EXERCISE PICKER ---------- */
-  bindTap($("toggleExercisePicker"), ()=>{
+  // check-in picker toggle
+  $("toggleExercisePicker").addEventListener("click", ()=>{
     const panel = $("exercisePicker");
     const open = panel.style.display !== "none";
     panel.style.display = open ? "none" : "";
     if(!open) renderExercisePicker();
   });
 
-  /* ---------- ROUTINES (FIX: NEW ROUTINE + EDITOR + PICKER) ---------- */
-  bindTap($("newRoutineBtn"), ()=>{
-    // Ensure routines are available
-    if(!currentUser){ toast("Not logged in"); return; }
-
-    // If exercises aren't loaded yet, prevent an empty picker
-    if(!cachedExercises || cachedExercises.length === 0){
-      toast("Loading exercises…");
-      // still open editor, but picker will show "No exercises yet"
-    }
-
-    showRoutineEditor(null);
-  });
-
-  bindTap($("saveRoutineBtn"), ()=> saveRoutineFromEditor());
-  bindTap($("deleteRoutineBtn"), ()=> deleteRoutineFromEditor());
-
-  bindTap($("closeRoutineEditor"), ()=>{
-    const m = $("routineEditorModal");
-    if(m) m.classList.remove("show");
-  });
-
-  const routineEditorModal = $("routineEditorModal");
-  if(routineEditorModal){
-    routineEditorModal.addEventListener("click", (e)=>{
-      if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
-    });
-    routineEditorModal.addEventListener("touchend", (e)=>{
-      if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
-    }, { passive:false });
-  }
-
-  bindTap($("openRoutinePicker"), ()=>{
-    if(!currentUser){ toast("Not logged in"); return; }
-    renderRoutinePickerList();
-    const m = $("routinePickerModal");
-    if(m) m.classList.add("show");
-  });
-
-  bindTap($("closeRoutinePicker"), ()=>{
-    const m = $("routinePickerModal");
-    if(m) m.classList.remove("show");
-  });
-
-  const routinePickerModal = $("routinePickerModal");
-  if(routinePickerModal){
-    routinePickerModal.addEventListener("click", (e)=>{
-      if(e.target === routinePickerModal) routinePickerModal.classList.remove("show");
-    });
-    routinePickerModal.addEventListener("touchend", (e)=>{
-      if(e.target === routinePickerModal) routinePickerModal.classList.remove("show");
-    }, { passive:false });
-  }
-
-  /* ---------- SLIDERS ---------- */
+  // sliders
   ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
-    const el = $(id);
-    if(el) el.addEventListener("input", syncVals);
+    $(id).addEventListener("input", syncVals);
   });
 
-  /* ---------- SEARCH + FAVORITES ---------- */
+  // search + favorites (Exercises tab)
   const searchEl = $("exSearch");
   const favBtn = $("toggleFavorites");
   const clearBtn = $("clearSearch");
@@ -3011,8 +2912,7 @@ function wireUI(){
   }
 
   if(favBtn){
-    favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
-    bindTap(favBtn, ()=>{
+    favBtn.addEventListener("click", ()=>{
       showFavoritesOnly = !showFavoritesOnly;
       favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
       renderExerciseList();
@@ -3020,104 +2920,122 @@ function wireUI(){
   }
 
   if(clearBtn){
-    bindTap(clearBtn, ()=>{
+    clearBtn.addEventListener("click", ()=>{
       exSearchQuery = "";
       if(searchEl) searchEl.value = "";
-      selectedCategory = "All";
-      renderCategoryChips();
       renderExerciseList();
     });
   }
 
-  /* ---------- SAVE CHECK-IN ---------- */
-  const checkinForm = $("checkinForm");
-  if(checkinForm){
-    checkinForm.addEventListener("submit", async (e)=>{
+  // ✅ Risk info modal (works on iPhone)
+  function openRiskInfo(){
+    const m = $("riskInfoModal");
+    if(!m) return;
+    m.classList.add("show");
+  }
+  function closeRiskInfo(){
+    const m = $("riskInfoModal");
+    if(!m) return;
+    m.classList.remove("show");
+  }
+
+  const riskBtn = $("riskInfoBtn");
+  if(riskBtn){
+    riskBtn.addEventListener("click", (e)=>{
       e.preventDefault();
-      if(!currentUser){ toast("Not logged in"); return; }
-
-      const entry = {
-        date: $("f_date").value,
-        minutes: Number($("f_minutes").value),
-        rpe: Number($("f_rpe").value),
-        sleep: Number($("f_sleep").value),
-        sore: Number($("f_sore").value),
-        fatigue: Number($("f_fatigue").value),
-
-        pointe: !!$("f_pointe").checked,
-        partner: !!$("f_partner").checked,
-        jumps: Number($("f_jumps").value || 0),
-
-        notes: $("f_notes").value || "",
-        exercises: getCheckinPicked()
-      };
-
-      try{
-        await upsertCheckin(currentUser.uid, entry);
-
-        const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
-        if(idx >= 0) cachedCheckins[idx] = entry;
-        else cachedCheckins.push(entry);
-
-        toast("Saved ✓");
-        closeCheckinModal();
-        render();
-      }catch(err){
-        console.error(err);
-        toast("Save failed");
-      }
+      e.stopPropagation();
+      openRiskInfo();
     });
   }
 
-  /* ---------- ADD CUSTOM EXERCISE ---------- */
-  const addExerciseForm = $("addExerciseForm");
-  if(addExerciseForm){
-    addExerciseForm.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      if(!currentUser){ toast("Not logged in"); return; }
+  const closeRisk = $("closeRiskInfo");
+  if(closeRisk) closeRisk.addEventListener("click", closeRiskInfo);
 
-      const name = ($("ae_name").value || "").trim();
-      const category = ($("ae_category")?.value || "Other").trim();
-      const focus = ($("ae_focus").value || "").trim();
-      const defaultRx = ($("ae_presc").value || "").trim();
-      const howText = ($("ae_how").value || "").trim();
-      const cuesText = ($("ae_cues").value || "").trim();
-
-      if(!name || !focus || !defaultRx){
-        toast("Fill name + focus + default");
-        return;
-      }
-
-      const ex = {
-        id: makeId(),
-        source: "user",
-        category,
-        name,
-        focus,
-        defaultRx,
-        how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
-        cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
-      };
-
-      try{
-        await addUserExercise(currentUser.uid, ex);
-
-        const userExercises = await loadUserExercises(currentUser.uid);
-        cachedExercises = mergeExerciseLibrary(userExercises);
-
-        renderCategoryChips();
-        renderExerciseList();
-
-        toast("Exercise added");
-        closeAddExerciseModal();
-      }catch(err){
-        console.error(err);
-        toast("Add failed");
-      }
+  const riskModal = $("riskInfoModal");
+  if(riskModal){
+    riskModal.addEventListener("click", (e)=>{
+      if(e.target === riskModal) closeRiskInfo();
     });
   }
 
-  /* ---------- INITIAL ---------- */
+  // save check-in
+  $("checkinForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    const entry = {
+      date: $("f_date").value,
+      minutes: Number($("f_minutes").value),
+      rpe: Number($("f_rpe").value),
+      sleep: Number($("f_sleep").value),
+      sore: Number($("f_sore").value),
+      fatigue: Number($("f_fatigue").value),
+      notes: $("f_notes").value || "",
+      exercises: getCheckinPicked()
+    };
+
+    try{
+      await upsertCheckin(currentUser.uid, entry);
+
+      const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
+      if(idx >= 0) cachedCheckins[idx] = entry;
+      else cachedCheckins.push(entry);
+
+      toast("Saved ✓");
+      closeCheckinModal();
+      render();
+    }catch(err){
+      console.error(err);
+      toast("Save failed");
+    }
+  });
+
+  // add custom exercise (now includes category)
+  $("addExerciseForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    const name = ($("ae_name").value || "").trim();
+    const category = ($("ae_category")?.value || "Other").trim();
+    const focus = ($("ae_focus").value || "").trim();
+    const defaultRx = ($("ae_presc").value || "").trim();
+    const howText = ($("ae_how").value || "").trim();
+    const cuesText = ($("ae_cues").value || "").trim();
+
+    if(!name || !focus || !defaultRx){
+      toast("Fill name + focus + default");
+      return;
+    }
+
+    const ex = {
+      id: makeId(),
+      source: "user",
+      category,
+      name,
+      focus,
+      defaultRx,
+      how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
+      cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
+    };
+
+    try{
+      await addUserExercise(currentUser.uid, ex);
+
+      const userExercises = await loadUserExercises(currentUser.uid);
+      cachedExercises = mergeExerciseLibrary(userExercises);
+
+      renderCategoryChips();
+      renderExerciseList();
+
+      toast("Exercise added");
+      closeAddExerciseModal();
+    }catch(err){
+      console.error(err);
+      toast("Add failed");
+    }
+  });
+
+  // initial chips
   renderCategoryChips();
 }
 
