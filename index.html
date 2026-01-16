@@ -1211,6 +1211,7 @@ function deleteRoutineById(uid, id){
      * Each has a defaultRx string that we can pre-fill in check-in.
      ***********************/
 const DEFAULT_EXERCISES = [
+  // ===== Your current defaults (kept) =====
   {
     id:"default_calf_iso_ecc",
     source:"default",
@@ -1341,6 +1342,243 @@ const DEFAULT_EXERCISES = [
       "Progress to standing turnout holds in parallel → first."
     ],
     cues:["Pelvis neutral","No arch collapse","Feel deep hip"]
+  },
+
+  // ===== NEW DEFAULTS (PT-guided dancer set) =====
+
+  // --- Foot/Ankle ---
+  {
+    id:"default_tib_ant",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Tibialis Anterior Raises (Wall / Band)",
+    focus:"Shin control · landing decel · ankle stiffness",
+    defaultRx:"3×12–20 slow reps",
+    how:[
+      "Stand with back on wall, heels down, lift toes toward shins.",
+      "Control down slowly; don’t rock through hips."
+    ],
+    cues:["Heels heavy","Toes up evenly","Slow return"]
+  },
+  {
+    id:"default_peroneals",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Peroneals / Eversion Control (Band)",
+    focus:"Lateral ankle stability · cutting/side travel",
+    defaultRx:"3×12–15 slow reps or 3×20s holds",
+    how:[
+      "Band around forefoot, move foot outward (eversion), control back.",
+      "Keep knee still; move at ankle."
+    ],
+    cues:["Move at ankle","Control eccentric","No knee sway"]
+  },
+  {
+    id:"default_balance_star",
+    source:"default",
+    category:"Foot/Ankle",
+    name:"Single-Leg Balance + Star Reach",
+    focus:"Proprioception · ankle/hip control for landings",
+    defaultRx:"2–3×5 reaches each direction per side",
+    how:[
+      "Stand tall on one leg and reach the other foot forward/side/back.",
+      "Keep pelvis level; reach lightly and return."
+    ],
+    cues:["Tripod foot","Pelvis level","Soft knee"]
+  },
+
+  // --- Knee / Landing ---
+  {
+    id:"default_spanish_squat",
+    source:"default",
+    category:"Strength",
+    name:"Spanish Squat (Quad Tendon-Friendly)",
+    focus:"Patellar tendon/knee pain · quad strength",
+    defaultRx:"4×30–45s holds (or 3×8–12 slow reps)",
+    how:[
+      "Anchor a strap/band behind knees, sit back into squat.",
+      "Keep torso tall; pain should stay ≤3/10."
+    ],
+    cues:["Shins near vertical","Sit back","Even pressure"]
+  },
+  {
+    id:"default_split_squat_iso",
+    source:"default",
+    category:"Strength",
+    name:"Split Squat Isometric (Mid-Range)",
+    focus:"Knee/hip control · decel capacity",
+    defaultRx:"3×20–40s each side",
+    how:[
+      "Find a stable split stance, drop to mid-range, hold steady.",
+      "Progress by adding load or longer holds."
+    ],
+    cues:["Front knee tracks","Ribs stacked","Even weight"]
+  },
+  {
+    id:"default_lateral_stepdown",
+    source:"default",
+    category:"Strength",
+    name:"Lateral Step-Down (Hip Control)",
+    focus:"Glute med control · valgus prevention",
+    defaultRx:"3×6–10 each side (slow down, light tap)",
+    how:[
+      "Stand on a step, lower opposite heel to tap lightly.",
+      "Keep pelvis level; return without bouncing."
+    ],
+    cues:["Pelvis level","Knee over toes","Slow lower"]
+  },
+
+  // --- Hip/Core / Turnout ---
+  {
+    id:"default_bridge_march",
+    source:"default",
+    category:"Hip/Core",
+    name:"Bridge March (Pelvic Stability)",
+    focus:"Posterior chain · pelvic control for single-leg",
+    defaultRx:"3×8–12 marches per side",
+    how:[
+      "Bridge up, keep pelvis still, lift one knee toward chest and lower.",
+      "Avoid rib flare or hip drop."
+    ],
+    cues:["Ribs down","Pelvis quiet","Squeeze glutes"]
+  },
+  {
+    id:"default_side_plank_abd",
+    source:"default",
+    category:"Hip/Core",
+    name:"Side Plank + Top Leg Abduction",
+    focus:"Glute med endurance · lateral line strength",
+    defaultRx:"3×6–10 lifts each side (or 20–30s hold)",
+    how:[
+      "Hold side plank, lift top leg slightly with control.",
+      "Modify: knees down if needed."
+    ],
+    cues:["Stack shoulders/hips","Don’t rotate","Slow lift"]
+  },
+  {
+    id:"default_turnout_control_releve",
+    source:"default",
+    category:"Turnout/Technique",
+    name:"Turnout Control in Relevé (Small Range)",
+    focus:"Turnout maintenance without foot collapse",
+    defaultRx:"2–3×6–10 slow reps or 3×20s holds",
+    how:[
+      "In parallel or 1st, rise to relevé and hold alignment.",
+      "Keep arches lifted; turnout from hip, not pronation."
+    ],
+    cues:["Tripod foot","Turnout from hip","No sickling"]
+  },
+
+  // --- Posterior Chain / Back ---
+  {
+    id:"default_copenhagen_mod",
+    source:"default",
+    category:"Strength",
+    name:"Adductor Side Plank (Modified Copenhagen)",
+    focus:"Adductors/groin · turnout support · knee control",
+    defaultRx:"3×15–25s each side",
+    how:[
+      "Side plank with top leg supported (knee on bench/chair).",
+      "Hold steady; build time before making it harder."
+    ],
+    cues:["Hips tall","No rotation","Breathe steadily"]
+  },
+  {
+    id:"default_back_ext_iso",
+    source:"default",
+    category:"Strength",
+    name:"Back Extension Isometric (Hip Hinge Hold)",
+    focus:"Posterior chain endurance · spinal load management",
+    defaultRx:"3×20–40s holds",
+    how:[
+      "Hinge to a comfortable angle, keep spine long, hold.",
+      "Can be done as ‘good morning’ position with hands on hips."
+    ],
+    cues:["Long spine","Hips back","Breathe"]
+  },
+
+  // --- Mobility / Recovery ---
+  {
+    id:"default_hip_flexor_mob",
+    source:"default",
+    category:"Mobility",
+    name:"Hip Flexor Mobility (Half-Kneeling)",
+    focus:"Hip extension · arabesque line · low back offload",
+    defaultRx:"2×45–60s each side",
+    how:[
+      "Half-kneeling, tuck pelvis slightly, shift forward until stretch.",
+      "Add gentle reach overhead for more line."
+    ],
+    cues:["Posterior pelvic tilt","Glute squeeze","Ribs stacked"]
+  },
+  {
+    id:"default_ankle_dorsiflex",
+    source:"default",
+    category:"Mobility",
+    name:"Ankle Dorsiflexion (Knee-to-Wall)",
+    focus:"Plié depth · landing mechanics · ankle mobility",
+    defaultRx:"2–3×8–12 controlled reps each side",
+    how:[
+      "Drive knee toward wall over toes without heel lifting.",
+      "Pause at end range, return with control."
+    ],
+    cues:["Heel stays down","Knee tracks over toes","Slow"]
+  },
+
+  // --- Upper body (partnering + port de bras) ---
+  {
+    id:"default_serratus_wall_slide",
+    source:"default",
+    category:"Strength",
+    name:"Serratus Wall Slide (Scap Control)",
+    focus:"Shoulder stability · overhead lines · partnering",
+    defaultRx:"3×8–12 slow reps",
+    how:[
+      "Forearms on wall, slide up while keeping ribs down.",
+      "Feel shoulder blades rotate and wrap forward."
+    ],
+    cues:["Ribs down","Reach long","No shrug"]
+  },
+  {
+    id:"default_rotator_cuff_er",
+    source:"default",
+    category:"Strength",
+    name:"Rotator Cuff ER (Band, Elbow at Side)",
+    focus:"Shoulder resilience · partnering lifts",
+    defaultRx:"3×12–15 each side",
+    how:[
+      "Elbow at side, rotate forearm out against band.",
+      "Control return; avoid trunk rotation."
+    ],
+    cues:["Elbow pinned","Slow return","Shoulders relaxed"]
+  },
+
+  // --- Plyometrics progressions (more dance-specific) ---
+  {
+    id:"default_pogo_hops",
+    source:"default",
+    category:"Plyometrics",
+    name:"Pogo Hops (Ankle Stiffness)",
+    focus:"Jump prep · Achilles tolerance · elastic recoil",
+    defaultRx:"3×10–20s bouts, 60–90s rest",
+    how:[
+      "Small quick hops, minimal knee bend, stay tall.",
+      "Stop if pain increases; build time gradually."
+    ],
+    cues:["Quiet feet","Tall posture","Springy ankles"]
+  },
+  {
+    id:"default_single_leg_hop_stick",
+    source:"default",
+    category:"Plyometrics",
+    name:"Single-Leg Hop + Stick (Forward/Diagonal)",
+    focus:"Return-to-jump control · asymmetry awareness",
+    defaultRx:"3×3–5 hops each direction per side",
+    how:[
+      "Hop and land quietly, stick 2 seconds, reset each rep.",
+      "Keep knee aligned; start small distances."
+    ],
+    cues:["Stick the landing","Knee tracks","Control pelvis"]
   }
 ];
 
@@ -2528,6 +2766,28 @@ async function onUserSignedIn(user){
      * EVENTS / WIRES
      ***********************/
 function wireUI(){
+  // iPhone-safe tap binding (prevents click + touchend double-fire)
+  function bindTap(el, handler){
+    if(!el) return;
+    let last = 0;
+
+    const wrapped = (e)=>{
+      const now = Date.now();
+      if(now - last < 450) return;
+      last = now;
+      try{
+        if(e){
+          e.preventDefault?.();
+          e.stopPropagation?.();
+        }
+      }catch(_){}
+      handler(e);
+    };
+
+    el.addEventListener("click", wrapped, { passive:false });
+    el.addEventListener("touchend", wrapped, { passive:false });
+  }
+
   // helper: build category chips
   function getAllCategories(){
     const set = new Set(["All"]);
@@ -2542,7 +2802,8 @@ function wireUI(){
     const cats = getAllCategories();
     wrap.innerHTML = "";
 
-    cats.forEach(cat=>{
+    for(let i=0;i<cats.length;i++){
+      const cat = cats[i];
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "mutedBtn";
@@ -2560,13 +2821,16 @@ function wireUI(){
       });
 
       wrap.appendChild(btn);
-    });
+    }
   }
 
+  // expose for refreshExercises() to rebuild chips without duplicating logic
+  window.__opp_renderCategoryChips = renderCategoryChips;
+
   /* ---------- AUTH ---------- */
-  $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
-  $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
-  $("authReset").addEventListener("click", doResetPassword);
+  bindTap($("authPrimaryBtn"), doAuthPrimary);
+  bindTap($("authToggle"), ()=> setAuthMode(authMode === "login" ? "create" : "login"));
+  bindTap($("authReset"), doResetPassword);
 
   /* ---------- TABS ---------- */
   document.querySelectorAll(".tab").forEach(btn=>{
@@ -2575,19 +2839,20 @@ function wireUI(){
       if(btn.dataset.tab === "exercises"){
         renderCategoryChips();
         renderExerciseList();
+        renderRoutineList();
       }
     });
   });
 
   /* ---------- MAIN BUTTONS ---------- */
-  $("openCheckin").addEventListener("click", ()=> openCheckinModal());
-  $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
-  $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+  bindTap($("openCheckin"), ()=> openCheckinModal());
+  bindTap($("openCheckin2"), ()=> openCheckinModal());
+  bindTap($("openExercises"), ()=> setTab("exercises"));
 
-  $("exportBtn").addEventListener("click", exportCSV);
-  $("logoutBtn").addEventListener("click", async ()=>{ await signOut(auth); });
+  bindTap($("exportBtn"), exportCSV);
+  bindTap($("logoutBtn"), async ()=>{ await signOut(auth); });
 
-  $("clearData").addEventListener("click", async ()=>{
+  bindTap($("clearData"), async ()=>{
     if(!currentUser) return;
     if(confirm("Clear all check-ins for this account?")){
       await deleteAllCheckins(currentUser.uid);
@@ -2607,7 +2872,7 @@ function wireUI(){
       e.preventDefault();
       e.stopPropagation();
     }
-    riskModal.classList.add("show");
+    if(riskModal) riskModal.classList.add("show");
   }
 
   function closeRiskModal(e){
@@ -2615,18 +2880,11 @@ function wireUI(){
       e.preventDefault();
       e.stopPropagation();
     }
-    riskModal.classList.remove("show");
+    if(riskModal) riskModal.classList.remove("show");
   }
 
-  if(openRiskBtn){
-    openRiskBtn.addEventListener("click", openRiskModal, { passive:false });
-    openRiskBtn.addEventListener("touchend", openRiskModal, { passive:false });
-  }
-
-  if(closeRiskBtn){
-    closeRiskBtn.addEventListener("click", closeRiskModal);
-    closeRiskBtn.addEventListener("touchend", closeRiskModal);
-  }
+  bindTap(openRiskBtn, openRiskModal);
+  bindTap(closeRiskBtn, closeRiskModal);
 
   if(riskModal){
     riskModal.addEventListener("click", (e)=>{
@@ -2634,45 +2892,110 @@ function wireUI(){
     });
     riskModal.addEventListener("touchend", (e)=>{
       if(e.target === riskModal) closeRiskModal(e);
-    });
+    }, { passive:false });
   }
 
   /* ---------- CHECK-IN MODAL ---------- */
-  $("closeCheckin").addEventListener("click", closeCheckinModal);
-  $("cancelCheckin").addEventListener("click", closeCheckinModal);
-  $("checkinModal").addEventListener("click", (e)=>{
-    if(e.target === $("checkinModal")) closeCheckinModal();
-  });
+  bindTap($("closeCheckin"), ()=> closeCheckinModal());
+  bindTap($("cancelCheckin"), ()=> closeCheckinModal());
+  const checkinModal = $("checkinModal");
+  if(checkinModal){
+    checkinModal.addEventListener("click", (e)=>{
+      if(e.target === checkinModal) closeCheckinModal();
+    });
+  }
 
   /* ---------- EXERCISE MODAL ---------- */
-  $("closeExercise").addEventListener("click", ()=> $("exerciseModal").classList.remove("show"));
-  $("exerciseModal").addEventListener("click", (e)=>{
-    if(e.target === $("exerciseModal")) $("exerciseModal").classList.remove("show");
-  });
+  bindTap($("closeExercise"), ()=> $("exerciseModal").classList.remove("show"));
+  const exModal = $("exerciseModal");
+  if(exModal){
+    exModal.addEventListener("click", (e)=>{
+      if(e.target === exModal) exModal.classList.remove("show");
+    });
+  }
 
   /* ---------- ADD EXERCISE MODAL ---------- */
-  $("openAddExercise").addEventListener("click", ()=>{
+  bindTap($("openAddExercise"), ()=>{
     openAddExerciseModal();
     const cat = $("ae_category");
     if(cat) cat.value = "Foot/Ankle";
   });
-  $("closeAddExercise").addEventListener("click", closeAddExerciseModal);
-  $("cancelAddExercise").addEventListener("click", closeAddExerciseModal);
-  $("addExerciseModal").addEventListener("click", (e)=>{
-    if(e.target === $("addExerciseModal")) closeAddExerciseModal();
-  });
+  bindTap($("closeAddExercise"), closeAddExerciseModal);
+  bindTap($("cancelAddExercise"), closeAddExerciseModal);
+
+  const addExModal = $("addExerciseModal");
+  if(addExModal){
+    addExModal.addEventListener("click", (e)=>{
+      if(e.target === addExModal) closeAddExerciseModal();
+    });
+  }
 
   /* ---------- EXERCISE PICKER ---------- */
-  $("toggleExercisePicker").addEventListener("click", ()=>{
+  bindTap($("toggleExercisePicker"), ()=>{
     const panel = $("exercisePicker");
     const open = panel.style.display !== "none";
     panel.style.display = open ? "none" : "";
     if(!open) renderExercisePicker();
   });
 
+  /* ---------- ROUTINES (FIX: NEW ROUTINE + EDITOR + PICKER) ---------- */
+  bindTap($("newRoutineBtn"), ()=>{
+    // Ensure routines are available
+    if(!currentUser){ toast("Not logged in"); return; }
+
+    // If exercises aren't loaded yet, prevent an empty picker
+    if(!cachedExercises || cachedExercises.length === 0){
+      toast("Loading exercises…");
+      // still open editor, but picker will show "No exercises yet"
+    }
+
+    showRoutineEditor(null);
+  });
+
+  bindTap($("saveRoutineBtn"), ()=> saveRoutineFromEditor());
+  bindTap($("deleteRoutineBtn"), ()=> deleteRoutineFromEditor());
+
+  bindTap($("closeRoutineEditor"), ()=>{
+    const m = $("routineEditorModal");
+    if(m) m.classList.remove("show");
+  });
+
+  const routineEditorModal = $("routineEditorModal");
+  if(routineEditorModal){
+    routineEditorModal.addEventListener("click", (e)=>{
+      if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
+    });
+    routineEditorModal.addEventListener("touchend", (e)=>{
+      if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
+    }, { passive:false });
+  }
+
+  bindTap($("openRoutinePicker"), ()=>{
+    if(!currentUser){ toast("Not logged in"); return; }
+    renderRoutinePickerList();
+    const m = $("routinePickerModal");
+    if(m) m.classList.add("show");
+  });
+
+  bindTap($("closeRoutinePicker"), ()=>{
+    const m = $("routinePickerModal");
+    if(m) m.classList.remove("show");
+  });
+
+  const routinePickerModal = $("routinePickerModal");
+  if(routinePickerModal){
+    routinePickerModal.addEventListener("click", (e)=>{
+      if(e.target === routinePickerModal) routinePickerModal.classList.remove("show");
+    });
+    routinePickerModal.addEventListener("touchend", (e)=>{
+      if(e.target === routinePickerModal) routinePickerModal.classList.remove("show");
+    }, { passive:false });
+  }
+
   /* ---------- SLIDERS ---------- */
   ["f_minutes","f_rpe","f_sleep","f_sore","f_fatigue"].forEach(id=>{
-    $(id).addEventListener("input", syncVals);
+    const el = $(id);
+    if(el) el.addEventListener("input", syncVals);
   });
 
   /* ---------- SEARCH + FAVORITES ---------- */
@@ -2688,7 +3011,8 @@ function wireUI(){
   }
 
   if(favBtn){
-    favBtn.addEventListener("click", ()=>{
+    favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
+    bindTap(favBtn, ()=>{
       showFavoritesOnly = !showFavoritesOnly;
       favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
       renderExerciseList();
@@ -2696,7 +3020,7 @@ function wireUI(){
   }
 
   if(clearBtn){
-    clearBtn.addEventListener("click", ()=>{
+    bindTap(clearBtn, ()=>{
       exSearchQuery = "";
       if(searchEl) searchEl.value = "";
       selectedCategory = "All";
@@ -2706,86 +3030,92 @@ function wireUI(){
   }
 
   /* ---------- SAVE CHECK-IN ---------- */
-  $("checkinForm").addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    if(!currentUser){ toast("Not logged in"); return; }
+  const checkinForm = $("checkinForm");
+  if(checkinForm){
+    checkinForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      if(!currentUser){ toast("Not logged in"); return; }
 
-    const entry = {
-      date: $("f_date").value,
-      minutes: Number($("f_minutes").value),
-      rpe: Number($("f_rpe").value),
-      sleep: Number($("f_sleep").value),
-      sore: Number($("f_sore").value),
-      fatigue: Number($("f_fatigue").value),
+      const entry = {
+        date: $("f_date").value,
+        minutes: Number($("f_minutes").value),
+        rpe: Number($("f_rpe").value),
+        sleep: Number($("f_sleep").value),
+        sore: Number($("f_sore").value),
+        fatigue: Number($("f_fatigue").value),
 
-      pointe: !!$("f_pointe").checked,
-      partner: !!$("f_partner").checked,
-      jumps: Number($("f_jumps").value || 0),
+        pointe: !!$("f_pointe").checked,
+        partner: !!$("f_partner").checked,
+        jumps: Number($("f_jumps").value || 0),
 
-      notes: $("f_notes").value || "",
-      exercises: getCheckinPicked()
-    };
+        notes: $("f_notes").value || "",
+        exercises: getCheckinPicked()
+      };
 
-    try{
-      await upsertCheckin(currentUser.uid, entry);
+      try{
+        await upsertCheckin(currentUser.uid, entry);
 
-      const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
-      if(idx >= 0) cachedCheckins[idx] = entry;
-      else cachedCheckins.push(entry);
+        const idx = cachedCheckins.findIndex(x=> x.date === entry.date);
+        if(idx >= 0) cachedCheckins[idx] = entry;
+        else cachedCheckins.push(entry);
 
-      toast("Saved ✓");
-      closeCheckinModal();
-      render();
-    }catch(err){
-      console.error(err);
-      toast("Save failed");
-    }
-  });
+        toast("Saved ✓");
+        closeCheckinModal();
+        render();
+      }catch(err){
+        console.error(err);
+        toast("Save failed");
+      }
+    });
+  }
 
   /* ---------- ADD CUSTOM EXERCISE ---------- */
-  $("addExerciseForm").addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    if(!currentUser){ toast("Not logged in"); return; }
+  const addExerciseForm = $("addExerciseForm");
+  if(addExerciseForm){
+    addExerciseForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      if(!currentUser){ toast("Not logged in"); return; }
 
-    const name = ($("ae_name").value || "").trim();
-    const category = ($("ae_category")?.value || "Other").trim();
-    const focus = ($("ae_focus").value || "").trim();
-    const defaultRx = ($("ae_presc").value || "").trim();
-    const howText = ($("ae_how").value || "").trim();
-    const cuesText = ($("ae_cues").value || "").trim();
+      const name = ($("ae_name").value || "").trim();
+      const category = ($("ae_category")?.value || "Other").trim();
+      const focus = ($("ae_focus").value || "").trim();
+      const defaultRx = ($("ae_presc").value || "").trim();
+      const howText = ($("ae_how").value || "").trim();
+      const cuesText = ($("ae_cues").value || "").trim();
 
-    if(!name || !focus || !defaultRx){
-      toast("Fill name + focus + default");
-      return;
-    }
+      if(!name || !focus || !defaultRx){
+        toast("Fill name + focus + default");
+        return;
+      }
 
-    const ex = {
-      id: makeId(),
-      source: "user",
-      category,
-      name,
-      focus,
-      defaultRx,
-      how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
-      cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
-    };
+      const ex = {
+        id: makeId(),
+        source: "user",
+        category,
+        name,
+        focus,
+        defaultRx,
+        how: howText ? howText.split("\n").map(s=>s.trim()).filter(Boolean) : [],
+        cues: cuesText ? cuesText.split(",").map(s=>s.trim()).filter(Boolean) : []
+      };
 
-    try{
-      await addUserExercise(currentUser.uid, ex);
+      try{
+        await addUserExercise(currentUser.uid, ex);
 
-      const userExercises = await loadUserExercises(currentUser.uid);
-      cachedExercises = mergeExerciseLibrary(userExercises);
+        const userExercises = await loadUserExercises(currentUser.uid);
+        cachedExercises = mergeExerciseLibrary(userExercises);
 
-      renderCategoryChips();
-      renderExerciseList();
+        renderCategoryChips();
+        renderExerciseList();
 
-      toast("Exercise added");
-      closeAddExerciseModal();
-    }catch(err){
-      console.error(err);
-      toast("Add failed");
-    }
-  });
+        toast("Exercise added");
+        closeAddExerciseModal();
+      }catch(err){
+        console.error(err);
+        toast("Add failed");
+      }
+    });
+  }
 
   /* ---------- INITIAL ---------- */
   renderCategoryChips();
