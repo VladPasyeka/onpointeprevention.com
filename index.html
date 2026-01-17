@@ -169,29 +169,7 @@
     .badge.ok .badgeDot{background:var(--ok)}
     .badge.caution .badgeDot{background:var(--caution)}
     .badge.high .badgeDot{background:var(--high)}
-    .badge.clickable{
-  cursor:pointer;
-  user-select:none;
-}
-.badge.clickable:active{
-  transform: scale(.99);
-}
-.badge.clickable:focus{
-  outline: 2px solid rgba(255,255,255,.22);
-  outline-offset: 2px;
-}
-.badge.clickable{
-  cursor:pointer;
-  user-select:none;
-}
-.badge.clickable:active{
-  transform: scale(.99);
-}
-.badge.clickable:focus{
-  outline: 2px solid rgba(255,255,255,.22);
-  outline-offset: 2px;
-}
-  
+
     /* small help button next to badge */
     .badgeHelpBtn{
       padding:8px 10px;
@@ -592,43 +570,29 @@
         <div class="authTitle" id="authModeTitle">ONPOINTE LOGIN</div>
         <div class="authSub">Your leap, safely landed.</div>
 
-<div class="form" style="gap:12px;">
-  <div class="field">
-    <div class="labelRow"><span>Email</span></div>
-    <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
-  </div>
+        <div class="form" style="gap:12px;">
+          <div class="field">
+            <div class="labelRow"><span>Email</span></div>
+            <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
+          </div>
+          <div class="field">
+            <div class="labelRow"><span>Password</span></div>
+            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
+          </div>
 
-  <div class="field">
-    <div class="labelRow"><span>Password</span></div>
-    <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
-  </div>
+          <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
 
-  <div class="field" id="roleSelectWrap" style="display:none;">
-    <div class="labelRow"><span>Account type</span></div>
-    <select id="authRole" style="width:100%; background: rgba(255,255,255,.04); border:1px solid var(--line); color: var(--text); border-radius: 14px; padding: 12px 12px; font-size:14px;">
-      <option value="patient">Dancer / Patient</option>
-      <option value="pt">Physical Therapist</option>
-    </select>
-    <div class="hint">PT accounts require approval before access.</div>
-  </div>
+          <div class="authLinkRow">
+            <span id="authAltText">Don’t have an account?</span>
+            <a class="authLink" id="authToggle" href="javascript:void(0)">Create</a>
+          </div>
 
-  <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
+          <div class="authLinkRow" style="margin-top:6px;">
+            <a class="authLink" id="authReset" href="javascript:void(0)" style="border-bottom-color:rgba(255,255,255,.18); color:rgba(255,255,255,.75)">Forgot password</a>
+          </div>
 
-  <div class="authLinkRow">
-    <span id="authAltText">Don’t have an account?</span>
-    <a class="authLink" id="authToggle" href="javascript:void(0)">Create</a>
-  </div>
-
-  <div class="authLinkRow" style="margin-top:6px;">
-    <a class="authLink" id="authReset" href="javascript:void(0)" style="border-bottom-color:rgba(255,255,255,.18); color:rgba(255,255,255,.75)">Forgot password</a>
-  </div>
-
-  <div class="authLinkRow" id="pendingLogout" style="display:none; margin-top:10px;">
-    <a class="authLink" href="javascript:void(0)" onclick="document.getElementById('logoutBtn').click()">Logout</a>
-  </div>
-
-  <div class="authMsg" id="authMsg"></div>
-</div>
+          <div class="authMsg" id="authMsg"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -668,12 +632,13 @@
                   <div class="small">Based on acute/chronic load (ACWR) + recovery markers.</div>
                 </div>
 
-               <div style="display:flex; gap:10px; align-items:center;">
-                <div class="badge ok clickable" id="riskBadge" role="button" tabindex="0" aria-label="Explain injury risk">
-                 <span class="badgeDot"></span>
-                 <span id="riskLabel">OK</span>
-               </div>
-              </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                  <div class="badge ok" id="riskBadge">
+                    <span class="badgeDot"></span>
+                    <span id="riskLabel">OK</span>
+                  </div>
+                  <button class="iconBtn" id="riskInfoBtn" type="button" aria-label="Explain injury risk">?</button>
+                </div>
               </div>
 
               <div class="metrics">
@@ -1147,6 +1112,17 @@
       </div>
     </div>
 
+    <!-- Modal: Risk Explanation -->
+    <div class="modalBackdrop" id="riskInfoModal">
+      <div class="modal">
+        <div class="modalTop">
+          <p class="modalTitle">Injury Risk — How it works</p>
+          <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
+        </div>
+        <div class="modalBody" id="riskInfoBody"></div>
+      </div>
+    </div>
+
     <div class="toast" id="toast">Saved</div>
   </div>
 
@@ -1215,27 +1191,14 @@
       return "ex_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
 
-async function ensureUserProfile(uid, email){
-  // IMPORTANT:
-  // Signup can succeed but "look broken" if Firestore rules block reads/writes.
-  // This must be best-effort and never crash auth flow.
-
-  const ref = userDocRef(uid);
-
-  try{
-    const snap = await getDoc(ref);
-
-    if(!snap.exists()){
-      try{
+    async function ensureUserProfile(uid, email){
+      const ref = userDocRef(uid);
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
         await setDoc(ref, { email: email || null, createdAt: serverTimestamp() }, { merge: true });
-      }catch(e){
-        // likely permission-denied until rules are deployed — ignore
       }
     }
-  }catch(e){
-    // likely permission-denied until rules are deployed — ignore
-  }
-}
+
 /***********************
  * DATA CACHE
  ***********************/
@@ -1767,24 +1730,33 @@ function riskFromACWR(acwr, entriesCount){
 }
 function guidanceText(entries, metrics){
   if(!entries || entries.length === 0){
-    return "Add check-ins to start building your personal baseline.";
+    return "Add check-ins to start building your personal load baseline.";
   }
 
+  // Baseline-building phase
   if(entries.length < 10){
-    return "Baseline phase: log consistently for ~2 weeks so your trends become more accurate.";
+    return "Building your baseline. Early risk signals can look high until the app learns your normal training rhythm. Log consistently for ~2 weeks.";
   }
 
-  // Keep it minimal + non-weekly to reduce mental load
-  const acwr = (metrics && typeof metrics.acwr === "number" && isFinite(metrics.acwr)) ? metrics.acwr : null;
+  const acwr = metrics && typeof metrics.acwr === "number" ? metrics.acwr : null;
+
   if(acwr === null){
-    return "Keep logging—consistency improves accuracy.";
+    return "Keep logging daily to refine your baseline. Prioritize sleep and recovery on heavy days.";
   }
 
-  if(acwr > 1.5) return "High spike: prioritize recovery and avoid extra volume for 24–72h.";
-  if(acwr > 1.3) return "Caution: watch fatigue and avoid stacking hard days.";
-  if(acwr < 0.8) return "Low load: progress gradually to avoid a sudden spike.";
+  if(acwr > 1.5){
+    return "Recent load is much higher than your baseline. Protect the next 24–72h: avoid adding extra jumps or pointe volume.";
+  }
 
-  return "Load looks steady. Keep recovery basics consistent.";
+  if(acwr > 1.3){
+    return "Moderate increase in load. Keep rehearsal quality high and trim extra volume if fatigue rises.";
+  }
+
+  if(acwr < 0.8){
+    return "Load is lower than your recent norm. Progress gradually to avoid a sudden spike.";
+  }
+
+  return "Load looks steady. Keep progressing and support recovery basics.";
 }
 
 
@@ -1842,7 +1814,8 @@ async function refreshExercises(){
   const userExercises = await loadUserExercises(currentUser.uid);
   cachedExercises = mergeExerciseLibrary(userExercises);
 
-  // If selected category no longer exists, fall back to All
+  // Keep UI consistent after refresh:
+  // - If the currently-selected category no longer exists, fall back to All
   if(selectedCategory && selectedCategory !== "All"){
     let exists = false;
     for(let i=0;i<cachedExercises.length;i++){
@@ -1852,15 +1825,9 @@ async function refreshExercises(){
     if(!exists) selectedCategory = "All";
   }
 
-  // Rebuild category chips (wireUI exposes renderer)
+  // Rebuild chips if the container exists (wireUI defines the renderer)
   if(typeof window.__opp_renderCategoryChips === "function"){
     window.__opp_renderCategoryChips();
-  }
-
-  // Keep favorites toggle label in sync (if button exists)
-  const favBtn = $("toggleFavorites");
-  if(favBtn){
-    favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
   }
 
   renderExerciseList();
@@ -2276,7 +2243,7 @@ function renderRecent(entries){
     return;
   }
 
-  // Build once (lighter than appendChild loops)
+  // Build once (lighter than creating/appendChild per row)
   let html = "";
   for(let i=0;i<recent.length;i++){
     const e = recent[i];
@@ -2718,39 +2685,20 @@ function applyRoutineToToday(routineId){
      ***********************/
 function setTab(tab){
   const screens = ["dashboard","checkin","exercises","history"];
-  for(let i=0;i<screens.length;i++){
-    const s = screens[i];
-    const node = $("screen-"+s);
-    if(node) node.style.display = (s===tab) ? "" : "none";
-  }
-
-  document.querySelectorAll(".tab").forEach(b=>{
-    b.classList.toggle("active", b.dataset.tab === tab);
-  });
+  screens.forEach(s=> $("screen-"+s).style.display = (s===tab) ? "" : "none");
+  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.tab === tab));
 
   // Only render what’s needed (less lag on iPhone)
-  if(tab === "history"){
+  if(tab === "dashboard"){
+    render();
+  }else if(tab === "history"){
     const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
     renderHistory(entries);
-    return;
-  }
-
-  if(tab === "exercises"){
-    // chips only if renderer exists (wireUI defines it)
-    if(typeof window.__opp_renderCategoryChips === "function"){
-      window.__opp_renderCategoryChips();
-    }
-    // keep favorites label correct
-    const favBtn = $("toggleFavorites");
-    if(favBtn){
-      favBtn.textContent = showFavoritesOnly ? "⭐ Favorites: On" : "⭐ Favorites: Off";
-    }
+  }else if(tab === "exercises"){
     renderRoutineList();
     renderExerciseList();
-    return;
   }
-
-  // dashboard / checkin: no auto re-render to avoid unnecessary work
+  // checkin tab doesn't need re-render
 }
 
     /***********************
@@ -2850,55 +2798,33 @@ function exportCSV(){
      ***********************/
     let authMode = "login";
     function setAuthMode(mode){
-  authMode = mode;
-  $("authModeTitle").textContent = mode === "login" ? "ONPOINTE LOGIN" : "CREATE ACCOUNT";
-  $("authPrimaryBtn").textContent = mode === "login" ? "Log in" : "Create";
-  $("authAltText").textContent = mode === "login" ? "Don’t have an account?" : "Already have an account?";
-  $("authToggle").textContent = mode === "login" ? "Create" : "Log in";
-  $("authMsg").textContent = "";
-  $("authPassword").setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
-
-  const wrap = $("roleSelectWrap");
-  if(wrap) wrap.style.display = (mode === "create") ? "" : "none";
-}
+      authMode = mode;
+      $("authModeTitle").textContent = mode === "login" ? "ONPOINTE LOGIN" : "CREATE ACCOUNT";
+      $("authPrimaryBtn").textContent = mode === "login" ? "Log in" : "Create";
+      $("authAltText").textContent = mode === "login" ? "Don’t have an account?" : "Already have an account?";
+      $("authToggle").textContent = mode === "login" ? "Create" : "Log in";
+      $("authMsg").textContent = "";
+      $("authPassword").setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
+    }
     function setAuthMessage(msg){ $("authMsg").textContent = msg || ""; }
 
-async function doAuthPrimary(){
-  const email = ($("authEmail").value || "").trim();
-  const pass = $("authPassword").value || "";
-  if(!email || !pass){ setAuthMessage("Enter email + password."); return; }
-
-  const btn = $("authPrimaryBtn");
-  const prevText = btn ? btn.textContent : "";
-  if(btn){ btn.disabled = true; btn.textContent = (authMode === "login" ? "Logging in..." : "Creating..."); }
-
-  try{
-    if(authMode === "login"){
-      await signInWithEmailAndPassword(auth, email, pass);
-      setAuthMessage("");
-    }else{
-      await createUserWithEmailAndPassword(auth, email, pass);
-      // If app boot fails after signup (Firestore rules, etc.), user still sees progress.
-      setAuthMessage("Account created. Signing you in...");
+    async function doAuthPrimary(){
+      const email = ($("authEmail").value || "").trim();
+      const pass = $("authPassword").value || "";
+      if(!email || !pass){ setAuthMessage("Enter email + password."); return; }
+      try{
+        if(authMode === "login") await signInWithEmailAndPassword(auth, email, pass);
+        else await createUserWithEmailAndPassword(auth, email, pass);
+      }catch(err){
+        const code = err?.code || "";
+        let m = err?.message || "Auth error";
+        if(code.includes("invalid-credential")) m = "Incorrect email or password.";
+        if(code.includes("email-already-in-use")) m = "That email is already in use. Try logging in.";
+        if(code.includes("weak-password")) m = "Password should be at least 6 characters.";
+        if(code.includes("invalid-email")) m = "Invalid email format.";
+        setAuthMessage(m);
+      }
     }
-  }catch(err){
-    const code = err?.code || "";
-    let m = err?.message || "Auth error";
-
-    if(code.includes("invalid-credential")) m = "Incorrect email or password.";
-    if(code.includes("email-already-in-use")) m = "That email is already in use. Try logging in.";
-    if(code.includes("weak-password")) m = "Password should be at least 6 characters.";
-    if(code.includes("invalid-email")) m = "Invalid email format.";
-    if(code.includes("operation-not-allowed")) m = "Email/password sign-in is not enabled in Firebase Auth.";
-
-    // show the real code too (helps you debug fast)
-    if(code && !m.includes(code)) m = m + " (" + code + ")";
-
-    setAuthMessage(m);
-  }finally{
-    if(btn){ btn.disabled = false; btn.textContent = prevText || (authMode === "login" ? "Log in" : "Create"); }
-  }
-}
 
     async function doResetPassword(){
       const email = ($("authEmail").value || "").trim();
@@ -2913,59 +2839,24 @@ async function doAuthPrimary(){
 
     function showAuth(){ $("authScreen").style.display=""; $("appShell").style.display="none"; setAuthMode("login"); }
     function showApp(){ $("authScreen").style.display="none"; $("appShell").style.display=""; }
-    /***********************
- * AUTH UI EVENTS
- ***********************/
-(function wireAuthUI(){
-  const primary = $("authPrimaryBtn");
-  const toggle = $("authToggle");
-  const reset  = $("authReset");
-
-  if(primary){
-    primary.addEventListener("click", ()=>{
-      doAuthPrimary();
-    });
-  }
-
-  if(toggle){
-    toggle.addEventListener("click", ()=>{
-      setAuthMode(authMode === "login" ? "create" : "login");
-    });
-  }
-
-  if(reset){
-    reset.addEventListener("click", ()=>{
-      doResetPassword();
-    });
-  }
-})();
 
     /***********************
      * BOOT PER USER
      ***********************/
 async function onUserSignedIn(user){
   currentUser = user;
-
-  // Never block sign-in on profile read/write
   await ensureUserProfile(user.uid, user.email);
 
-  // Local state
+  // Load local user preferences FIRST
   loadFavorites(user.uid);
   loadRoutines(user.uid);
 
-  // Firestore reads can fail if rules aren't set yet — don't crash the app
-  try{
-    cachedCheckins = await loadAllCheckins(user.uid);
-  }catch(e){
-    cachedCheckins = [];
-  }
+  // load user checkins
+  cachedCheckins = await loadAllCheckins(user.uid);
 
-  try{
-    const userExercises = await loadUserExercises(user.uid);
-    cachedExercises = mergeExerciseLibrary(userExercises);
-  }catch(e){
-    cachedExercises = mergeExerciseLibrary([]);
-  }
+  // load custom exercises + merge with defaults
+  const userExercises = await loadUserExercises(user.uid);
+  cachedExercises = mergeExerciseLibrary(userExercises);
 
   renderExerciseList();
   renderRoutineList();
@@ -2977,44 +2868,6 @@ async function onUserSignedIn(user){
      * EVENTS / WIRES
      ***********************/
 function wireUI(){
-    // --- Risk badge opens info modal ---
-  function openRiskInfoModal(){
-    const m = $("riskInfoModal");
-    if(!m) return;
-    m.classList.add("show");
-    // render() already populates #riskInfoBody
-    render();
-  }
-
-  function closeRiskInfoModal(){
-    const m = $("riskInfoModal");
-    if(!m) return;
-    m.classList.remove("show");
-  }
-
-  const riskBadge = $("riskBadge");
-  if(riskBadge){
-    riskBadge.addEventListener("click", openRiskInfoModal);
-    riskBadge.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter" || e.key === " "){
-        e.preventDefault();
-        openRiskInfoModal();
-      }
-    });
-  }
-
-  const closeRiskInfo = $("closeRiskInfo");
-  if(closeRiskInfo){
-    closeRiskInfo.addEventListener("click", closeRiskInfoModal);
-  }
-
-  // optional: tap outside to close
-  const riskModal = $("riskInfoModal");
-  if(riskModal){
-    riskModal.addEventListener("click", (e)=>{
-      if(e.target === riskModal) closeRiskInfoModal();
-    });
-  }
   // helper: build category chips
   function getAllCategories(){
     const set = new Set(["All"]);
@@ -3344,84 +3197,49 @@ function wireUI(){
   renderCategoryChips();
 }
 
-/***********************
- * INIT
- ***********************/
-(function init(){
-  setupPWA();
-  wireUI();
-  setAuthMode("login");
+    /***********************
+     * INIT
+     ***********************/
+    (function init(){
+      setupPWA();
+      wireUI();
+      setAuthMode("login");
 
-  onAuthStateChanged(auth, async (user)=>{
-    try{
-      if(user){
-        showApp();
-
-        // Boot should never crash the auth flow
-        try{
+      onAuthStateChanged(auth, async (user)=>{
+        if(user){
+          showApp();
           await onUserSignedIn(user);
-        }catch(e){
-          console.error(e);
-
-          // If Firestore boot failed, keep user logged in but show auth so it doesn't feel "stuck"
-          try{ await signOut(auth); }catch(x){}
+        }else{
           currentUser = null;
           cachedCheckins = [];
           cachedExercises = [];
           showAuth();
-          setAuthMessage("Account created, but Firestore access failed. Check Firestore rules, then log in again.");
         }
-      }else{
-        currentUser = null;
-        cachedCheckins = [];
-        cachedExercises = [];
-        showAuth();
-      }
-    }catch(err){
-      console.error(err);
-      currentUser = null;
-      cachedCheckins = [];
-      cachedExercises = [];
-      showAuth();
-      setAuthMessage("Auth state error. Refresh and try again.");
-    }
-  });
-})();
+      });
+    })();
 
-/***********************
- * FIRESTORE RULES UPDATE (IMPORTANT)
- *
- * Phase 1: Roles + PT approval (stored in users/{uid})
- *
- * Data model:
- * users/{uid}:
- *   - email: string|null
- *   - role: "patient" | "pt" | "admin"
- *   - ptApproved: boolean
- *
- * Note:
- * - PT approval is intended to be set manually by you (Firebase Console / Admin SDK),
- *   not by the client UI. Firebase Console bypasses rules.
- *
- * -------------------------------------------------
- * rules_version = '2';
- * service cloud.firestore {
- *   match /databases/{database}/documents {
- *     match /users/{userId} {
- *       allow read, write: if request.auth != null && request.auth.uid == userId;
- *
- *       match /checkins/{docId} {
- *         allow read, write: if request.auth != null && request.auth.uid == userId;
- *       }
- *
- *       match /exercises/{exId} {
- *         allow read, write: if request.auth != null && request.auth.uid == userId;
- *       }
- *     }
- *   }
- * }
- * -------------------------------------------------
- ***********************/
+    /***********************
+     * FIRESTORE RULES UPDATE (IMPORTANT)
+     *
+     * Add exercises subcollection permissions:
+     * -------------------------------------------------
+     * rules_version = '2';
+     * service cloud.firestore {
+     *   match /databases/{database}/documents {
+     *     match /users/{userId} {
+     *       allow read, write: if request.auth != null && request.auth.uid == userId;
+     *       match /checkins/{docId} {
+     *         allow read, write: if request.auth != null && request.auth.uid == userId;
+     *       }
+     *       match /exercises/{exId} {
+     *         allow read, write: if request.auth != null && request.auth.uid == userId;
+     *       }
+     *     }
+     *   }
+     * }
+     * -------------------------------------------------
+     *
+     ***********************/
   </script>
 </body>
 </html>
