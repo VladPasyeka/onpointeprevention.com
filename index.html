@@ -597,6 +597,64 @@
     </div>
   </section>
 
+  <!-- ROLE SETUP (shown after account creation / first login if role missing) -->
+<section id="roleGate" style="display:none; padding:18px; max-width:520px; margin:0 auto;">
+  <div style="border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:16px; background:rgba(255,255,255,.03);">
+    <h2 style="margin:0 0 8px 0;">Finish setup</h2>
+    <p style="margin:0 0 14px 0; color: var(--muted);">
+      Choose who you are to continue.
+    </p>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <button id="choosePatientBtn" type="button" style="flex:1; min-width:180px;">
+        I’m a Patient (Dancer)
+      </button>
+      <button id="choosePtBtn" type="button" style="flex:1; min-width:180px;">
+        I’m a PT
+      </button>
+    </div>
+
+    <div id="ptCodeWrap" style="display:none; margin-top:10px;">
+      <div style="margin:10px 0 6px 0; color: var(--muted);">Enter PT secret code</div>
+      <input id="ptSecretCode" type="password" placeholder="Code" style="
+        width:100%;
+        padding:12px 12px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.03);
+        color: var(--text);
+        outline:none;
+      "/>
+
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button id="savePtRoleBtn" type="button" style="flex:1;">Continue as PT</button>
+        <button id="cancelPtRoleBtn" type="button" style="flex:1; opacity:.8;">Back</button>
+      </div>
+
+      <div id="ptCodeError" style="display:none; margin-top:10px; color:#ffb4b4;">
+        Wrong code. Try again.
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- ROLE (PT vs Patient) — show only on Create -->
+<div class="field" id="authRoleWrap" style="display:none;">
+  <div class="labelRow"><span>Account type</span></div>
+  <select id="authRole" style="
+    width:100%;
+    padding:12px 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.03);
+    color: var(--text);
+    outline:none;
+  ">
+    <option value="patient">Patient (Dancer)</option>
+    <option value="pt">Physical Therapist (PT)</option>
+  </select>
+</div>
+
   <!-- APP -->
   <div id="appShell" style="display:none;">
     <div class="top">
@@ -1180,13 +1238,26 @@
       return "ex_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
 
-    async function ensureUserProfile(uid, email){
-      const ref = userDocRef(uid);
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        await setDoc(ref, { email: email || null, createdAt: serverTimestamp() }, { merge: true });
-      }
-    }
+    async function ensureUserProfile(uid, email, role){
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
+
+  // If doc doesn't exist, create it with role
+  if(!snap.exists()){
+    await setDoc(ref, {
+      email: email || "",
+      role: role || "patient",
+      createdAt: serverTimestamp()
+    }, { merge: true });
+    return;
+  }
+
+  // If doc exists but missing role, add it (don’t overwrite an existing role)
+  const data = snap.data() || {};
+  if(!data.role && role){
+    await setDoc(ref, { role }, { merge: true });
+  }
+}
 
 /***********************
  * DATA CACHE
@@ -2794,6 +2865,7 @@ function exportCSV(){
       $("authToggle").textContent = mode === "login" ? "Create" : "Log in";
       $("authMsg").textContent = "";
       $("authPassword").setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
+      $("authRoleWrap").style.display = (mode === "login") ? "none" : "";
     }
     function setAuthMessage(msg){ $("authMsg").textContent = msg || ""; }
 
@@ -2803,7 +2875,11 @@ function exportCSV(){
       if(!email || !pass){ setAuthMessage("Enter email + password."); return; }
       try{
         if(authMode === "login") await signInWithEmailAndPassword(auth, email, pass);
-        else await createUserWithEmailAndPassword(auth, email, pass);
+        else {
+  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+  const role = ($("authRole")?.value || "patient");
+  await ensureUserProfile(cred.user.uid, cred.user.email, role);
+}
       }catch(err){
         const code = err?.code || "";
         let m = err?.message || "Auth error";
@@ -2950,6 +3026,40 @@ if(riskModal){
   });
 }
 
+  // Role Gate button wiring
+$("choosePatientBtn").addEventListener("click", async ()=>{
+  await setUserRole("patient");
+  hideRoleGate();
+  toast("Setup complete");
+  // optional: call whatever loads your dashboard
+  // loadDashboard();
+});
+
+$("choosePtBtn").addEventListener("click", ()=>{
+  $("ptCodeWrap").style.display = "";
+  $("ptCodeError").style.display = "none";
+  $("ptSecretCode").value = "";
+  $("ptSecretCode").focus();
+});
+
+$("cancelPtRoleBtn").addEventListener("click", ()=>{
+  $("ptCodeWrap").style.display = "none";
+  $("ptCodeError").style.display = "none";
+  $("ptSecretCode").value = "";
+});
+
+$("savePtRoleBtn").addEventListener("click", async ()=>{
+  const code = ($("ptSecretCode").value || "").trim();
+  if(code !== "secret"){
+    $("ptCodeError").style.display = "";
+    return;
+  }
+  $("ptCodeError").style.display = "none";
+  await setUserRole("pt");
+  hideRoleGate();
+  toast("Setup complete");
+});
+  
   // tabs
   document.querySelectorAll(".tab").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -3213,8 +3323,10 @@ if(riskModal){
 
       onAuthStateChanged(auth, async (user)=>{
         if(user){
+          const gated = await gateRoleIfMissing(user);
+if(gated) return; // stop here until user chooses role
           showApp();
-          await onUserSignedIn(user);
+          await onUserSignedIn(user.uid, user.email);
         }else{
           currentUser = null;
           cachedCheckins = [];
@@ -3246,6 +3358,43 @@ if(riskModal){
      * -------------------------------------------------
      *
      ***********************/
+    function showRoleGate(){
+  $("roleGate").style.display = "";
+  // Hide your main app wrapper if you have one
+  const app = document.querySelector("#app, #appShell, #mainApp, main");
+  if(app) app.style.display = "none";
+}
+
+function hideRoleGate(){
+  $("roleGate").style.display = "none";
+  const app = document.querySelector("#app, #appShell, #mainApp, main");
+  if(app) app.style.display = "";
+}
+
+async function setUserRole(role){
+  if(!auth.currentUser) { toast("Not logged in"); return; }
+  const uid = auth.currentUser.uid;
+
+  await setDoc(doc(db, "users", uid), {
+    role,
+    roleSetAt: serverTimestamp()
+  }, { merge: true });
+}
+async function gateRoleIfMissing(user){
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? (snap.data() || {}) : {};
+
+  // If missing profile or missing role => force role setup
+  if(!snap.exists() || !data.role){
+    showRoleGate();
+    return true; // gated
+  }
+
+  hideRoleGate();
+  return false; // not gated
+}
+
   </script>
 </body>
 </html>
