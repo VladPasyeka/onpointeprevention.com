@@ -1112,17 +1112,6 @@
       </div>
     </div>
 
-    <!-- Modal: Risk Explanation -->
-    <div class="modalBackdrop" id="riskInfoModal">
-      <div class="modal">
-        <div class="modalTop">
-          <p class="modalTitle">Injury Risk — How it works</p>
-          <button class="iconBtn" id="closeRiskInfo" type="button">● Close</button>
-        </div>
-        <div class="modalBody" id="riskInfoBody"></div>
-      </div>
-    </div>
-
     <div class="toast" id="toast">Saved</div>
   </div>
 
@@ -2943,6 +2932,23 @@ function wireUI(){
   $("authPrimaryBtn").addEventListener("click", doAuthPrimary);
   $("authToggle").addEventListener("click", ()=> setAuthMode(authMode === "login" ? "create" : "login"));
   $("authReset").addEventListener("click", doResetPassword);
+
+  // Risk info modal open/close
+const riskBtn = $("riskInfoBtn");
+const riskModal = $("riskInfoModal");
+const closeRisk = $("closeRiskInfo");
+
+if(riskBtn && riskModal){
+  riskBtn.addEventListener("click", ()=> riskModal.classList.add("show"));
+}
+if(closeRisk && riskModal){
+  closeRisk.addEventListener("click", ()=> riskModal.classList.remove("show"));
+}
+if(riskModal){
+  riskModal.addEventListener("click", (e)=>{
+    if(e.target === riskModal) riskModal.classList.remove("show");
+  });
+}
 
   // tabs
   document.querySelectorAll(".tab").forEach(btn=>{
