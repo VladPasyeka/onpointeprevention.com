@@ -284,6 +284,51 @@
       user-select:none;
       white-space:nowrap;
     }
+    
+/* ===== Inline Finish Setup (auth flow) ===== */
+.roleInline{
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+}
+
+.roleInline h2{
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+}
+
+.roleInline p{
+  font-size: 11px;
+  margin: 0 0 10px 0;
+  color: var(--muted);
+}
+
+/* role buttons */
+.roleInline .roleBtns{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.roleInline button{
+  padding: 10px 12px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+/* PT code block */
+.roleInline .ptCode{
+  margin-top: 10px;
+}
+
+.roleInline input{
+  font-size: 13px;
+  padding: 10px 12px;
+}
 
     canvas{
       width:100%;
@@ -572,6 +617,13 @@
         <div class="authSub">Your leap, safely landed.</div>
 
 <div class="form" style="gap:12px;">
+
+  <!-- Name (Create mode only) -->
+  <div class="field" id="authNameWrap" style="display:none;">
+    <div class="labelRow"><span>Name</span></div>
+    <input type="text" id="authName" placeholder="Your name" autocomplete="name" />
+  </div>
+
   <div class="field">
     <div class="labelRow"><span>Email</span></div>
     <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
@@ -582,23 +634,37 @@
     <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
   </div>
 
-  <!-- PASTE authRoleWrap HERE -->
-  <div class="field" id="authRoleWrap" style="display:none;">
-    <div class="labelRow"><span>Account type</span></div>
-    <select id="authRole" style="
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      outline:none;
-    ">
-      <option value="patient">Patient (Dancer)</option>
-      <option value="pt">Physical Therapist (PT)</option>
-    </select>
+  <!-- Confirm Password (Create mode only) -->
+  <div class="field" id="authPassword2Wrap" style="display:none;">
+    <div class="labelRow"><span>Re-enter password</span></div>
+    <input type="password" id="authPassword2" placeholder="••••••••" autocomplete="new-password" />
+  </div>
+<section id="roleGate" class="roleInline" style="display:none;">
+  <h2>Finish setup</h2>
+  <p>Choose who you are to continue.</p>
+
+  <div class="roleBtns">
+    <button id="choosePatientBtn" type="button">I’m a Patient (Dancer)</button>
+    <button id="choosePtBtn" type="button">I’m a PT</button>
   </div>
 
+  <div id="ptCodeWrap" class="ptCode" style="display:none;">
+    <div style="font-size:11px; color:var(--muted); margin-bottom:6px;">
+      Enter PT secret code
+    </div>
+
+    <input id="ptSecretCode" type="password" placeholder="Code" />
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+      <button id="savePtRoleBtn" type="button">Continue as PT</button>
+      <button id="cancelPtRoleBtn" type="button">Back</button>
+    </div>
+
+    <div id="ptCodeError" style="display:none; margin-top:8px; font-size:11px; color:#ffb4b4;">
+      Wrong code. Try again.
+    </div>
+  </div>
+</section>
 </div>
         <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
 
@@ -610,54 +676,10 @@
           <div class="authLinkRow" style="margin-top:6px;">
             <a class="authLink" id="authReset" href="javascript:void(0)" style="border-bottom-color:rgba(255,255,255,.18); color:rgba(255,255,255,.75)">Forgot password</a>
           </div>
-
           <div class="authMsg" id="authMsg"></div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ROLE SETUP (shown after account creation / first login if role missing) -->
-<section id="roleGate" style="display:none; padding:18px; max-width:520px; margin:0 auto;">
-  <div style="border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:16px; background:rgba(255,255,255,.03);">
-    <h2 style="margin:0 0 8px 0;">Finish setup</h2>
-    <p style="margin:0 0 14px 0; color: var(--muted);">
-      Choose who you are to continue.
-    </p>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
-      <button id="choosePatientBtn" type="button" style="flex:1; min-width:180px;">
-        I’m a Patient (Dancer)
-      </button>
-      <button id="choosePtBtn" type="button" style="flex:1; min-width:180px;">
-        I’m a PT
-      </button>
-    </div>
-
-    <div id="ptCodeWrap" style="display:none; margin-top:10px;">
-      <div style="margin:10px 0 6px 0; color: var(--muted);">Enter PT secret code</div>
-      <input id="ptSecretCode" type="password" placeholder="Code" style="
-        width:100%;
-        padding:12px 12px;
-        border-radius:14px;
-        border:1px solid rgba(255,255,255,.12);
-        background: rgba(255,255,255,.03);
-        color: var(--text);
-        outline:none;
-      "/>
-
-      <div style="display:flex; gap:10px; margin-top:10px;">
-        <button id="savePtRoleBtn" type="button" style="flex:1;">Continue as PT</button>
-        <button id="cancelPtRoleBtn" type="button" style="flex:1; opacity:.8;">Back</button>
-      </div>
-
-      <div id="ptCodeError" style="display:none; margin-top:10px; color:#ffb4b4;">
-        Wrong code. Try again.
-      </div>
-    </div>
-  </div>
-</section>
-
+      </section>
+    
   <!-- APP -->
   <div id="appShell" style="display:none;">
     <div class="top">
@@ -1228,7 +1250,7 @@
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
     import {
       getFirestore,
-      collection, doc, getDocs, getDoc, setDoc, deleteDoc,
+      collection, doc, getDocs, getDoc, setDoc, deleteDoc, updateDoc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
@@ -1296,20 +1318,28 @@ async function initLinkingUI(){
 
   // Get my role from Firestore
   const uSnap = await getDoc(doc(db, "users", currentUser.uid));
-  const role = uSnap.exists() ? (uSnap.data().role || "patient") : "patient";
+  const role = uSnap.exists() ? (uSnap.data().role || "dancer") : "dancer";
 
   card.style.display = "";
-  $("patientLinkUI").style.display = (role === "patient") ? "" : "none";
+  $("patientLinkUI").style.display = (role === "dancer") ? "" : "none";
   $("ptLinkUI").style.display = (role === "pt") ? "" : "none";
 
-  if(role === "patient"){
+  if(role === "dancer"){
     $("linkSub").textContent = "Connect to your PT to share progress and receive guidance.";
 
     // show existing linked PT if any
     try{
       const r = await callFn("getMyPt", "GET");
       const ptId = r.data?.ptId || null;
-      $("linkMsg").textContent = ptId ? `Linked to PT: ${ptId}` : "Not linked yet.";
+
+if(!ptId){
+  $("linkMsg").textContent = "Not linked yet.";
+}else{
+  const ptSnap = await getDoc(doc(db, "users", ptId));
+  const ptData = ptSnap.exists() ? ptSnap.data() : null;
+  const ptLabel = (ptData?.name || ptData?.email || ptId);
+  $("linkMsg").textContent = `Linked to PT: ${ptLabel}`;
+}
     }catch(e){
       $("linkMsg").textContent = "Not linked yet.";
     }
@@ -1320,7 +1350,12 @@ async function initLinkingUI(){
       $("linkMsg").textContent = "Linking…";
       try{
         const r = await callFn("linkWithPtCode", "POST", { code });
-        $("linkMsg").textContent = `Linked ✓ PT: ${r.ptId}`;
+const ptId = r.ptId || r.data?.ptId; // supports either shape
+const ptSnap = await getDoc(doc(db, "users", ptId));
+const ptData = ptSnap.exists() ? ptSnap.data() : null;
+const ptLabel = (ptData?.displayName || ptData?.email || ptId);
+
+$("linkMsg").textContent = `Linked ✓ PT: ${ptLabel}`;
       }catch(e){
         $("linkMsg").textContent = `Error: ${e.message}`;
       }
@@ -1375,15 +1410,36 @@ async function initLinkingUI(){
       return "ex_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
 
-async function ensureUserProfile(uid, email, role){
-  const ref = userDocRef(uid);
-  const payload = {
-    email: email || null,
-    updatedAt: serverTimestamp()
-  };
-  if(role) payload.role = role;
+async function ensureUserProfile(uid, email, role=null, name=null){
+  const ref = doc(db, "users", uid);
+  const snap = await getDoc(ref);
 
-  await setDoc(ref, payload, { merge: true });
+  if(!snap.exists()){
+    await setDoc(ref, {
+      email: email || "",
+      role: role || null,      // role will be set in Finish Setup
+      name: name || "",        // <-- REQUIRED: /users/{uid}.name
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return;
+  }
+
+  const data = snap.data() || {};
+  const patch = {};
+
+  if(!data.email && email) patch.email = email;
+
+  // Only set role if explicitly provided (don’t overwrite an existing role)
+  if(!data.role && role) patch.role = role;
+
+  // Only set name if explicitly provided AND not already present
+  if((!data.name || !String(data.name).trim()) && name) patch.name = name;
+
+  if(Object.keys(patch).length){
+    patch.updatedAt = serverTimestamp();
+    await updateDoc(ref, patch);
+  }
 }
 
 /***********************
@@ -2984,16 +3040,23 @@ function exportCSV(){
      * AUTH UI
      ***********************/
     let authMode = "login";
-    function setAuthMode(mode){
-      authMode = mode;
-      $("authModeTitle").textContent = mode === "login" ? "ONPOINTE LOGIN" : "CREATE ACCOUNT";
-      $("authPrimaryBtn").textContent = mode === "login" ? "Log in" : "Create";
-      $("authAltText").textContent = mode === "login" ? "Don’t have an account?" : "Already have an account?";
-      $("authToggle").textContent = mode === "login" ? "Create" : "Log in";
-      $("authMsg").textContent = "";
-      $("authPassword").setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
-      $("authRoleWrap").style.display = (mode === "login") ? "none" : "";
-    }
+function setAuthMode(mode){
+  authMode = mode;
+
+  const creating = (mode === "create");
+
+  $("authModeTitle").textContent = creating ? "CREATE ACCOUNT" : "ONPOINTE LOGIN";
+  $("authPrimaryBtn").textContent = creating ? "Create" : "Log in";
+  $("authAltText").textContent = creating ? "Already have an account?" : "Don’t have an account?";
+  $("authToggle").textContent = creating ? "Log in" : "Create";
+
+  // NEW: show name + confirm password only when creating
+  $("authNameWrap").style.display = creating ? "" : "none";
+  $("authPassword2Wrap").style.display = creating ? "" : "none";
+
+  // clear messages
+  setAuthMessage("");
+}
     function setAuthMessage(msg){ $("authMsg").textContent = msg || ""; }
 
     async function doAuthPrimary(){
@@ -3002,10 +3065,17 @@ function exportCSV(){
       if(!email || !pass){ setAuthMessage("Enter email + password."); return; }
       try{
         if(authMode === "login") await signInWithEmailAndPassword(auth, email, pass);
-        else {
+else {
+  const name = ($("authName").value || "").trim();
+  const pass2 = $("authPassword2").value || "";
+
+  if(!name){ setAuthMessage("Enter your name."); return; }
+  if(pass !== pass2){ setAuthMessage("Passwords don’t match."); return; }
+
   const cred = await createUserWithEmailAndPassword(auth, email, pass);
-  const role = ($("authRole")?.value || "patient");
-  await ensureUserProfile(cred.user.uid, cred.user.email, role);
+
+  // Save email + name now. Role will be chosen on Finish Setup screen.
+  await ensureUserProfile(cred.user.uid, cred.user.email, null, name);
 }
       }catch(err){
         const code = err?.code || "";
@@ -3488,86 +3558,135 @@ if(gated) return; // stop here until user chooses role
      *
      ***********************/
     
-    /***********************
- * ROLE GATE WIRES
+/***********************
+ * ROLE GATE (single source of truth)
  ***********************/
-function wireRoleGate(){
-  const patientBtn = $("rolePatientBtn");
-  const ptBtn = $("rolePtBtn");
-  const secretEl = $("ptSecret");
-  const msgEl = $("roleMsg");
-
-  function setMsg(t){ if(msgEl) msgEl.textContent = t || ""; }
-
-  if(patientBtn){
-    patientBtn.addEventListener("click", async ()=>{
-      try{
-        await setUserRole("patient");
-        hideRoleGate();
-        showApp();
-        await onUserSignedIn(auth.currentUser); // continue boot
-      }catch(e){
-        console.error(e);
-        setMsg("Could not set role. Try again.");
-      }
-    });
-  }
-
-  if(ptBtn){
-    ptBtn.addEventListener("click", async ()=>{
-      const code = (secretEl?.value || "").trim();
-      if(code !== "secret"){
-        setMsg("Wrong PT code.");
-        return;
-      }
-      try{
-        await setUserRole("pt");
-        hideRoleGate();
-        showApp();
-        await onUserSignedIn(auth.currentUser); // continue boot
-      }catch(e){
-        console.error(e);
-        setMsg("Could not set role. Try again.");
-      }
-    });
-  }
-}
-
-    function showRoleGate(){
-  $("roleGate").style.display = "";
-  // Hide your main app wrapper if you have one
-  const app = document.querySelector("#app, #appShell, #mainApp, main");
-  if(app) app.style.display = "none";
+function showRoleGate(){
+  const gate = $("roleGate");
+  if(gate) gate.style.display = "";
+  $("authScreen").style.display = "";   // keep auth visible
+  $("appShell").style.display = "none";
 }
 
 function hideRoleGate(){
-  $("roleGate").style.display = "none";
-  const app = document.querySelector("#app, #appShell, #mainApp, main");
-  if(app) app.style.display = "";
+  const gate = $("roleGate");
+  if(gate) gate.style.display = "none";
 }
 
 async function setUserRole(role){
-  if(!auth.currentUser) { toast("Not logged in"); return; }
-  const uid = auth.currentUser.uid;
+  if(!auth.currentUser) throw new Error("Not logged in");
+  if(role !== "pt" && role !== "dancer") throw new Error("Invalid role");
 
+  const uid = auth.currentUser.uid;
   await setDoc(doc(db, "users", uid), {
     role,
-    roleSetAt: serverTimestamp()
+    roleSetAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
   }, { merge: true });
 }
+
+function wireRoleGate(){
+  const dancerBtn = $("choosePatientBtn"); // Dancer
+  const ptBtn = $("choosePtBtn");          // PT (requires code)
+  const ptWrap = $("ptCodeWrap");
+  const ptErr  = $("ptCodeError");
+  const ptCode = $("ptSecretCode");
+  const savePt = $("savePtRoleBtn");
+  const cancel = $("cancelPtRoleBtn");
+
+  // Hide PT code UI by default
+  if(ptWrap) ptWrap.style.display = "none";
+  if(ptErr)  ptErr.style.display  = "none";
+
+  // Dancer: one click
+  if(dancerBtn){
+    dancerBtn.onclick = async ()=>{
+      try{
+        await setUserRole("dancer");
+        hideRoleGate();
+        showApp();
+        await onUserSignedIn(auth.currentUser);
+      }catch(e){
+        console.error(e);
+        toast("Could not set role. Try again.");
+        showRoleGate();
+      }
+    };
+  }
+
+  // PT: show code box only (DO NOT set role here)
+  if(ptBtn){
+    ptBtn.onclick = ()=>{
+      if(ptWrap) ptWrap.style.display = "";
+      if(ptErr)  ptErr.style.display  = "none";
+      if(ptCode) ptCode.value = "";
+      if(ptCode) ptCode.focus();
+
+      // UX: disable Continue until typed something
+      if(savePt){
+        savePt.disabled = true;
+        savePt.style.opacity = "0.6";
+      }
+    };
+  }
+
+  // Enable Continue when code is typed
+  if(ptCode && savePt){
+    ptCode.addEventListener("input", ()=>{
+      const has = !!(ptCode.value || "").trim();
+      savePt.disabled = !has;
+      savePt.style.opacity = has ? "" : "0.6";
+    });
+  }
+
+  // Back button hides code UI
+  if(cancel){
+    cancel.onclick = ()=>{
+      if(ptWrap) ptWrap.style.display = "none";
+      if(ptErr)  ptErr.style.display  = "none";
+      if(ptCode) ptCode.value = "";
+    };
+  }
+
+  // Continue as PT requires secret code (UI gate)
+  if(savePt){
+    savePt.onclick = async ()=>{
+      const code = (ptCode?.value || "").trim();
+
+      // TODO: replace "secret" with your real secret/Cloud Function check
+      if(code !== "secret"){
+        if(ptErr) ptErr.style.display = "";
+        return;
+      }
+
+      try{
+        if(ptErr) ptErr.style.display = "none";
+        await setUserRole("pt");
+        hideRoleGate();
+        showApp();
+        await onUserSignedIn(auth.currentUser);
+        toast("Setup complete");
+      }catch(e){
+        console.error(e);
+        toast("Could not set PT role.");
+        showRoleGate();
+      }
+    };
+  }
+}
+
 async function gateRoleIfMissing(user){
   const ref = doc(db, "users", user.uid);
   const snap = await getDoc(ref);
   const data = snap.exists() ? (snap.data() || {}) : {};
 
-  // If missing profile or missing role => force role setup
   if(!snap.exists() || !data.role){
     showRoleGate();
-    return true; // gated
+    return true;
   }
 
   hideRoleGate();
-  return false; // not gated
+  return false;
 }
 
   </script>
