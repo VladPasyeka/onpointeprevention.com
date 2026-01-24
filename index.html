@@ -644,7 +644,7 @@
   <p>Choose who you are to continue.</p>
 
   <div class="roleBtns">
-    <button id="choosePatientBtn" type="button">I’m a Patient (Dancer)</button>
+    <button id="chooseDancerBtn" type="button">I’m a Dancer</button>
     <button id="choosePtBtn" type="button">I’m a PT</button>
   </div>
 
@@ -706,13 +706,13 @@
       <!-- DASHBOARD -->
       <div class="container" id="screen-dashboard">
         <div class="grid">
-<!-- PT ↔ Patient Linking -->
+<!-- PT ↔ Dancer Linking -->
 <div class="card" id="linkCard" style="margin-bottom:14px; display:none;">
-  <div class="cardTitle">Provider connection</div>
+  <div class="cardTitle">PT connection</div>
   <div class="cardSub" id="linkSub" style="margin-top:6px; color:rgba(255,255,255,.72)"></div>
 
-  <!-- Patient view -->
-  <div id="patientLinkUI" style="display:none; margin-top:12px;">
+  <!-- Dancer view -->
+  <div id="dancerLinkUI" style="display:none; margin-top:12px;">
     <div class="labelRow"><span>Enter PT code</span></div>
     <input id="ptLinkCode" placeholder="e.g. AB12CD" style="
       width:100%;
@@ -727,6 +727,9 @@
     <button class="pillBtn" id="linkToPtBtn" type="button" style="margin-top:10px; width:100%; justify-content:center;">
       Link to PT
     </button>
+    <button id="unlinkBtn" class="mutedBtn danger" type="button" style="display:none; width:100%;">
+  Unlink from PT
+</button>
     <div id="linkMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
   </div>
 
@@ -1316,56 +1319,124 @@ async function initLinkingUI(){
   const card = $("linkCard");
   if(!card || !currentUser) return;
 
-  // Get my role from Firestore
+  const dancerUI = $("dancerLinkUI");
+  const ptUI = $("ptLinkUI");
+
+  const linkMsg = $("linkMsg");
+  const linkSub = $("linkSub");
+  const codeInput = $("ptLinkCode");
+  const linkBtn = $("linkToPtBtn");
+  const unlinkBtn = $("unlinkBtn");
+
+  // Defensive: prevent “everything disappeared” if an element id changed
+  if(!dancerUI || !ptUI || !linkMsg || !linkSub || !codeInput || !linkBtn){
+    console.warn("[linking] Missing DOM elements", {
+      card: !!card, dancerUI: !!dancerUI, ptUI: !!ptUI,
+      linkMsg: !!linkMsg, linkSub: !!linkSub, codeInput: !!codeInput,
+      linkBtn: !!linkBtn, unlinkBtn: !!unlinkBtn
+    });
+    return;
+  }
+
+  // Get role
   const uSnap = await getDoc(doc(db, "users", currentUser.uid));
   const role = uSnap.exists() ? (uSnap.data().role || "dancer") : "dancer";
 
   card.style.display = "";
-  $("patientLinkUI").style.display = (role === "dancer") ? "" : "none";
-  $("ptLinkUI").style.display = (role === "pt") ? "" : "none";
+  dancerUI.style.display = (role === "dancer") ? "" : "none";
+  ptUI.style.display = (role === "pt") ? "" : "none";
 
+  // ---------- DANCER ----------
   if(role === "dancer"){
-    $("linkSub").textContent = "Connect to your PT to share progress and receive guidance.";
+    linkSub.textContent = "Connect to your PT to share progress and receive guidance.";
 
-    // show existing linked PT if any
+    // Default UI state
+    linkMsg.textContent = "Checking link…";
+    codeInput.value = "";
+    codeInput.disabled = false;
+    linkBtn.disabled = false;
+    if(unlinkBtn) unlinkBtn.style.display = "none";
+
+    // Check existing link
+    let ptId = null;
     try{
       const r = await callFn("getMyPt", "GET");
-      const ptId = r.data?.ptId || null;
-
-if(!ptId){
-  $("linkMsg").textContent = "Not linked yet.";
-}else{
-  const ptSnap = await getDoc(doc(db, "users", ptId));
-  const ptData = ptSnap.exists() ? ptSnap.data() : null;
-  const ptLabel = (ptData?.name || ptData?.email || ptId);
-  $("linkMsg").textContent = `Linked to PT: ${ptLabel}`;
-}
+      ptId = r.data?.ptId || r.ptId || null;
     }catch(e){
-      $("linkMsg").textContent = "Not linked yet.";
+      ptId = null;
     }
 
-    $("linkToPtBtn").onclick = async ()=>{
-      const code = ($("ptLinkCode").value || "").trim();
-      if(!code){ $("linkMsg").textContent = "Enter a code first."; return; }
-      $("linkMsg").textContent = "Linking…";
+    const setUnlinkedUI = ()=>{
+      linkMsg.textContent = "Not linked yet.";
+      codeInput.disabled = false;
+      linkBtn.disabled = false;
+      if(unlinkBtn) unlinkBtn.style.display = "none";
+    };
+
+    const setLinkedUI = async (id)=>{
+      try{
+        const ptSnap = await getDoc(doc(db, "users", id));
+        const ptData = ptSnap.exists() ? ptSnap.data() : null;
+        const ptLabel = (ptData?.name || ptData?.email || id);
+        linkMsg.textContent = `Linked ✓ PT: ${ptLabel}`;
+      }catch(e){
+        linkMsg.textContent = `Linked ✓ PT: ${id}`;
+      }
+      codeInput.disabled = true;
+      linkBtn.disabled = true;
+      if(unlinkBtn) unlinkBtn.style.display = "";
+    };
+
+    if(!ptId) setUnlinkedUI();
+    else await setLinkedUI(ptId);
+
+    // Link action
+    linkBtn.onclick = async ()=>{
+      const code = (codeInput.value || "").trim();
+      if(!code){ linkMsg.textContent = "Enter a code first."; return; }
+
+      linkMsg.textContent = "Linking…";
+      linkBtn.disabled = true;
+
       try{
         const r = await callFn("linkWithPtCode", "POST", { code });
-const ptId = r.ptId || r.data?.ptId; // supports either shape
-const ptSnap = await getDoc(doc(db, "users", ptId));
-const ptData = ptSnap.exists() ? ptSnap.data() : null;
-const ptLabel = (ptData?.displayName || ptData?.email || ptId);
+        const newPtId = r.data?.ptId || r.ptId || null;
+        if(!newPtId) throw new Error("No PT id returned.");
 
-$("linkMsg").textContent = `Linked ✓ PT: ${ptLabel}`;
+        await setLinkedUI(newPtId);
       }catch(e){
-        $("linkMsg").textContent = `Error: ${e.message}`;
+        linkMsg.textContent = `Error: ${e.message}`;
+        linkBtn.disabled = false;
       }
     };
+
+    // Unlink action
+    if(unlinkBtn){
+      unlinkBtn.onclick = async ()=>{
+        if(!confirm("Unlink from your PT?")) return;
+
+        unlinkBtn.disabled = true;
+        unlinkBtn.textContent = "Unlinking…";
+
+        try{
+          await callFn("unlinkFromPt", "POST");
+          toast("Unlinked ✓");
+          unlinkBtn.disabled = false;
+          unlinkBtn.textContent = "Unlink from PT";
+          setUnlinkedUI();
+        }catch(e){
+          unlinkBtn.disabled = false;
+          unlinkBtn.textContent = "Unlink from PT";
+          linkMsg.textContent = `Error: ${e.message}`;
+        }
+      };
+    }
   }
 
+  // ---------- PT ----------
   if(role === "pt"){
     $("linkSub").textContent = "Share your code with your dancers to connect them to your care.";
 
-    // if PT already has code in user doc, show it; otherwise generate
     const existing = uSnap.exists() ? (uSnap.data().ptCode || "") : "";
     if(existing){
       $("myPtCode").textContent = existing;
@@ -3225,8 +3296,8 @@ if(riskModal){
 }
 
   // Role Gate button wiring
-$("choosePatientBtn").addEventListener("click", async ()=>{
-  await setUserRole("patient");
+$("chooseDancerBtn").addEventListener("click", async ()=>{
+  await setUserRole("dancer");
   hideRoleGate();
   toast("Setup complete");
   // optional: call whatever loads your dashboard
@@ -3586,7 +3657,7 @@ async function setUserRole(role){
 }
 
 function wireRoleGate(){
-  const dancerBtn = $("choosePatientBtn"); // Dancer
+  const dancerBtn = $("chooseDancerBtn"); // Dancer
   const ptBtn = $("choosePtBtn");          // PT (requires code)
   const ptWrap = $("ptCodeWrap");
   const ptErr  = $("ptCodeError");
