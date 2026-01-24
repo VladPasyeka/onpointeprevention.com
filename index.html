@@ -466,6 +466,7 @@
       font-size:12px;
     }
     .authBtn{
+      margin-top: 20px; 
       width:100%;
       border:1px solid rgba(255,255,255,.18);
       background: rgba(255,255,255,.92);
@@ -570,17 +571,36 @@
         <div class="authTitle" id="authModeTitle">ONPOINTE LOGIN</div>
         <div class="authSub">Your leap, safely landed.</div>
 
-        <div class="form" style="gap:12px;">
-          <div class="field">
-            <div class="labelRow"><span>Email</span></div>
-            <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
-          </div>
-          <div class="field">
-            <div class="labelRow"><span>Password</span></div>
-            <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
-          </div>
+<div class="form" style="gap:12px;">
+  <div class="field">
+    <div class="labelRow"><span>Email</span></div>
+    <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" />
+  </div>
 
-          <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
+  <div class="field">
+    <div class="labelRow"><span>Password</span></div>
+    <input type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password" />
+  </div>
+
+  <!-- PASTE authRoleWrap HERE -->
+  <div class="field" id="authRoleWrap" style="display:none;">
+    <div class="labelRow"><span>Account type</span></div>
+    <select id="authRole" style="
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      outline:none;
+    ">
+      <option value="patient">Patient (Dancer)</option>
+      <option value="pt">Physical Therapist (PT)</option>
+    </select>
+  </div>
+
+</div>
+        <button class="authBtn" id="authPrimaryBtn" type="button">Log in</button>
 
           <div class="authLinkRow">
             <span id="authAltText">Don’t have an account?</span>
@@ -638,23 +658,6 @@
   </div>
 </section>
 
-  <!-- ROLE (PT vs Patient) — show only on Create -->
-<div class="field" id="authRoleWrap" style="display:none;">
-  <div class="labelRow"><span>Account type</span></div>
-  <select id="authRole" style="
-    width:100%;
-    padding:12px 12px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.03);
-    color: var(--text);
-    outline:none;
-  ">
-    <option value="patient">Patient (Dancer)</option>
-    <option value="pt">Physical Therapist (PT)</option>
-  </select>
-</div>
-
   <!-- APP -->
   <div id="appShell" style="display:none;">
     <div class="top">
@@ -681,6 +684,49 @@
       <!-- DASHBOARD -->
       <div class="container" id="screen-dashboard">
         <div class="grid">
+<!-- PT ↔ Patient Linking -->
+<div class="card" id="linkCard" style="margin-bottom:14px; display:none;">
+  <div class="cardTitle">Provider connection</div>
+  <div class="cardSub" id="linkSub" style="margin-top:6px; color:rgba(255,255,255,.72)"></div>
+
+  <!-- Patient view -->
+  <div id="patientLinkUI" style="display:none; margin-top:12px;">
+    <div class="labelRow"><span>Enter PT code</span></div>
+    <input id="ptLinkCode" placeholder="e.g. AB12CD" style="
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      outline:none;
+      margin-top:6px;
+    "/>
+    <button class="pillBtn" id="linkToPtBtn" type="button" style="margin-top:10px; width:100%; justify-content:center;">
+      Link to PT
+    </button>
+    <div id="linkMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
+  </div>
+
+  <!-- PT view -->
+  <div id="ptLinkUI" style="display:none; margin-top:12px;">
+    <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+      <div>
+        <div class="labelRow"><span>Your PT code</span></div>
+        <div id="myPtCode" style="font-size:18px; font-weight:900; letter-spacing:.08em; margin-top:6px;">
+          —
+        </div>
+        <div style="font-size:12px; color:rgba(255,255,255,.65); margin-top:6px;">
+          Share this with your dancer to connect.
+        </div>
+      </div>
+      <button class="pillBtn" id="regenPtCodeBtn" type="button" style="height:40px;">
+        New code
+      </button>
+    </div>
+    <div id="ptCodeMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
+  </div>
+</div>
 
                    <div class="card">
             <div class="cardInner">
@@ -1220,7 +1266,98 @@
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[m]));
     }
+// ---------- Cloud Functions caller ----------
+const REGION = "us-central1";
+const PROJECT = "on-pointe-prevention";
+const FN_BASE = `https://${REGION}-${PROJECT}.cloudfunctions.net`;
 
+async function callFn(path, method = "GET", body = null){
+  if(!auth.currentUser) throw new Error("Not logged in");
+  const token = await auth.currentUser.getIdToken();
+  const opts = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(`${FN_BASE}/${path}`, opts);
+  const data = await res.json().catch(()=> ({}));
+  if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
+// ---------- Linking UI ----------
+async function initLinkingUI(){
+  const card = $("linkCard");
+  if(!card || !currentUser) return;
+
+  // Get my role from Firestore
+  const uSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const role = uSnap.exists() ? (uSnap.data().role || "patient") : "patient";
+
+  card.style.display = "";
+  $("patientLinkUI").style.display = (role === "patient") ? "" : "none";
+  $("ptLinkUI").style.display = (role === "pt") ? "" : "none";
+
+  if(role === "patient"){
+    $("linkSub").textContent = "Connect to your PT to share progress and receive guidance.";
+
+    // show existing linked PT if any
+    try{
+      const r = await callFn("getMyPt", "GET");
+      const ptId = r.data?.ptId || null;
+      $("linkMsg").textContent = ptId ? `Linked to PT: ${ptId}` : "Not linked yet.";
+    }catch(e){
+      $("linkMsg").textContent = "Not linked yet.";
+    }
+
+    $("linkToPtBtn").onclick = async ()=>{
+      const code = ($("ptLinkCode").value || "").trim();
+      if(!code){ $("linkMsg").textContent = "Enter a code first."; return; }
+      $("linkMsg").textContent = "Linking…";
+      try{
+        const r = await callFn("linkWithPtCode", "POST", { code });
+        $("linkMsg").textContent = `Linked ✓ PT: ${r.ptId}`;
+      }catch(e){
+        $("linkMsg").textContent = `Error: ${e.message}`;
+      }
+    };
+  }
+
+  if(role === "pt"){
+    $("linkSub").textContent = "Share your code with your dancers to connect them to your care.";
+
+    // if PT already has code in user doc, show it; otherwise generate
+    const existing = uSnap.exists() ? (uSnap.data().ptCode || "") : "";
+    if(existing){
+      $("myPtCode").textContent = existing;
+      $("ptCodeMsg").textContent = "";
+    }else{
+      $("ptCodeMsg").textContent = "Generating code…";
+      try{
+        const r = await callFn("generatePtCode", "POST");
+        $("myPtCode").textContent = r.code;
+        $("ptCodeMsg").textContent = "";
+      }catch(e){
+        $("ptCodeMsg").textContent = `Error: ${e.message}`;
+      }
+    }
+
+    $("regenPtCodeBtn").onclick = async ()=>{
+      $("ptCodeMsg").textContent = "Generating…";
+      try{
+        const r = await callFn("generatePtCode", "POST");
+        $("myPtCode").textContent = r.code;
+        $("ptCodeMsg").textContent = "New code generated ✓";
+      }catch(e){
+        $("ptCodeMsg").textContent = `Error: ${e.message}`;
+      }
+    };
+  }
+}
     /***********************
      * FIRESTORE PATHS
      ***********************/
@@ -1238,25 +1375,15 @@
       return "ex_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
 
-    async function ensureUserProfile(uid, email, role){
-  const ref = doc(db, "users", uid);
-  const snap = await getDoc(ref);
+async function ensureUserProfile(uid, email, role){
+  const ref = userDocRef(uid);
+  const payload = {
+    email: email || null,
+    updatedAt: serverTimestamp()
+  };
+  if(role) payload.role = role;
 
-  // If doc doesn't exist, create it with role
-  if(!snap.exists()){
-    await setDoc(ref, {
-      email: email || "",
-      role: role || "patient",
-      createdAt: serverTimestamp()
-    }, { merge: true });
-    return;
-  }
-
-  // If doc exists but missing role, add it (don’t overwrite an existing role)
-  const data = snap.data() || {};
-  if(!data.role && role){
-    await setDoc(ref, { role }, { merge: true });
-  }
+  await setDoc(ref, payload, { merge: true });
 }
 
 /***********************
@@ -2927,6 +3054,7 @@ async function onUserSignedIn(user){
   renderRoutineList();
   render();
   setTab("dashboard");
+  await initLinkingUI();
 }
 
     /***********************
@@ -3317,16 +3445,17 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
      * INIT
      ***********************/
     (function init(){
-      setupPWA();
-      wireUI();
-      setAuthMode("login");
+  setupPWA();
+  wireUI();
+  wireRoleGate();      // <-- ADD THIS
+  setAuthMode("login");
 
       onAuthStateChanged(auth, async (user)=>{
         if(user){
           const gated = await gateRoleIfMissing(user);
 if(gated) return; // stop here until user chooses role
           showApp();
-          await onUserSignedIn(user.uid, user.email);
+          await onUserSignedIn(user);
         }else{
           currentUser = null;
           cachedCheckins = [];
@@ -3358,6 +3487,52 @@ if(gated) return; // stop here until user chooses role
      * -------------------------------------------------
      *
      ***********************/
+    
+    /***********************
+ * ROLE GATE WIRES
+ ***********************/
+function wireRoleGate(){
+  const patientBtn = $("rolePatientBtn");
+  const ptBtn = $("rolePtBtn");
+  const secretEl = $("ptSecret");
+  const msgEl = $("roleMsg");
+
+  function setMsg(t){ if(msgEl) msgEl.textContent = t || ""; }
+
+  if(patientBtn){
+    patientBtn.addEventListener("click", async ()=>{
+      try{
+        await setUserRole("patient");
+        hideRoleGate();
+        showApp();
+        await onUserSignedIn(auth.currentUser); // continue boot
+      }catch(e){
+        console.error(e);
+        setMsg("Could not set role. Try again.");
+      }
+    });
+  }
+
+  if(ptBtn){
+    ptBtn.addEventListener("click", async ()=>{
+      const code = (secretEl?.value || "").trim();
+      if(code !== "secret"){
+        setMsg("Wrong PT code.");
+        return;
+      }
+      try{
+        await setUserRole("pt");
+        hideRoleGate();
+        showApp();
+        await onUserSignedIn(auth.currentUser); // continue boot
+      }catch(e){
+        console.error(e);
+        setMsg("Could not set role. Try again.");
+      }
+    });
+  }
+}
+
     function showRoleGate(){
   $("roleGate").style.display = "";
   // Hide your main app wrapper if you have one
