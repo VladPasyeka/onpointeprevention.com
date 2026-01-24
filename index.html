@@ -1299,18 +1299,39 @@ const FN_BASE = `https://${REGION}-${PROJECT}.cloudfunctions.net`;
 async function callFn(path, method = "GET", body = null){
   if(!auth.currentUser) throw new Error("Not logged in");
   const token = await auth.currentUser.getIdToken();
-  const opts = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    }
-  };
-  if(body) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${FN_BASE}/${path}`, opts);
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  const headers = {
+    "Authorization": `Bearer ${token}`
+  };
+
+  // Only set JSON content-type if we actually send a body
+  const opts = { method, headers };
+
+  if(body !== null){
+    headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(body);
+  }
+
+  const url = `${FN_BASE}/${path}`;
+  console.log("FN CALL:", method, url, body);
+
+  let res;
+  try{
+    res = await fetch(url, opts);
+  }catch(e){
+    // This is where CORS/network shows up as "Failed to fetch"
+    console.error("FETCH FAILED:", e);
+    throw new Error("Failed to fetch (network/CORS). Check Function URL + CORS headers.");
+  }
+
+  const text = await res.text();              // don’t assume JSON
+  let data = {};
+  try{ data = text ? JSON.parse(text) : {}; } catch(e){ data = { raw: text }; }
+
+  if(!res.ok){
+    console.error("FN ERROR:", res.status, data);
+    throw new Error(data.error || `Request failed (${res.status})`);
+  }
   return data;
 }
 
