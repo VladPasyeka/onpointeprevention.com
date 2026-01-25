@@ -895,6 +895,170 @@ input, select, textarea{
 @media (max-width: 520px){
   html, body{ overflow-x: hidden; }
 }
+/* =========================================================
+   MOBILE SHELL PATCH (iOS + Android)
+   Paste at very end of <style>
+   ========================================================= */
+
+/* 1) Make the app a real "screen" with internal scrolling */
+html, body{
+  height:100%;
+  overflow:hidden; /* IMPORTANT: stop body scroll */
+}
+
+#appShell{
+  height:100dvh;               /* iOS dynamic viewport */
+  display:flex;
+  flex-direction:column;
+}
+
+/* Top stays visible, main scrolls */
+#appShell > .top{
+  flex:0 0 auto;
+  position:sticky;
+  top:0;
+}
+
+#appShell > main{
+  flex:1 1 auto;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom: 12px; /* breathing room above tabs */
+}
+
+/* Remove the giant bottom padding (it was for fixed tabs overlay) */
+.container{
+  padding-bottom: 18px !important;
+}
+
+/* 2) Tabs: make them sticky (not overlay) + horizontal scroll */
+.tabs{
+  position:sticky;   /* replaces fixed overlay behavior */
+  bottom:0;
+  left:auto;
+  right:auto;
+  padding: 8px 10px calc(env(safe-area-inset-bottom) + 10px);
+  z-index:40;
+}
+
+.tabRow{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom: 2px;
+}
+
+.tabRow::-webkit-scrollbar{ display:none; }
+.tabRow{ scrollbar-width:none; }
+
+.tab{
+  flex:0 0 auto;
+  min-width: 92px;
+  scroll-snap-align:center;
+  padding: 10px 10px;
+  border-radius: 16px;
+}
+
+/* 3) Top bar: reflow actions under the title on iPhone */
+@media (max-width: 520px){
+  .top{
+    padding: calc(env(safe-area-inset-top) + 8px) 12px 10px;
+  }
+
+  .brandRow{
+    grid-template-columns: 44px 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 10px;
+  }
+
+  .brand{ grid-column: 2; grid-row: 1; }
+
+  .topActions{
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content:flex-end;
+    gap:10px;
+  }
+
+  /* Make Export / Logout smaller */
+  .pillBtn{
+    padding: 9px 12px;
+    font-size: 12px;
+    min-height: 44px; /* good tap target */
+  }
+}
+
+/* 4) Cards: tighter spacing on iPhone */
+@media (max-width: 420px){
+  :root{
+    --pad: 12px;
+    --pad2: 14px;
+    --radius: 14px;
+    --radius2: 18px;
+  }
+
+  .grid{ gap: 10px; }
+  .cardInner{ padding: 14px !important; }
+  .h{ font-size: 13px; }
+  .small{ font-size: 12px; line-height:1.35; }
+}
+
+/* 5) Availability calendar: fit better on small screens */
+@media (max-width: 420px){
+  .calTop{
+    display:grid;
+    grid-template-columns: 42px 1fr 42px;
+    gap:10px;
+    align-items:center;
+    margin-bottom:10px;
+  }
+
+  .calMonth{
+    text-align:center;
+    font-size: 14px;
+  }
+
+  .calWeekdays{
+    gap:6px;
+    font-size:11px;
+    margin-bottom:6px;
+  }
+
+  .calGrid{ gap:6px; }
+
+  .calDay{
+    min-height: 44px;
+    padding: 8px 8px 10px;
+    border-radius: 12px;
+  }
+
+  .calNum{ font-size: 13px; }
+
+  .calDot{
+    right:8px;
+    bottom:8px;
+    font-size:10px;
+    padding: 2px 6px;
+  }
+}
+
+/* 6) Prevent iOS Safari input zoom + make modals scroll nicely */
+input, select, textarea, button{
+  font-size:16px;
+}
+
+.modal{
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+}
+
+.modalCard{
+  max-height: calc(100dvh - (env(safe-area-inset-top) + env(safe-area-inset-bottom) + 24px)) !important;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
 
   </style>
 </head>
