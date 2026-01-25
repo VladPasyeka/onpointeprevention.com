@@ -770,6 +770,131 @@
   color: rgba(255,255,255,.92);
   cursor:not-allowed;
 }
+/* =========================================================
+   MOBILE / iOS / ANDROID RESPONSIVE PATCH
+   Paste at very end of <style> (overrides earlier rules)
+   ========================================================= */
+
+/* Better touch behavior on mobile */
+*{
+  -webkit-tap-highlight-color: transparent;
+}
+button, .pillBtn, .iconBtn, .calDay, a{
+  touch-action: manipulation;
+}
+
+/* Center content on larger screens without breaking mobile */
+main .container{
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* Fix overly-large bottom padding on small screens (your current +240px is huge) */
+@media (max-width: 520px){
+  .container{
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 120px) !important;
+  }
+  :root{
+    --pad: 12px;
+    --pad2: 14px;
+    --radius: 14px;
+    --radius2: 18px;
+  }
+
+  /* Cards feel better on iPhone */
+  .cardInner{
+    padding: 14px !important;
+  }
+
+  /* Top bar spacing */
+  .top{
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  /* Make text slightly tighter */
+  .h{ font-size: 13px; }
+  .small{ font-size: 12px; line-height: 1.35; }
+}
+
+/* iOS: prevent input auto-zoom + improve “native” feel */
+input, select, textarea, button{
+  font-size: 16px; /* prevents iOS Safari zoom */
+}
+input, select, textarea{
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Make all tap targets at least 44px high (Apple guideline) */
+.pillBtn, .iconBtn, .badgeHelpBtn{
+  min-height: 44px;
+}
+
+/* Modal improvements on mobile (scroll + safe area + no offscreen) */
+.modal{
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+}
+.modalCard{
+  width: 100% !important;
+  max-width: 640px;
+  max-height: calc(100dvh - (env(safe-area-inset-top) + env(safe-area-inset-bottom) + 24px)) !important;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Calendar: make it fit nicely on iPhone */
+@media (max-width: 420px){
+  .calTop{ gap: 8px; }
+  .calMonth{ font-size: 14px; }
+
+  .calWeekdays{
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .calGrid{
+    gap: 6px;
+  }
+
+  .calDay{
+    border-radius: 12px;
+    padding: 8px 8px 10px;
+    min-height: 48px; /* smaller but still tappable */
+  }
+
+  .calNum{
+    font-size: 13px;
+  }
+
+  .calDot{
+    right: 8px;
+    bottom: 8px;
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  /* Make rows not overflow horizontally */
+  .row{
+    gap: 10px;
+  }
+  .rowTitle{
+    word-break: break-word;
+  }
+}
+
+/* Fix sticky header + scroll jank in iOS inside modal */
+.modalHeader{
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* If any horizontal overflow happens, kill it on mobile */
+@media (max-width: 520px){
+  html, body{ overflow-x: hidden; }
+}
 
   </style>
 </head>
