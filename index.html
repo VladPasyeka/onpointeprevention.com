@@ -598,6 +598,161 @@
       height:1px; background: rgba(255,255,255,.08);
       border:0; margin: 8px 0;
     }
+    /* ---------- PT UI polish (scoped) ---------- */
+
+/* Make header rows consistent */
+#screen-dancers .cardTop,
+#linkCard .cardTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:12px;
+}
+
+/* Title/subtitle spacing + typography */
+#screen-dancers .cardTitle,
+#linkCard .cardTitle{
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:.2px;
+  line-height:1.15;
+}
+
+#screen-dancers .cardSub,
+#linkCard .cardSub{
+  margin-top:6px;
+  line-height:1.35;
+  color: rgba(255,255,255,.72);
+}
+
+/* Give these cards slightly better padding so they don’t feel “flat” */
+#screen-dancers .card,
+#linkCard{
+  padding:18px;
+}
+
+/* PT code should look like a code pill, not random bold text */
+#myPtCode{
+  display:inline-flex;
+  align-items:center;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  letter-spacing:.14em;
+  font-weight:900;
+  font-size:16px;
+  margin-top:8px;
+}
+
+/* Keep the “New code” button aligned + not squished */
+#linkCard .mutedBtn{
+  white-space:nowrap;
+}
+
+/* Make empty-state text not hug the edges */
+#ptDancersMsg, #ptDancerSub{
+  margin-top:8px;
+  color: rgba(255,255,255,.65);
+}
+/* ===== PT Availability Calendar ===== */
+.calTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.calMonth{
+  font-weight:900;
+  letter-spacing:.2px;
+}
+.calWeekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  color:rgba(255,255,255,.65);
+  font-size:12px;
+  margin-bottom:8px;
+}
+.calGrid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+}
+.calDay{
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  border-radius:14px;
+  padding:10px 10px 12px;
+  color: var(--text);
+  text-align:left;
+  cursor:pointer;
+  min-height:54px;
+  position:relative;
+}
+.calDay:hover{ background: rgba(255,255,255,.06); }
+.calEmpty{
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,.10);
+  cursor:default;
+}
+.calNum{ font-weight:900; font-size:14px; }
+.calDot{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  font-size:11px;
+  padding:2px 7px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+}
+.calDotEmpty{ opacity:.25; }
+.calHas .calDot{ opacity:1; }
+.calSel{
+  outline: 2px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.08);
+}   
+/* ===== Universal Modal Overlay (fix off-screen & close issues) ===== */
+.modal{
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0,0,0,.55);
+}
+
+.modal.show{ display:flex; }
+
+.modalCard{
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(25,20,25,.92);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  padding: 14px;
+}
+
+.modalHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  background: rgba(25,20,25,.92);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  z-index: 2;
+}
   </style>
 </head>
 
@@ -708,48 +863,78 @@
         <div class="grid">
 <!-- PT ↔ Dancer Linking -->
 <div class="card" id="linkCard" style="margin-bottom:14px; display:none;">
-  <div class="cardTitle">PT connection</div>
-  <div class="cardSub" id="linkSub" style="margin-top:6px; color:rgba(255,255,255,.72)"></div>
+  <div class="cardInner">
+    <div class="cardTitle">PT connection</div>
+    <div class="cardSub" id="linkSub" style="margin-top:6px; color:rgba(255,255,255,.72)"></div>
 
-  <!-- Dancer view -->
-  <div id="dancerLinkUI" style="display:none; margin-top:12px;">
-    <div class="labelRow"><span>Enter PT code</span></div>
-    <input id="ptLinkCode" placeholder="e.g. AB12CD" style="
-      width:100%;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      outline:none;
-      margin-top:6px;
-    "/>
-    <button class="pillBtn" id="linkToPtBtn" type="button" style="margin-top:10px; width:100%; justify-content:center;">
-      Link to PT
-    </button>
-    <button id="unlinkBtn" class="mutedBtn danger" type="button" style="display:none; width:100%;">
-  Unlink from PT
-</button>
-    <div id="linkMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
-  </div>
-
-  <!-- PT view -->
-  <div id="ptLinkUI" style="display:none; margin-top:12px;">
-    <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-      <div>
-        <div class="labelRow"><span>Your PT code</span></div>
-        <div id="myPtCode" style="font-size:18px; font-weight:900; letter-spacing:.08em; margin-top:6px;">
-          —
-        </div>
-        <div style="font-size:12px; color:rgba(255,255,255,.65); margin-top:6px;">
-          Share this with your dancer to connect.
-        </div>
-      </div>
-      <button class="pillBtn" id="regenPtCodeBtn" type="button" style="height:40px;">
-        New code
+    <!-- Dancer view -->
+    <div id="dancerLinkUI" style="display:none; margin-top:12px;">
+      <div class="labelRow"><span>Enter PT code</span></div>
+      <input id="ptLinkCode" placeholder="e.g. AB12CD" style="
+        width:100%;
+        padding:12px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.03);
+        color: var(--text);
+        outline:none;
+        margin-top:6px;
+      "/>
+      <button class="pillBtn" id="linkToPtBtn" type="button" style="margin-top:10px; width:100%; justify-content:center;">
+        Link to PT
       </button>
+      <button id="unlinkBtn" class="mutedBtn danger" type="button" style="display:none; width:100%;">
+        Unlink from PT
+      </button>
+      <div id="linkMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
     </div>
-    <div id="ptCodeMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
+
+    <!-- PT view -->
+    <div id="ptLinkUI" style="display:none; margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+        <div>
+          <div class="labelRow"><span>Your PT code</span></div>
+          <div id="myPtCode" style="font-size:18px; font-weight:900; letter-spacing:.08em; margin-top:6px;">
+            —
+          </div>
+          <div style="font-size:12px; color:rgba(255,255,255,.65); margin-top:6px;">
+            Share this with your dancer to connect.
+          </div>
+        </div>
+        <button class="pillBtn" id="regenPtCodeBtn" type="button" style="height:40px;">
+          New code
+        </button>
+      </div>
+      <div id="ptCodeMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PT DASHBOARD -->
+<div class="card" id="ptAvailabilityCard" style="display:none;">
+  <div class="cardInner">
+    <div class="cardTitle">Availability</div>
+    <div class="cardSub" style="margin-top:6px;">
+      Set when dancers can request sessions.
+    </div>
+
+    <button class="pillBtn" id="addAvailBtn" type="button"
+      style="margin-top:10px; width:100%; justify-content:center;">
+      + Add availability
+    </button>
+
+    <div id="ptAvailList" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<div class="card" id="ptRecentCard" style="display:none;">
+  <div class="cardInner">
+    <div class="cardTitle">Recent dancer check-ins</div>
+    <div class="cardSub" style="margin-top:6px;">
+      Latest activity from dancers linked to you.
+    </div>
+
+    <div id="ptRecentCheckins" style="margin-top:12px;"></div>
   </div>
 </div>
 
@@ -845,6 +1030,30 @@
         </div>
       </div>
 
+<!-- PT: My Dancers -->
+<section id="screen-dancers" style="display:none;">
+  <div class="container">
+    <div class="card">
+      <div class="cardTop">
+        <div>
+          <div class="cardTitle">My Dancers</div>
+          <div class="cardSub">Read check-ins from dancers linked to your PT account.</div>
+        </div>
+        <button class="mutedBtn" id="refreshDancersBtn" type="button">Refresh</button>
+      </div>
+
+      <div id="ptDancersMsg" class="hint" style="margin-top:10px;"></div>
+      <div id="ptDancersList" style="display:grid; gap:10px; margin-top:12px;"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="cardTitle" id="ptDancerTitle">Select a dancer</div>
+      <div class="cardSub" id="ptDancerSub">Their recent check-ins will appear here.</div>
+      <div id="ptCheckinsList" style="display:grid; gap:10px; margin-top:12px;"></div>
+    </div>
+  </div>
+</section>
+      
 <!-- EXERCISES -->
 <div class="container" id="screen-exercises" style="display:none">
   <div class="grid">
@@ -917,8 +1126,9 @@
     <div class="tabs">
       <div class="tabRow">
         <button class="tab active" data-tab="dashboard" type="button"><div class="emoji">📊</div>Dashboard</button>
-        <button class="tab" data-tab="checkin" type="button"><div class="emoji">📝</div>Check-In</button>
+        <button class="tab" data-tab="checkin" type="button"><div class="emoji">📝</div>Check-In</button>         <button class="tab" data-tab="dancers" type="button"><div class="emoji">💃</div>My Dancers</button>
         <button class="tab" data-tab="exercises" type="button"><div class="emoji">🩰</div>Exercises</button>
+
         <button class="tab" data-tab="history" type="button"><div class="emoji">🗓️</div>History</button>
       </div>
     </div>
@@ -1243,6 +1453,60 @@
 
     <div class="toast" id="toast">Saved</div>
   </div>
+<!-- PT Check-in Modal (single source of truth) -->
+<div id="ptCheckinModal" class="modal">
+  <div class="modalCard">
+    <div class="modalHeader">
+      <div>
+        <div id="ptCheckinTitle" style="font-weight:900;">Check-in</div>
+        <div id="ptCheckinSub" class="sub"></div>
+      </div>
+      <button id="ptCheckinCloseBtn" class="iconBtn" type="button">Close</button>
+    </div>
+
+    <div id="ptCheckinBody" style="color:rgba(255,255,255,.88); font-size:14px; line-height:1.35; margin-top:10px;">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+ <!-- PT Availability Modal -->
+<div id="ptAvailModal" class="modal" style="display:none;">
+  <div class="modalCard">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div style="font-weight:900;">Add availability</div>
+      <button class="iconBtn" id="ptAvailCloseBtn" type="button">✕</button>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="labelRow"><span>Date</span></div>
+      <input id="ptAvailDate" type="date" style="width:100%;" />
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+      <div>
+        <div class="labelRow"><span>Start</span></div>
+        <input id="ptAvailStart" type="time" style="width:100%;" />
+      </div>
+      <div>
+        <div class="labelRow"><span>End</span></div>
+        <input id="ptAvailEnd" type="time" style="width:100%;" />
+      </div>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="labelRow"><span>Note (optional)</span></div>
+      <input id="ptAvailNote" placeholder="e.g. Zoom only" style="width:100%;" />
+    </div>
+
+    <button class="pillBtn" id="ptAvailSaveBtn" type="button" style="width:100%; justify-content:center; margin-top:12px;">
+      Save
+    </button>
+
+    <div id="ptAvailMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
+  </div>
+</div>
+  
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -1271,6 +1535,44 @@
     const db = getFirestore(fbApp);
 
     const $ = (id) => document.getElementById(id);
+    // ---------- SAFE UI HELPERS (prevents "everything disappeared") ----------
+function setText(id, text){
+  const el = $(id);
+  if(!el){
+    console.warn(`[ui] Missing #${id} (skipping setText)`);
+    return false;
+  }
+  el.textContent = text ?? "";
+  return true;
+}
+function setHTML(id, html){
+  const el = $(id);
+  if(!el){
+    console.warn(`[ui] Missing #${id} (skipping setHTML)`);
+    return false;
+  }
+  el.innerHTML = html ?? "";
+  return true;
+}
+function show(id){
+  const el = $(id);
+  if(!el){
+    console.warn(`[ui] Missing #${id} (skipping show)`);
+    return false;
+  }
+  el.style.display = "";
+  return true;
+}
+function hide(id){
+  const el = $(id);
+  if(!el){
+    console.warn(`[ui] Missing #${id} (skipping hide)`);
+    return false;
+  }
+  el.style.display = "none";
+  return true;
+}
+
     const fmt1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
     const todayISO = () => new Date().toISOString().slice(0,10);
 
@@ -1291,84 +1593,265 @@
         "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
       }[m]));
     }
+    function applyRoleTabs(role){
+  const tabCheckin  = document.querySelector('.tab[data-tab="checkin"]');
+  const tabDancers  = document.querySelector('.tab[data-tab="dancers"]');
+  const tabHistory  = document.querySelector('.tab[data-tab="history"]');
+
+  if(role === "pt"){
+    if(tabCheckin) tabCheckin.style.display = "none";
+    if(tabHistory) tabHistory.style.display = "none"; // optional
+    if(tabDancers) tabDancers.style.display = "";
+  } else {
+    if(tabCheckin) tabCheckin.style.display = "";
+    if(tabHistory) tabHistory.style.display = "";
+    if(tabDancers) tabDancers.style.display = "none";
+  }
+}
 // ---------- Cloud Functions caller ----------
 const REGION = "us-central1";
 const PROJECT = "on-pointe-prevention";
 const FN_BASE = `https://${REGION}-${PROJECT}.cloudfunctions.net`;
 
-async function callFn(path, method = "GET", body = null){
+async function callFn(path, method = "GET", body = null, query = null){
   if(!auth.currentUser) throw new Error("Not logged in");
+
   const token = await auth.currentUser.getIdToken();
 
-  const headers = {
-    "Authorization": `Bearer ${token}`
-  };
+  // Build base URL
+  let url = `${FN_BASE}/${path}`;
 
-  // Only set JSON content-type if we actually send a body
-  const opts = { method, headers };
-
-  if(body !== null){
-    headers["Content-Type"] = "application/json";
-    opts.body = JSON.stringify(body);
+  // Append query params safely (works even if path already contains ?)
+  if(query && typeof query === "object"){
+    const qs = new URLSearchParams();
+    for(const [k,v] of Object.entries(query)){
+      if(v !== undefined && v !== null) qs.set(k, String(v));
+    }
+    const s = qs.toString();
+    if(s){
+      url += (url.includes("?") ? "&" : "?") + s;
+    }
   }
 
-  const url = `${FN_BASE}/${path}`;
-  console.log("FN CALL:", method, url, body);
+  const opts = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+
+  console.log("FN CALL:", method, url, body || null);
 
   let res;
   try{
     res = await fetch(url, opts);
-  }catch(e){
-    // This is where CORS/network shows up as "Failed to fetch"
-    console.error("FETCH FAILED:", e);
-    throw new Error("Failed to fetch (network/CORS). Check Function URL + CORS headers.");
+  }catch(err){
+    console.error("FETCH FAILED:", err);
+    throw new Error("Network/CORS blocked the request. Fix Functions CORS (see section B).");
   }
 
-  const text = await res.text();              // don’t assume JSON
   let data = {};
-  try{ data = text ? JSON.parse(text) : {}; } catch(e){ data = { raw: text }; }
+  try{
+    data = await res.json();
+  }catch(e){
+    // If function returns non-JSON (or empty), keep data {}
+  }
 
   if(!res.ok){
-    console.error("FN ERROR:", res.status, data);
-    throw new Error(data.error || `Request failed (${res.status})`);
+    const msg = data?.error || `Request failed (${res.status})`;
+    throw new Error(msg);
   }
+
   return data;
+}
+    
+async function refreshMyDancersUI(){
+  if(!currentUser) return;
+
+  const msgEl = document.getElementById("ptDancersMsg");
+  const listEl = document.getElementById("ptDancersList");
+  const emptyEl = document.getElementById("ptDancersEmpty");
+
+  if(msgEl) msgEl.textContent = "Loading dancers…";
+  if(listEl) listEl.innerHTML = "";
+  if(emptyEl) emptyEl.style.display = "none";
+
+  window.ptDancerNameMap = window.ptDancerNameMap || {};
+
+  try{
+    const r = await callFn("getMyDancers", "GET");
+    const dancers = r?.data?.dancers || [];
+
+    if(!Array.isArray(dancers) || dancers.length === 0){
+      if(msgEl) msgEl.textContent = "";
+      if(emptyEl) emptyEl.style.display = "";
+      return;
+    }
+
+    dancers.forEach(d=>{
+      if(d?.dancerId) window.ptDancerNameMap[d.dancerId] = d.name || d.email || d.dancerId;
+    });
+
+    if(msgEl) msgEl.textContent = `Connected: ${dancers.length}`;
+
+    let html = "";
+    for(const d of dancers){
+      const dancerId = d.dancerId || "";
+      const name = d.name || d.email || dancerId;
+
+      html += `
+        <div class="row">
+          <div class="rowMain">
+            <div class="rowTitle">${escapeHTML(name)}</div>
+            <div class="rowSub">${escapeHTML(dancerId)}</div>
+          </div>
+          <div class="rowRight">
+            <button class="iconBtn" type="button" data-open-dancer="${escapeHTML(dancerId)}">Open</button>
+          </div>
+        </div>
+      `;
+    }
+    if(listEl) listEl.innerHTML = html;
+
+    // ✅ event delegation: one listener, always works
+    if(listEl && !listEl.dataset.bound){
+      listEl.dataset.bound = "1";
+      listEl.addEventListener("click", async (e)=>{
+        const btn = e.target.closest("[data-open-dancer]");
+        if(!btn) return;
+        e.preventDefault();
+
+        const dancerId = btn.getAttribute("data-open-dancer");
+        if(!dancerId) return;
+
+        // If you have a “select a dancer” area, populate it here,
+        // otherwise we load that dancer’s check-ins into the PT recent list:
+        const recentWrap = document.getElementById("ptRecentCheckins");
+        if(recentWrap) recentWrap.innerHTML = `<div class="rowSub">Loading…</div>`;
+
+        try{
+          const rr = await callFn("getDancerRecentCheckins", "GET", null, { dancerId, limit: 12 });
+          const items = Array.isArray(rr?.items) ? rr.items : [];
+
+          if(!recentWrap) return;
+
+          if(items.length === 0){
+            recentWrap.innerHTML = `<div class="rowSub">No check-ins yet for this dancer.</div>`;
+            return;
+          }
+
+          let out = "";
+          items.forEach(it=>{
+            const load = computeSessionLoad(it);
+            out += `
+              <div class="row" data-pt-open="${escapeHTML(dancerId)}|${escapeHTML(it.date || "")}">
+                <div class="rowMain">
+                  <div class="rowTitle">${escapeHTML(shortDate(it.date || ""))} · ${it.minutes || 0} min · RPE ${it.rpe || 0} · Load ${load}</div>
+                  <div class="rowSub">${escapeHTML((it.notes || "").slice(0,120))}</div>
+                </div>
+                <div class="rowRight"><button class="iconBtn" type="button">Open</button></div>
+              </div>
+            `;
+          });
+          recentWrap.innerHTML = out;
+
+          recentWrap.querySelectorAll("[data-pt-open]").forEach(row=>{
+            row.addEventListener("click", ()=>{
+              const key = row.getAttribute("data-pt-open") || "";
+              const [did, date] = key.split("|");
+              const entry = items.find(x => String(x.date||"") === String(date||""));
+              if(entry) openPtCheckinModal({ ...entry, dancerId: did });
+            });
+          });
+
+        }catch(err){
+          console.error(err);
+          if(recentWrap) recentWrap.innerHTML = `<div class="rowSub">Failed to load dancer check-ins.</div>`;
+        }
+      });
+    }
+
+  }catch(e){
+    console.error(e);
+    if(msgEl) msgEl.textContent = `Error: ${e.message || "Failed"}`;
+  }
 }
 
 // ---------- Linking UI ----------
 async function initLinkingUI(){
+    console.log("[linking] initLinkingUI() start", {
+    currentUser: !!currentUser,
+    uid: currentUser?.uid
+  });
+  if(!currentUser) return;
+
+  console.log("[linking] DOM check", {
+    linkCard: !!document.getElementById("linkCard"),
+    dancerLinkUI: !!document.getElementById("dancerLinkUI"),
+    ptLinkUI: !!document.getElementById("ptLinkUI"),
+    linkSub: !!document.getElementById("linkSub")
+  });
+  if(!currentUser) return;
+
+  // --- Get role first ---
+  let role = "dancer";
+  let uSnap = null;
+  try{
+    uSnap = await getDoc(doc(db, "users", currentUser.uid));
+    role = uSnap.exists() ? (uSnap.data().role || "dancer") : "dancer";
+  }catch(e){
+    console.error("[linking] Failed to read user role:", e);
+  }
+
+  // --- Role-based tabs (PT hides checkin/history, shows dancers) ---
+  const tabCheckin = document.querySelector('.tab[data-tab="checkin"]');
+  const tabDancers = document.querySelector('.tab[data-tab="dancers"]');
+  const tabHistory = document.querySelector('.tab[data-tab="history"]');
+
+  if(role === "pt"){
+    if(tabCheckin) tabCheckin.style.display = "none";
+    if(tabHistory) tabHistory.style.display = "none";
+    if(tabDancers) tabDancers.style.display = "";
+  }else{
+    if(tabCheckin) tabCheckin.style.display = "";
+    if(tabHistory) tabHistory.style.display = "";
+    if(tabDancers) tabDancers.style.display = "none";
+  }
+
+  // --- Link card + UIs ---
   const card = $("linkCard");
-  if(!card || !currentUser) return;
+  if(!card) return;
 
   const dancerUI = $("dancerLinkUI");
   const ptUI = $("ptLinkUI");
-
-  const linkMsg = $("linkMsg");
   const linkSub = $("linkSub");
-  const codeInput = $("ptLinkCode");
-  const linkBtn = $("linkToPtBtn");
-  const unlinkBtn = $("unlinkBtn");
 
-  // Defensive: prevent “everything disappeared” if an element id changed
-  if(!dancerUI || !ptUI || !linkMsg || !linkSub || !codeInput || !linkBtn){
-    console.warn("[linking] Missing DOM elements", {
-      card: !!card, dancerUI: !!dancerUI, ptUI: !!ptUI,
-      linkMsg: !!linkMsg, linkSub: !!linkSub, codeInput: !!codeInput,
-      linkBtn: !!linkBtn, unlinkBtn: !!unlinkBtn
-    });
-    return;
-  }
-
-  // Get role
-  const uSnap = await getDoc(doc(db, "users", currentUser.uid));
-  const role = uSnap.exists() ? (uSnap.data().role || "dancer") : "dancer";
-
+  // Don’t hard-fail if the other role’s DOM is missing
   card.style.display = "";
-  dancerUI.style.display = (role === "dancer") ? "" : "none";
-  ptUI.style.display = (role === "pt") ? "" : "none";
+  if(dancerUI) dancerUI.style.display = (role === "dancer") ? "" : "none";
+  if(ptUI) ptUI.style.display = (role === "pt") ? "" : "none";
+
+  // Must exist for both roles to show the subtitle
+  if(!linkSub){
+    console.warn("[linking] Missing #linkSub");
+  }
 
   // ---------- DANCER ----------
   if(role === "dancer"){
+    const linkMsg   = $("linkMsg");
+    const codeInput = $("ptLinkCode");
+    const linkBtn   = $("linkToPtBtn");
+    const unlinkBtn = $("unlinkBtn");
+
+    if(!dancerUI || !linkMsg || !codeInput || !linkBtn){
+      console.warn("[linking] Missing dancer linking DOM elements", {
+        dancerUI: !!dancerUI, linkMsg: !!linkMsg, codeInput: !!codeInput, linkBtn: !!linkBtn
+      });
+      return;
+    }
+
     linkSub.textContent = "Connect to your PT to share progress and receive guidance.";
 
     // Default UI state
@@ -1452,43 +1935,61 @@ async function initLinkingUI(){
         }
       };
     }
+
+    return; // done
   }
 
   // ---------- PT ----------
   if(role === "pt"){
-    $("linkSub").textContent = "Share your code with your dancers to connect them to your care.";
+    const myPtCodeEl = $("myPtCode");
+    const ptCodeMsg  = $("ptCodeMsg");
+    const regenBtn   = $("regenPtCodeBtn");
 
-    const existing = uSnap.exists() ? (uSnap.data().ptCode || "") : "";
+    if(!ptUI || !myPtCodeEl || !ptCodeMsg || !regenBtn){
+      console.warn("[linking] Missing PT linking DOM elements", {
+        ptUI: !!ptUI, myPtCode: !!myPtCodeEl, ptCodeMsg: !!ptCodeMsg, regenBtn: !!regenBtn
+      });
+      return;
+    }
+
+    linkSub.textContent = "Share your code with your dancers to connect them to your care.";
+
+    const existing = (uSnap && uSnap.exists()) ? (uSnap.data().ptCode || "") : "";
     if(existing){
-      $("myPtCode").textContent = existing;
-      $("ptCodeMsg").textContent = "";
+      myPtCodeEl.textContent = existing;
+      ptCodeMsg.textContent = "";
     }else{
-      $("ptCodeMsg").textContent = "Generating code…";
+      ptCodeMsg.textContent = "Generating code…";
       try{
         const r = await callFn("generatePtCode", "POST");
-        $("myPtCode").textContent = r.code;
-        $("ptCodeMsg").textContent = "";
+        myPtCodeEl.textContent = r.code;
+        ptCodeMsg.textContent = "";
       }catch(e){
-        $("ptCodeMsg").textContent = `Error: ${e.message}`;
+        ptCodeMsg.textContent = `Error: ${e.message}`;
       }
     }
 
-    $("regenPtCodeBtn").onclick = async ()=>{
-      $("ptCodeMsg").textContent = "Generating…";
+    regenBtn.onclick = async ()=>{
+      ptCodeMsg.textContent = "Generating…";
       try{
         const r = await callFn("generatePtCode", "POST");
-        $("myPtCode").textContent = r.code;
-        $("ptCodeMsg").textContent = "New code generated ✓";
+        myPtCodeEl.textContent = r.code;
+        ptCodeMsg.textContent = "New code generated ✓";
       }catch(e){
-        $("ptCodeMsg").textContent = `Error: ${e.message}`;
+        ptCodeMsg.textContent = `Error: ${e.message}`;
       }
     };
+
+    // Optional: ensure PT lands on dancers tab once UI is ready
+    if(typeof setTab === "function") setTab("dancers");
   }
 }
+    
     /***********************
      * FIRESTORE PATHS
      ***********************/
     let currentUser = null;
+    let currentRole = "dancer"; // "dancer" or "pt"
 
     const userDocRef = (uid)=> doc(db, "users", uid);
     const checkinsCol  = (uid)=> collection(db, "users", uid, "checkins");
@@ -1501,6 +2002,24 @@ async function initLinkingUI(){
       // simple unique id (good enough for Firestore doc id)
       return "ex_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
+async function loadCurrentRole(){
+  if(!currentUser){
+    currentRole = "dancer";
+    return currentRole;
+  }
+
+  try{
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    currentRole = snap.exists()
+      ? (snap.data().role || "dancer")
+      : "dancer";
+  }catch(e){
+    console.error("[role] failed to load role", e);
+    currentRole = "dancer";
+  }
+
+  return currentRole;
+}
 
 async function ensureUserProfile(uid, email, role=null, name=null){
   const ref = doc(db, "users", uid);
@@ -2476,7 +2995,64 @@ async function deleteExercise(ex){
         wrap.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No exercises yet</div><div class="rowSub">Go to Exercises tab and add your first one.</div></div></div>`;
       }
     }
+async function getMyRole(){
+  if(!currentUser) return "dancer";
+  try{
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    return snap.exists() ? (snap.data().role || "dancer") : "dancer";
+  }catch(e){
+    console.error("[role] getMyRole failed", e);
+    return "dancer";
+  }
+}
+function applyRoleUI(role){
+  // Tabs that are PT-only
+  const ptOnlyTabs = ["dancers"];
+  ptOnlyTabs.forEach(tab=>{
+    const btn = document.querySelector(`.tab[data-tab="${tab}"]`);
+    if(btn) btn.style.display = (role === "pt") ? "" : "none";
+  });
 
+  // PT-only cards inside dashboard (already exist in your HTML) :contentReference[oaicite:5]{index=5}
+  const ptCards = ["ptAvailabilityCard","ptRecentCard"];
+  ptCards.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = (role === "pt") ? "" : "none";
+  });
+
+  // Dancer-only dashboard elements to hide for PT (keep dancer UI intact)
+  const dancerOnlyIds = [
+    "riskBadge","riskLabel","riskInfoBtn","riskInfoModal",
+    "trendCanvas","trendHint",
+    "guidanceText",
+    "recentList",
+    "historyList",
+    "m_acute","m_chronic","m_acwr"
+  ];
+
+  dancerOnlyIds.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    // hide the whole card if possible, otherwise just the element
+    const card = el.closest && el.closest(".card");
+    if(role === "pt"){
+      if(card) card.style.display = "none";
+      else el.style.display = "none";
+    } else {
+      // dancer: show it back
+      if(card) card.style.display = "";
+      else el.style.display = "";
+    }
+  });
+
+  // IMPORTANT: if we previously created a PT wrapper via JS, remove it when dancer logs in
+  const wrap = document.getElementById("ptDashboardWrap");
+  if(wrap && role === "dancer"){
+    wrap.remove();
+  }
+}
+    
     /***********************
      * UI RENDER (dashboard/history)
      ***********************/
@@ -3014,26 +3590,123 @@ function applyRoutineToToday(routineId){
     renderExercisePicker();
   }
 }
+function openPtCheckinModal(entry){
+  const modal = document.getElementById("ptCheckinModal");
+  const title = document.getElementById("ptCheckinTitle");
+  const body  = document.getElementById("ptCheckinBody");
+  const close = document.getElementById("ptCheckinCloseBtn");
+
+  if(!modal || !title || !body || !close){
+    console.error("PT modal missing (ptCheckinModal / ptCheckinTitle / ptCheckinBody / ptCheckinCloseBtn).");
+    return;
+  }
+
+  // Fill content
+  const dancerId = entry?.dancerId || "";
+  const dancerName = (window.ptDancerNameMap && window.ptDancerNameMap[dancerId]) ? window.ptDancerNameMap[dancerId] : dancerId;
+
+  const date = entry?.date || "";
+  const minutes = entry?.minutes ?? "—";
+  const rpe = entry?.rpe ?? "—";
+  const load = (typeof computeSessionLoad === "function") ? computeSessionLoad(entry) : "—";
+
+  title.textContent = `${dancerName || "Dancer"} · ${date || ""}`;
+
+  const safe = (v)=> escapeHTML(String(v ?? "—"));
+
+  body.innerHTML = `
+    <div style="margin-bottom:10px; opacity:.9;">
+      <div><b>Session:</b> ${safe(minutes)} min · <b>RPE:</b> ${safe(rpe)} · <b>Load:</b> ${safe(load)}</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+        <div style="opacity:.65; font-size:12px;">Sleep</div>
+        <div style="font-weight:900;">${safe(entry?.sleep)}</div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+        <div style="opacity:.65; font-size:12px;">Soreness</div>
+        <div style="font-weight:900;">${safe(entry?.sore)}</div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+        <div style="opacity:.65; font-size:12px;">Fatigue</div>
+        <div style="font-weight:900;">${safe(entry?.fatigue)}</div>
+      </div>
+      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+        <div style="opacity:.65; font-size:12px;">Jumps</div>
+        <div style="font-weight:900;">${safe(entry?.jumps)}</div>
+      </div>
+    </div>
+
+    <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+      <div style="opacity:.65; font-size:12px; margin-bottom:6px;">Notes</div>
+      <div>${safe(entry?.notes || "") || "<span style='opacity:.6;'>—</span>"}</div>
+    </div>
+  `;
+
+  // Show modal
+  modal.classList.add("show");
+
+  // Close bindings (always works)
+  const closeFn = ()=> modal.classList.remove("show");
+
+  close.onclick = closeFn;
+
+  // Click backdrop to close
+  modal.onclick = (e)=> { if(e.target === modal) closeFn(); };
+
+  // Escape to close (one-time bind each open)
+  window.onkeydown = (e)=>{
+    if(e.key === "Escape") closeFn();
+  };
+}
+
+function closePtCheckinModal(){
+  const modal = document.getElementById("ptCheckinModal");
+  if(modal) modal.style.display = "none";
+}
 
     /***********************
      * TABS
      ***********************/
 function setTab(tab){
-  const screens = ["dashboard","checkin","exercises","history"];
-  screens.forEach(s=> $("screen-"+s).style.display = (s===tab) ? "" : "none");
-  document.querySelectorAll(".tab").forEach(b=> b.classList.toggle("active", b.dataset.tab === tab));
+  // Block PT-only tabs if dancer (prevents “My Dancers” empty screen for dancers)
+  if(currentRole !== "pt" && tab === "dancers"){
+    tab = "dashboard";
+  }
 
-  // Only render what’s needed (less lag on iPhone)
+  const screens = ["dashboard","checkin","dancers","exercises","history"];
+  screens.forEach(s=>{
+    const el = document.getElementById("screen-"+s);
+    if(el) el.style.display = (s===tab) ? "" : "none";
+  });
+
+  document.querySelectorAll(".tab").forEach(b=>{
+    b.classList.toggle("active", b.dataset.tab === tab);
+  });
+
+  // Only render what’s needed
   if(tab === "dashboard"){
-    render();
-  }else if(tab === "history"){
-    const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
-    renderHistory(entries);
-  }else if(tab === "exercises"){
+    if(currentRole === "pt"){
+      // PT dashboard render (do NOT call dancer render())
+      renderPtDashboard();
+    } else {
+      render();
+    }
+  } else if(tab === "history"){
+    if(currentRole === "dancer"){
+      const entries = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1));
+      renderHistory(entries);
+    }
+  } else if(tab === "exercises"){
     renderRoutineList();
     renderExerciseList();
+  } else if(tab === "dancers"){
+    // PT-only
+    if(currentRole === "pt"){
+      refreshMyDancersUI();
+    }
   }
-  // checkin tab doesn't need re-render
 }
 
     /***********************
@@ -3198,24 +3871,50 @@ else {
      * BOOT PER USER
      ***********************/
 async function onUserSignedIn(user){
+  console.log("[auth] onUserSignedIn()", { uid: user?.uid, email: user?.email });
   currentUser = user;
+
   await ensureUserProfile(user.uid, user.email);
+
+  // If role missing, stop here (role gate will show)
+  const blocked = await gateRoleIfMissing(user);
+  if(blocked) return;
+
+  // Load role once and store globally
+  currentRole = await getMyRole();
+  console.log("[role] currentRole =", currentRole);
+
+  // Role-aware tab visibility + dashboard visibility
+  applyRoleUI(currentRole);
 
   // Load local user preferences FIRST
   loadFavorites(user.uid);
   loadRoutines(user.uid);
 
-  // load user checkins
-  cachedCheckins = await loadAllCheckins(user.uid);
+  // Load dancer checkins only if dancer (PT does NOT need this)
+  if(currentRole === "dancer"){
+    cachedCheckins = await loadAllCheckins(user.uid);
+  } else {
+    cachedCheckins = []; // prevent dancer render code from misfiring
+  }
 
-  // load custom exercises + merge with defaults
+  // load custom exercises + merge with defaults (both roles can use exercise library if you want)
   const userExercises = await loadUserExercises(user.uid);
   cachedExercises = mergeExerciseLibrary(userExercises);
 
   renderExerciseList();
   renderRoutineList();
-  render();
-  setTab("dashboard");
+
+  // Role-aware dashboard render
+  if(currentRole === "pt"){
+    await renderPtDashboard();   // PT dashboard only
+    setTab("dashboard");
+  } else {
+    render();                   // Dancer dashboard only
+    setTab("dashboard");
+  }
+
+  // linking card is useful for both (dancer links to PT, PT sees code etc)
   await initLinkingUI();
 }
 
@@ -3617,6 +4316,13 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
           const gated = await gateRoleIfMissing(user);
 if(gated) return; // stop here until user chooses role
           showApp();
+          currentUser = user;
+          await loadCurrentRole();
+          if(currentRole === "pt"){
+      await initLinkingUI();        // keep PT connection UI alive
+      await renderPtDashboard();    // your new PT dashboard renderer
+      return;
+    }
           await onUserSignedIn(user);
         }else{
           currentUser = null;
@@ -3780,7 +4486,474 @@ async function gateRoleIfMissing(user){
   hideRoleGate();
   return false;
 }
+async function renderPtDashboard(){
+  try{
+    // Ensure PT-only cards exist and show
+    const availCard = document.getElementById("ptAvailabilityCard");
+    const recentCard = document.getElementById("ptRecentCard");
+    if(availCard) availCard.style.display = "";
+    if(recentCard) recentCard.style.display = "";
+
+    // Hide dancer-only dashboard cards/elements
+    applyRoleUI("pt");
+
+    // If you want to populate these cards:
+    if(typeof loadPtAvailability === "function") await loadPtAvailability();
+    if(typeof loadPtRecentCheckins === "function") await loadPtRecentCheckins();
+
+  }catch(e){
+    console.error("renderPtDashboard crashed:", e);
+    toast("PT dashboard failed to load.");
+  }
+}
+function hideDancerDashboardForPt(){
+  // These ids exist inside dancer-only cards:
+  const idsInsideDancerCards = [
+    "riskBadge", "riskLabel", "riskInfoBtn", "riskInfoModal",
+    "trendCanvas", "trendHint",
+    "recentList",            // ✅ Last 7 Days card contains #recentList
+    "openCheckin", "restDayBtn", "openExercises", "clearData",
+    "m_acwr", "m_acute", "m_chronic", "guidanceText"
+  ];
+
+  idsInsideDancerCards.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    // Prefer hiding the whole card
+    const card = el.closest && el.closest(".card");
+    if(card) card.style.display = "none";
+    else el.style.display = "none";
+  });
+
+  // Extra safety: if a card title matches these, hide that card too
+  const titleMatches = ["Last 7 Days", "Trends", "Guidance"];
+  document.querySelectorAll(".card").forEach(card=>{
+    const txt = (card.innerText || "").trim();
+    if(titleMatches.some(t => txt.includes(t))){
+      card.style.display = "none";
+    }
+  });
+}
+    function wirePtDashboardUI(){
+  const goBtn = document.getElementById("goToDancersBtn");
+  if(goBtn){
+    goBtn.onclick = ()=> setTab("dancers");
+  }
+
+  const copyBtn = document.getElementById("copyPtCodeBtn");
+  if(copyBtn){
+    copyBtn.onclick = async ()=>{
+      try{
+        const snap = await getDoc(doc(db, "users", currentUser.uid));
+        const code = snap.exists() ? snap.data().ptCode : null;
+        if(!code){ toast("No PT code yet"); return; }
+
+        await navigator.clipboard.writeText(code);
+        toast("PT code copied ✓");
+      }catch(e){
+        toast("Copy failed");
+      }
+    };
+  }
+}
+function safeNum(n, fallback=0){
+  const v = Number(n);
+  return isFinite(v) ? v : fallback;
+}
+
+function computeSessionLoad(entry){
+  return Math.round(safeNum(entry.minutes,0) * safeNum(entry.rpe,0));
+}
+
+function shortDate(iso){
+  try{
+    const d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month:"short", day:"numeric" });
+  }catch(e){
+    return iso || "";
+  }
+}
+
+// Fetch dancer names (best effort) using Firestore (PT can't read dancer user doc by your rules).
+// So we display a fallback label unless you decide later to allow PT read of linked dancer profile
+function dancerLabelFallback(uid){
+  return "Dancer " + String(uid).slice(0,6);
+}
+
+async function loadPtRecentCheckins(){
+  const wrap = document.getElementById("ptRecentCheckins");
+  if(!wrap) return;
+
+  wrap.innerHTML = `<div class="rowSub">Loading…</div>`;
+  window.ptDancerNameMap = window.ptDancerNameMap || {};
+
+  try{
+    const r = await callFn("getMyDancers", "GET");
+    const dancers = Array.isArray(r?.data?.dancers) ? r.data.dancers : [];
+    const dancerIds = dancers.map(d => d.dancerId).filter(Boolean);
+
+    dancers.forEach(d=>{
+      if(d?.dancerId) window.ptDancerNameMap[d.dancerId] = d.name || d.email || d.dancerId;
+    });
+
+    if(dancerIds.length === 0){
+      wrap.innerHTML = `<div class="rowSub">No dancers linked yet.</div>`;
+      return;
+    }
+
+    const all = [];
+    for(const dancerId of dancerIds){
+      const rr = await callFn("getDancerRecentCheckins", "GET", null, { dancerId, limit: 3 });
+      const items = Array.isArray(rr?.items) ? rr.items : [];
+      items.forEach(it => all.push({ ...it, dancerId }));
+    }
+
+    all.sort((a,b)=> (String(a.date) < String(b.date) ? 1 : -1));
+
+    if(all.length === 0){
+      wrap.innerHTML = `<div class="rowSub">No dancer check-ins yet.</div>`;
+      return;
+    }
+
+    let html = "";
+    all.slice(0, 12).forEach(e=>{
+      const name = window.ptDancerNameMap[e.dancerId] || e.dancerId;
+      const load = computeSessionLoad(e);
+      html += `
+        <div class="row" data-pt-open="${escapeHTML(e.dancerId)}|${escapeHTML(e.date || "")}">
+          <div class="rowMain">
+            <div class="rowTitle">${escapeHTML(name)} · ${escapeHTML(shortDate(e.date || ""))}</div>
+            <div class="rowSub">${e.minutes || 0} min · RPE ${e.rpe || 0} · Load ${load}</div>
+          </div>
+          <div class="rowRight"><button class="iconBtn" type="button">Open</button></div>
+        </div>
+      `;
+    });
+
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll("[data-pt-open]").forEach(row=>{
+      row.addEventListener("click", ()=>{
+        const key = row.getAttribute("data-pt-open") || "";
+        const [dancerId, date] = key.split("|");
+        const entry = all.find(x=> x.dancerId === dancerId && String(x.date) === String(date));
+        if(entry) openPtCheckinModal(entry);
+      });
+    });
+
+  }catch(e){
+    console.error(e);
+    wrap.innerHTML = `<div class="rowSub">Failed to load dancer check-ins.</div>`;
+  }
+}
+
+function openPtAvailModal(prefillDate){
+  const m = $("ptAvailModal");
+  if(!m) return;
+
+  // Prefill date from calendar selection (optional)
+  const dateInput = $("ptAvailDate");
+  if(dateInput){
+    const selected = prefillDate || window.ptCalState?.selected || toISODate(new Date());
+    dateInput.value = selected;
+  }
+
+  const msg = $("ptAvailMsg");
+  if(msg) msg.textContent = "";
+
+  // Use class-based show (works with your .modal/.modal.show CSS)
+  m.classList.add("show");
+}
+
+function closePtAvailModal(){
+  const m = $("ptAvailModal");
+  if(!m) return;
+  m.classList.remove("show");
+}
+
+function fmtTime(t){ return (t || "").trim(); }
+
+async function loadPtAvailability(){
+  // We’ll keep the data in a cache so calendar + day list can use it
+  window.ptAvailCache = window.ptAvailCache || [];
+  const itemsWrap = document.getElementById("ptAvailList"); // legacy list (may not exist now)
+  const calGrid = document.getElementById("ptCalGrid");
+
+  // If calendar exists, show loading state there
+  if(calGrid){
+    // no-op, we show loading in day slots area instead
+    const daySlots = document.getElementById("ptCalDaySlots");
+    if(daySlots) daySlots.innerHTML = `<div class="rowSub">Loading…</div>`;
+  } else if(itemsWrap){
+    itemsWrap.innerHTML = `<div class="rowSub">Loading…</div>`;
+  }
+
+  try{
+    const r = await callFn("getMyAvailability", "GET");
+    const items = Array.isArray(r.items) ? r.items : [];
+
+    // Normalize items for calendar usage
+    window.ptAvailCache = items.map(it=>({
+      id: it.id,
+      date: it.date,     // "YYYY-MM-DD"
+      start: it.start,   // "HH:MM" or ISO depending on your server
+      end: it.end,
+      note: it.note || ""
+    }));
+
+    // If you still have old list UI somewhere, populate it safely
+    if(itemsWrap){
+      if(window.ptAvailCache.length === 0){
+        itemsWrap.innerHTML = `<div class="rowSub">No availability set yet.</div>`;
+      }else{
+        let html = "";
+        for(const it of window.ptAvailCache){
+          const label = `${shortDate(it.date)} · ${fmtTime(it.start)}–${fmtTime(it.end)}`;
+          const note = (it.note || "").trim();
+          html += `
+            <div class="row" data-avslot="${escapeHTML(it.id)}">
+              <div class="rowMain">
+                <div class="rowTop">
+                  <div class="rowTitle">${escapeHTML(label)}</div>
+                  <div class="rowMeta">${note ? escapeHTML(note) : ""}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        itemsWrap.innerHTML = html;
+      }
+    }
+
+    // Draw / refresh calendar UI if it exists
+    if(document.getElementById("ptCalGrid")){
+      renderPtCalendarMonth();         // month grid
+      renderPtCalendarSelectedDay();   // slot list for selected day
+    }
+
+  }catch(e){
+    console.error(e);
+
+    if(itemsWrap){
+      itemsWrap.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
+    }
+    const daySlots = document.getElementById("ptCalDaySlots");
+    if(daySlots){
+      daySlots.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
+    }
+  }
+}
+
+function wirePtAvailabilityUI(){
+  const addBtn   = $("addAvailBtn");
+  const saveBtn  = $("ptAvailSaveBtn");   // ✅ matches HTML
+  const closeBtn = $("ptAvailCloseBtn");  // ✅ matches HTML
+  const modal    = $("ptAvailModal");
+
+  if(addBtn){
+    addBtn.onclick = ()=>{
+      const selected = window.ptCalState?.selected || toISODate(new Date());
+      openPtAvailModal(selected);
+    };
+  }
+
+  if(closeBtn) closeBtn.onclick = closePtAvailModal;
+
+  // click outside card closes modal
+  if(modal){
+    modal.addEventListener("click", (e)=>{
+      if(e.target === modal) closePtAvailModal();
+    });
+  }
+
+  if(saveBtn){
+    saveBtn.onclick = async ()=>{
+      const msg  = $("ptAvailMsg");
+      const date = ($("ptAvailDate")?.value || "").trim();
+      const start= ($("ptAvailStart")?.value || "").trim();
+      const end  = ($("ptAvailEnd")?.value || "").trim();
+      const note = ($("ptAvailNote")?.value || "").trim();
+
+      if(!date || !start || !end){
+        if(msg) msg.textContent = "Please fill date, start, and end.";
+        return;
+      }
+
+      if(msg) msg.textContent = "Saving…";
+      saveBtn.disabled = true;
+
+      try{
+        await callFn("setMyAvailability", "POST", { date, start, end, note });
+        if(msg) msg.textContent = "Saved ✓";
+        closePtAvailModal();
+        await loadPtAvailability();
+      }catch(e){
+        console.error(e);
+        if(msg) msg.textContent = `Error: ${e.message || "Failed"}`;
+      }finally{
+        saveBtn.disabled = false;
+      }
+    };
+  }
+}
+/***********************
+ * PT CALENDAR (Availability)
+ ***********************/
+function initPtCalendarUI(){
+  // State
+  const now = new Date();
+  window.ptCalState = window.ptCalState || {
+    y: now.getFullYear(),
+    m: now.getMonth(),           // 0-11
+    selected: toISODate(now)     // YYYY-MM-DD
+  };
+
+  const prevBtn = document.getElementById("ptCalPrev");
+  const nextBtn = document.getElementById("ptCalNext");
+
+  if(prevBtn) prevBtn.onclick = ()=>{
+    window.ptCalState.m -= 1;
+    if(window.ptCalState.m < 0){ window.ptCalState.m = 11; window.ptCalState.y -= 1; }
+    renderPtCalendarMonth();
+    renderPtCalendarSelectedDay();
+  };
+
+  if(nextBtn) nextBtn.onclick = ()=>{
+    window.ptCalState.m += 1;
+    if(window.ptCalState.m > 11){ window.ptCalState.m = 0; window.ptCalState.y += 1; }
+    renderPtCalendarMonth();
+    renderPtCalendarSelectedDay();
+  };
+
+  // Make "+ Add availability" prefill the selected date in your existing modal
+  const addBtn = document.getElementById("addAvailBtn");
+  if(addBtn){
+    addBtn.onclick = ()=>{
+      const selected = window.ptCalState?.selected || toISODate(new Date());
+      const dateInput = document.getElementById("ptAvailDate");
+      if(dateInput) dateInput.value = selected;
+      openPtAvailModal();
+    };
+  }
+
+  // Initial render
+  renderPtCalendarMonth();
+  renderPtCalendarSelectedDay();
+}
+
+function renderPtCalendarMonth(){
+  const grid = document.getElementById("ptCalGrid");
+  const label = document.getElementById("ptCalMonthLabel");
+  if(!grid || !label) return;
+
+  const y = window.ptCalState.y;
+  const m = window.ptCalState.m;
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  label.textContent = `${monthNames[m]} ${y}`;
+
+  const first = new Date(y, m, 1);
+  const startDow = first.getDay();                 // 0=Sun
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+
+  // Count slots per day
+  const items = Array.isArray(window.ptAvailCache) ? window.ptAvailCache : [];
+  const counts = {};
+  for(const it of items){
+    if(!it?.date) continue;
+    const d = it.date;
+    counts[d] = (counts[d] || 0) + 1;
+  }
+
+  // Build 6-week grid (42 cells)
+  const cells = [];
+  for(let i=0;i<42;i++){
+    const dayNum = i - startDow + 1;
+
+    if(dayNum < 1 || dayNum > daysInMonth){
+      cells.push(`<button class="calDay calEmpty" type="button" disabled></button>`);
+      continue;
+    }
+
+    const iso = `${y}-${String(m+1).padStart(2,"0")}-${String(dayNum).padStart(2,"0")}`;
+    const c = counts[iso] || 0;
+
+    const isSelected = (window.ptCalState.selected === iso);
+    const cls = `calDay ${isSelected ? "calSel" : ""} ${c>0 ? "calHas" : ""}`;
+
+    cells.push(`
+      <button class="${cls}" type="button" data-ptcal="${iso}">
+        <div class="calNum">${dayNum}</div>
+        ${c>0 ? `<div class="calDot">${c}</div>` : `<div class="calDot calDotEmpty"></div>`}
+      </button>
+    `);
+  }
+
+  grid.innerHTML = cells.join("");
+
+  // Click handlers
+  grid.querySelectorAll(`[data-ptcal]`).forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const iso = btn.getAttribute("data-ptcal");
+      if(!iso) return;
+      window.ptCalState.selected = iso;
+      renderPtCalendarMonth();        // refresh selection highlight
+      renderPtCalendarSelectedDay();  // refresh slots list
+    });
+  });
+}
+
+function renderPtCalendarSelectedDay(){
+  const label = document.getElementById("ptCalSelectedLabel");
+  const wrap = document.getElementById("ptCalDaySlots");
+  if(!label || !wrap) return;
+
+  const selected = window.ptCalState?.selected || null;
+  if(!selected){
+    label.textContent = "Select a day to view slots.";
+    wrap.innerHTML = `<div class="rowSub">No day selected.</div>`;
+    return;
+  }
+
+  label.textContent = `Slots for ${shortDate(selected)}`;
+
+  const items = Array.isArray(window.ptAvailCache) ? window.ptAvailCache : [];
+  const dayItems = items
+    .filter(it=> it.date === selected)
+    .sort((a,b)=> String(a.start).localeCompare(String(b.start)));
+
+  if(dayItems.length === 0){
+    wrap.innerHTML = `<div class="rowSub">No slots on this day.</div>`;
+    return;
+  }
+
+  let html = "";
+  for(const it of dayItems){
+    const time = `${fmtTime(it.start)}–${fmtTime(it.end)}`;
+    const note = (it.note || "").trim();
+    html += `
+      <div class="row">
+        <div class="rowMain">
+          <div class="rowTop">
+            <div class="rowTitle">${escapeHTML(time)}</div>
+            <div class="rowMeta">${note ? escapeHTML(note) : ""}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  wrap.innerHTML = html;
+}
+
+function toISODate(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
 
   </script>
+
 </body>
 </html>
