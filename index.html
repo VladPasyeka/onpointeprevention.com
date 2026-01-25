@@ -753,6 +753,24 @@
   margin-bottom: 10px;
   z-index: 2;
 }
+    /* Weekday row for PT calendar */
+.calWeekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  margin-top:10px;
+  font-size:12px;
+  color:rgba(255,255,255,.65);
+}
+
+/* Keep disabled date readable (we disable it on purpose to avoid iOS native calendar overlay) */
+#ptAvailDate:disabled{
+  opacity:1;
+  -webkit-text-fill-color: rgba(255,255,255,.92);
+  color: rgba(255,255,255,.92);
+  cursor:not-allowed;
+}
+
   </style>
 </head>
 
@@ -918,12 +936,31 @@
       Set when dancers can request sessions.
     </div>
 
-    <button class="pillBtn" id="addAvailBtn" type="button"
-      style="margin-top:10px; width:100%; justify-content:center;">
-      + Add availability
-    </button>
 
-    <div id="ptAvailList" style="margin-top:12px;"></div>
+<!-- Calendar UI (PT Availability) -->
+<div id="ptAvailCalendar" style="margin-top:12px;">
+  <div class="calTop">
+    <button class="iconBtn" id="ptCalPrev" type="button" aria-label="Previous month">‹</button>
+    <div class="calMonth" id="ptCalMonthLabel">—</div>
+    <button class="iconBtn" id="ptCalNext" type="button" aria-label="Next month">›</button>
+  </div>
+
+  <div class="calWeekdays" id="ptCalWeekdays">
+    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  </div>
+
+  <div class="calGrid" id="ptCalGrid"></div>
+
+  <div style="margin-top:12px;">
+    <div class="labelRow">
+      <span id="ptCalSelectedLabel">Select a day</span>
+    </div>
+    <div id="ptCalDaySlots" style="margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- Keep legacy container (hidden) so older code won't crash if referenced -->
+<div id="ptAvailList" style="margin-top:12px; display:none;"></div>
   </div>
 </div>
 
@@ -1480,7 +1517,10 @@
 
     <div style="margin-top:12px;">
       <div class="labelRow"><span>Date</span></div>
-      <input id="ptAvailDate" type="date" style="width:100%;" />
+<input id="ptAvailDate" type="date" style="width:100%;" disabled />
+<div style="margin-top:6px; font-size:12px; color:rgba(255,255,255,.65);">
+  Date is selected from the calendar above.
+</div>
     </div>
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
@@ -1506,7 +1546,37 @@
     <div id="ptAvailMsg" style="margin-top:10px; color:rgba(255,255,255,.75); font-size:12px;"></div>
   </div>
 </div>
-  
+<!-- PT Availability Calendar Modal -->
+<div id="ptCalModal" class="modal" style="display:none;">
+  <div class="modalCard">
+    <div class="modalHeader">
+      <div style="font-weight:900;">Availability Calendar</div>
+      <button class="iconBtn" id="ptCalCloseBtn" type="button">✕</button>
+    </div>
+
+    <div class="calTop">
+      <button class="pillBtn" id="ptCalPrev" type="button">‹</button>
+      <div class="calMonth" id="ptCalMonthLabel">—</div>
+      <button class="pillBtn" id="ptCalNext" type="button">›</button>
+    </div>
+
+    <div class="calWeekdays">
+      <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+    </div>
+
+    <div class="calGrid" id="ptCalGrid"></div>
+
+    <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div>
+        <div id="ptCalSelectedLabel" style="font-weight:850;">Slots</div>
+        <div class="small" style="margin-top:4px;">Pick a day, then add time slots.</div>
+      </div>
+      <button class="pillBtn" id="ptCalAddSlotBtn" type="button">+ Add slot</button>
+    </div>
+
+    <div id="ptCalDaySlots" style="margin-top:10px;"></div>
+  </div>
+</div>  
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -4488,16 +4558,17 @@ async function gateRoleIfMissing(user){
 }
 async function renderPtDashboard(){
   try{
-    // Ensure PT-only cards exist and show
     const availCard = document.getElementById("ptAvailabilityCard");
     const recentCard = document.getElementById("ptRecentCard");
     if(availCard) availCard.style.display = "";
     if(recentCard) recentCard.style.display = "";
 
-    // Hide dancer-only dashboard cards/elements
     applyRoleUI("pt");
 
-    // If you want to populate these cards:
+    // IMPORTANT: wire + init calendar before loading data
+    if(typeof wirePtAvailabilityUI === "function") wirePtAvailabilityUI();
+    if(typeof initPtCalendarUI === "function") initPtCalendarUI();
+
     if(typeof loadPtAvailability === "function") await loadPtAvailability();
     if(typeof loadPtRecentCheckins === "function") await loadPtRecentCheckins();
 
@@ -4506,6 +4577,7 @@ async function renderPtDashboard(){
     toast("PT dashboard failed to load.");
   }
 }
+
 function hideDancerDashboardForPt(){
   // These ids exist inside dancer-only cards:
   const idsInsideDancerCards = [
@@ -4648,71 +4720,104 @@ async function loadPtRecentCheckins(){
   }
 }
 
-function openPtAvailModal(prefillDate){
-  const m = $("ptAvailModal");
+// ---------------- PT AVAILABILITY + CALENDAR (FIXED) ----------------
+window.ptAvailCache = window.ptAvailCache || [];
+window.ptCalState = window.ptCalState || {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),      // 0-11
+  selected: null                    // "YYYY-MM-DD"
+};
+
+function showModal(id){
+  const m = $(id);
   if(!m) return;
-
-  // Prefill date from calendar selection (optional)
-  const dateInput = $("ptAvailDate");
-  if(dateInput){
-    const selected = prefillDate || window.ptCalState?.selected || toISODate(new Date());
-    dateInput.value = selected;
-  }
-
-  const msg = $("ptAvailMsg");
-  if(msg) msg.textContent = "";
-
-  // Use class-based show (works with your .modal/.modal.show CSS)
   m.classList.add("show");
+  m.style.display = "flex"; // belt + suspenders
 }
 
-function closePtAvailModal(){
-  const m = $("ptAvailModal");
+function hideModal(id){
+  const m = $(id);
   if(!m) return;
   m.classList.remove("show");
+  m.style.display = "none";
+}
+
+function isoDate(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+
+function parseISO(yyyy_mm_dd){
+  const [y,m,d] = (yyyy_mm_dd || "").split("-").map(Number);
+  if(!y || !m || !d) return null;
+  return new Date(y, m-1, d);
 }
 
 function fmtTime(t){ return (t || "").trim(); }
 
-async function loadPtAvailability(){
-  // We’ll keep the data in a cache so calendar + day list can use it
-  window.ptAvailCache = window.ptAvailCache || [];
-  const itemsWrap = document.getElementById("ptAvailList"); // legacy list (may not exist now)
-  const calGrid = document.getElementById("ptCalGrid");
+function openPtAvailModal(prefillDate){
+  const m = $("ptAvailModal");
+  if(!m) return;
 
-  // If calendar exists, show loading state there
-  if(calGrid){
-    // no-op, we show loading in day slots area instead
-    const daySlots = document.getElementById("ptCalDaySlots");
-    if(daySlots) daySlots.innerHTML = `<div class="rowSub">Loading…</div>`;
-  } else if(itemsWrap){
-    itemsWrap.innerHTML = `<div class="rowSub">Loading…</div>`;
+  const msg = $("ptAvailMsg");
+  if(msg) msg.textContent = "";
+
+  // prefill date from calendar selection, or today
+  const date = prefillDate || window.ptCalState.selected || isoDate(new Date());
+  const dateEl = $("ptAvailDate");
+  if(dateEl){
+    dateEl.value = date;
+    dateEl.disabled = true; // IMPORTANT: prevents iOS date picker overlay
   }
+
+  const s = $("ptAvailStart"); if(s) s.value = "";
+  const e = $("ptAvailEnd");   if(e) e.value = "";
+  const n = $("ptAvailNote");  if(n) n.value = "";
+
+  showModal("ptAvailModal");
+  if(s) setTimeout(()=>s.focus(), 0);
+}
+
+function closePtAvailModal(){
+  hideModal("ptAvailModal");
+}
+
+async function loadPtAvailability(){
+  // show loading in calendar day slots (preferred), else legacy list
+  const daySlots = document.getElementById("ptCalDaySlots");
+  const itemsWrap = document.getElementById("ptAvailList");
+
+  if(daySlots) daySlots.innerHTML = `<div class="rowSub">Loading…</div>`;
+  else if(itemsWrap) itemsWrap.innerHTML = `<div class="rowSub">Loading…</div>`;
 
   try{
     const r = await callFn("getMyAvailability", "GET");
     const items = Array.isArray(r.items) ? r.items : [];
 
-    // Normalize items for calendar usage
     window.ptAvailCache = items.map(it=>({
       id: it.id,
-      date: it.date,     // "YYYY-MM-DD"
-      start: it.start,   // "HH:MM" or ISO depending on your server
+      date: it.date,         // "YYYY-MM-DD"
+      start: it.start,       // "HH:MM"
       end: it.end,
       note: it.note || ""
     }));
 
-    // If you still have old list UI somewhere, populate it safely
-    if(itemsWrap){
+    // refresh calendar if present
+    if(document.getElementById("ptCalGrid")){
+      renderPtCalendarMonth();
+      renderPtCalendarSelectedDay();
+    }else if(itemsWrap){
+      // fallback legacy rendering if calendar not mounted
       if(window.ptAvailCache.length === 0){
         itemsWrap.innerHTML = `<div class="rowSub">No availability set yet.</div>`;
       }else{
-        let html = "";
-        for(const it of window.ptAvailCache){
+        itemsWrap.innerHTML = window.ptAvailCache.map(it=>{
           const label = `${shortDate(it.date)} · ${fmtTime(it.start)}–${fmtTime(it.end)}`;
           const note = (it.note || "").trim();
-          html += `
-            <div class="row" data-avslot="${escapeHTML(it.id)}">
+          return `
+            <div class="row">
               <div class="rowMain">
                 <div class="rowTop">
                   <div class="rowTitle">${escapeHTML(label)}</div>
@@ -4721,125 +4826,52 @@ async function loadPtAvailability(){
               </div>
             </div>
           `;
-        }
-        itemsWrap.innerHTML = html;
+        }).join("");
       }
     }
-
-    // Draw / refresh calendar UI if it exists
-    if(document.getElementById("ptCalGrid")){
-      renderPtCalendarMonth();         // month grid
-      renderPtCalendarSelectedDay();   // slot list for selected day
-    }
-
   }catch(e){
     console.error(e);
-
-    if(itemsWrap){
-      itemsWrap.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
-    }
-    const daySlots = document.getElementById("ptCalDaySlots");
-    if(daySlots){
-      daySlots.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
-    }
+    if(daySlots) daySlots.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
+    if(itemsWrap) itemsWrap.innerHTML = `<div class="rowSub">Failed to load availability.</div>`;
   }
 }
 
-function wirePtAvailabilityUI(){
-  const addBtn   = $("addAvailBtn");
-  const saveBtn  = $("ptAvailSaveBtn");   // ✅ matches HTML
-  const closeBtn = $("ptAvailCloseBtn");  // ✅ matches HTML
-  const modal    = $("ptAvailModal");
-
-  if(addBtn){
-    addBtn.onclick = ()=>{
-      const selected = window.ptCalState?.selected || toISODate(new Date());
-      openPtAvailModal(selected);
-    };
-  }
-
-  if(closeBtn) closeBtn.onclick = closePtAvailModal;
-
-  // click outside card closes modal
-  if(modal){
-    modal.addEventListener("click", (e)=>{
-      if(e.target === modal) closePtAvailModal();
-    });
-  }
-
-  if(saveBtn){
-    saveBtn.onclick = async ()=>{
-      const msg  = $("ptAvailMsg");
-      const date = ($("ptAvailDate")?.value || "").trim();
-      const start= ($("ptAvailStart")?.value || "").trim();
-      const end  = ($("ptAvailEnd")?.value || "").trim();
-      const note = ($("ptAvailNote")?.value || "").trim();
-
-      if(!date || !start || !end){
-        if(msg) msg.textContent = "Please fill date, start, and end.";
-        return;
-      }
-
-      if(msg) msg.textContent = "Saving…";
-      saveBtn.disabled = true;
-
-      try{
-        await callFn("setMyAvailability", "POST", { date, start, end, note });
-        if(msg) msg.textContent = "Saved ✓";
-        closePtAvailModal();
-        await loadPtAvailability();
-      }catch(e){
-        console.error(e);
-        if(msg) msg.textContent = `Error: ${e.message || "Failed"}`;
-      }finally{
-        saveBtn.disabled = false;
-      }
-    };
-  }
-}
-/***********************
- * PT CALENDAR (Availability)
- ***********************/
 function initPtCalendarUI(){
-  // State
-  const now = new Date();
-  window.ptCalState = window.ptCalState || {
-    y: now.getFullYear(),
-    m: now.getMonth(),           // 0-11
-    selected: toISODate(now)     // YYYY-MM-DD
-  };
+  const grid = document.getElementById("ptCalGrid");
+  if(!grid) return; // calendar HTML not mounted
 
-  const prevBtn = document.getElementById("ptCalPrev");
-  const nextBtn = document.getElementById("ptCalNext");
-
-  if(prevBtn) prevBtn.onclick = ()=>{
-    window.ptCalState.m -= 1;
-    if(window.ptCalState.m < 0){ window.ptCalState.m = 11; window.ptCalState.y -= 1; }
-    renderPtCalendarMonth();
-    renderPtCalendarSelectedDay();
-  };
-
-  if(nextBtn) nextBtn.onclick = ()=>{
-    window.ptCalState.m += 1;
-    if(window.ptCalState.m > 11){ window.ptCalState.m = 0; window.ptCalState.y += 1; }
-    renderPtCalendarMonth();
-    renderPtCalendarSelectedDay();
-  };
-
-  // Make "+ Add availability" prefill the selected date in your existing modal
-  const addBtn = document.getElementById("addAvailBtn");
-  if(addBtn){
-    addBtn.onclick = ()=>{
-      const selected = window.ptCalState?.selected || toISODate(new Date());
-      const dateInput = document.getElementById("ptAvailDate");
-      if(dateInput) dateInput.value = selected;
-      openPtAvailModal();
-    };
+  // initialize selected day (today by default)
+  if(!window.ptCalState.selected){
+    window.ptCalState.selected = isoDate(new Date());
   }
 
-  // Initial render
+  const prev = $("ptCalPrev");
+  const next = $("ptCalNext");
+  if(prev) prev.onclick = ()=>{
+    window.ptCalState.month--;
+    if(window.ptCalState.month < 0){ window.ptCalState.month = 11; window.ptCalState.year--; }
+    renderPtCalendarMonth();
+    renderPtCalendarSelectedDay();
+  };
+  if(next) next.onclick = ()=>{
+    window.ptCalState.month++;
+    if(window.ptCalState.month > 11){ window.ptCalState.month = 0; window.ptCalState.year++; }
+    renderPtCalendarMonth();
+    renderPtCalendarSelectedDay();
+  };
+
+  // main "+ Add availability" button should add for the selected day
+  const addBtn = $("addAvailBtn");
+  if(addBtn){
+    addBtn.onclick = ()=> openPtAvailModal(window.ptCalState.selected);
+  }
+
   renderPtCalendarMonth();
   renderPtCalendarSelectedDay();
+}
+
+function countSlotsOn(dateISO){
+  return window.ptAvailCache.filter(x => x.date === dateISO).length;
 }
 
 function renderPtCalendarMonth(){
@@ -4847,61 +4879,58 @@ function renderPtCalendarMonth(){
   const label = document.getElementById("ptCalMonthLabel");
   if(!grid || !label) return;
 
-  const y = window.ptCalState.y;
-  const m = window.ptCalState.m;
-
-  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  label.textContent = `${monthNames[m]} ${y}`;
+  const y = window.ptCalState.year;
+  const m = window.ptCalState.month;
 
   const first = new Date(y, m, 1);
-  const startDow = first.getDay();                 // 0=Sun
+  const startDay = first.getDay(); // 0-6
   const daysInMonth = new Date(y, m+1, 0).getDate();
 
-  // Count slots per day
-  const items = Array.isArray(window.ptAvailCache) ? window.ptAvailCache : [];
-  const counts = {};
-  for(const it of items){
-    if(!it?.date) continue;
-    const d = it.date;
-    counts[d] = (counts[d] || 0) + 1;
+  const monthName = first.toLocaleString(undefined, { month:"long" });
+  label.textContent = `${monthName} ${y}`;
+
+  // build cells (pad with blanks)
+  let cells = [];
+  for(let i=0;i<startDay;i++){
+    cells.push(`<div class="calCell calBlank"></div>`);
   }
 
-  // Build 6-week grid (42 cells)
-  const cells = [];
-  for(let i=0;i<42;i++){
-    const dayNum = i - startDow + 1;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateISO = isoDate(new Date(y, m, d));
+    const isSel = (dateISO === window.ptCalState.selected);
+    const slotCount = countSlotsOn(dateISO);
 
-    if(dayNum < 1 || dayNum > daysInMonth){
-      cells.push(`<button class="calDay calEmpty" type="button" disabled></button>`);
-      continue;
-    }
-
-    const iso = `${y}-${String(m+1).padStart(2,"0")}-${String(dayNum).padStart(2,"0")}`;
-    const c = counts[iso] || 0;
-
-    const isSelected = (window.ptCalState.selected === iso);
-    const cls = `calDay ${isSelected ? "calSel" : ""} ${c>0 ? "calHas" : ""}`;
+    const cls = `calCell ${isSel ? "calSelected" : ""}`;
+    const badge = slotCount ? `<div class="calCount">${slotCount}</div>` : "";
 
     cells.push(`
-      <button class="${cls}" type="button" data-ptcal="${iso}">
-        <div class="calNum">${dayNum}</div>
-        ${c>0 ? `<div class="calDot">${c}</div>` : `<div class="calDot calDotEmpty"></div>`}
+      <button class="${cls}" type="button" data-caldate="${dateISO}">
+        <div class="calNum">${d}</div>
+        ${badge}
       </button>
     `);
   }
 
   grid.innerHTML = cells.join("");
 
-  // Click handlers
-  grid.querySelectorAll(`[data-ptcal]`).forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const iso = btn.getAttribute("data-ptcal");
-      if(!iso) return;
-      window.ptCalState.selected = iso;
-      renderPtCalendarMonth();        // refresh selection highlight
-      renderPtCalendarSelectedDay();  // refresh slots list
-    });
+  // click handlers
+  grid.querySelectorAll("[data-caldate]").forEach(btn=>{
+    btn.onclick = ()=>{
+      window.ptCalState.selected = btn.getAttribute("data-caldate");
+      renderPtCalendarMonth();
+      renderPtCalendarSelectedDay();
+    };
   });
+}
+
+async function deleteAvailSlot(slotId){
+  try{
+    await callFn("deleteMyAvailability", "POST", { slotId });
+    await loadPtAvailability();
+  }catch(e){
+    console.error(e);
+    toast("Delete failed");
+  }
 }
 
 function renderPtCalendarSelectedDay(){
@@ -4909,42 +4938,95 @@ function renderPtCalendarSelectedDay(){
   const wrap = document.getElementById("ptCalDaySlots");
   if(!label || !wrap) return;
 
-  const selected = window.ptCalState?.selected || null;
-  if(!selected){
-    label.textContent = "Select a day to view slots.";
-    wrap.innerHTML = `<div class="rowSub">No day selected.</div>`;
+  const sel = window.ptCalState.selected;
+  if(!sel){
+    label.textContent = "Select a day";
+    wrap.innerHTML = `<div class="rowSub">Pick a date to see / add time slots.</div>`;
     return;
   }
 
-  label.textContent = `Slots for ${shortDate(selected)}`;
+  label.textContent = `Selected: ${shortDate(sel)}`;
 
-  const items = Array.isArray(window.ptAvailCache) ? window.ptAvailCache : [];
-  const dayItems = items
-    .filter(it=> it.date === selected)
-    .sort((a,b)=> String(a.start).localeCompare(String(b.start)));
+  const slots = window.ptAvailCache
+    .filter(x => x.date === sel)
+    .sort((a,b)=> (a.start||"").localeCompare(b.start||""));
 
-  if(dayItems.length === 0){
-    wrap.innerHTML = `<div class="rowSub">No slots on this day.</div>`;
-    return;
-  }
-
-  let html = "";
-  for(const it of dayItems){
-    const time = `${fmtTime(it.start)}–${fmtTime(it.end)}`;
-    const note = (it.note || "").trim();
-    html += `
-      <div class="row">
-        <div class="rowMain">
-          <div class="rowTop">
-            <div class="rowTitle">${escapeHTML(time)}</div>
-            <div class="rowMeta">${note ? escapeHTML(note) : ""}</div>
-          </div>
-        </div>
+  if(slots.length === 0){
+    wrap.innerHTML = `
+      <div class="rowSub">No availability for this day.</div>
+      <button class="pillBtn" type="button" style="width:100%; justify-content:center; margin-top:10px;"
+        id="ptCalAddForDayBtn">+ Add time slot</button>
+    `;
+  }else{
+    wrap.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${slots.map(it=>{
+          const note = (it.note || "").trim();
+          return `
+            <div class="row">
+              <div class="rowMain">
+                <div class="rowTop">
+                  <div class="rowTitle">${escapeHTML(fmtTime(it.start))}–${escapeHTML(fmtTime(it.end))}</div>
+                  <div class="rowMeta">${note ? escapeHTML(note) : ""}</div>
+                </div>
+              </div>
+              <div class="rowActions">
+                <button class="iconBtn" type="button" data-del="${escapeHTML(it.id)}" aria-label="Delete slot">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+        <button class="pillBtn" type="button" style="width:100%; justify-content:center;"
+          id="ptCalAddForDayBtn">+ Add another slot</button>
       </div>
     `;
   }
-  wrap.innerHTML = html;
+
+  const add = document.getElementById("ptCalAddForDayBtn");
+  if(add) add.onclick = ()=> openPtAvailModal(sel);
+
+  wrap.querySelectorAll("[data-del]").forEach(b=>{
+    b.onclick = ()=> deleteAvailSlot(b.getAttribute("data-del"));
+  });
 }
+
+function wirePtAvailabilityUI(){
+  // Fix ID mismatches: your HTML uses ptAvailSaveBtn + ptAvailCloseBtn
+  const saveBtn = $("ptAvailSaveBtn");
+  const closeBtn = $("ptAvailCloseBtn");
+  const modal = $("ptAvailModal");
+
+  if(closeBtn) closeBtn.onclick = closePtAvailModal;
+  if(modal){
+    modal.onclick = (e)=>{ if(e.target === modal) closePtAvailModal(); };
+  }
+
+  if(saveBtn){
+    saveBtn.onclick = async ()=>{
+      const msg = $("ptAvailMsg");
+      const date = ($("ptAvailDate")?.value || "").trim();
+      const start = ($("ptAvailStart")?.value || "").trim();
+      const end = ($("ptAvailEnd")?.value || "").trim();
+      const note = ($("ptAvailNote")?.value || "").trim();
+
+      if(!date || !start || !end){
+        if(msg) msg.textContent = "Please pick start + end time.";
+        return;
+      }
+
+      if(msg) msg.textContent = "Saving…";
+      try{
+        await callFn("setMyAvailability", "POST", { date, start, end, note });
+        closePtAvailModal();
+        await loadPtAvailability();
+      }catch(e){
+        console.error(e);
+        if(msg) msg.textContent = e?.message || "Save failed.";
+      }
+    };
+  }
+}
+// ---------------- /PT AVAILABILITY + CALENDAR (FIXED) ----------------
 
 function toISODate(d){
   const y = d.getFullYear();
