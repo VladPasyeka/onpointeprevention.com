@@ -44,7 +44,15 @@
       -moz-osx-font-smoothing:grayscale;
     }
 
+    
     /* Use dynamic viewport height where supported (iOS/Android browser chrome) */
+    @supports (min-height: 100dvh){
+      body{ min-height: 100dvh; }
+      main{ min-height: 100dvh; }
+      .authWrap{ min-height: 100dvh; }
+    }
+
+        /* Use dynamic viewport height where supported (iOS/Android browser chrome) */
     @supports (min-height: 100dvh){
       body{ min-height: 100dvh; }
       main{ min-height: 100dvh; }
@@ -914,7 +922,9 @@ html, body{
 }
 
 #appShell{
-  height:100dvh;               /* iOS dynamic viewport */
+  height:100dvh; 
+  */
+  min-height:100dvh;/* iOS dynamic viewport */
   display:flex;
   flex-direction:column;
 }
@@ -2038,11 +2048,15 @@ async function refreshMyDancersUI(){
 
   const msgEl = document.getElementById("ptDancersMsg");
   const listEl = document.getElementById("ptDancersList");
-  const emptyEl = document.getElementById("ptDancersEmpty");
+   const titleEl = document.getElementById("ptDancerTitle");
+  const subEl = document.getElementById("ptDancerSub");
+  const checkinsEl = document.getElementById("ptCheckinsList");
 
   if(msgEl) msgEl.textContent = "Loading dancers…";
   if(listEl) listEl.innerHTML = "";
-  if(emptyEl) emptyEl.style.display = "none";
+  if(titleEl) titleEl.textContent = "Select a dancer";
+  if(subEl) subEl.textContent = "Their recent check-ins will appear here.";
+  if(checkinsEl) checkinsEl.innerHTML = "";
 
   window.ptDancerNameMap = window.ptDancerNameMap || {};
 
@@ -2051,8 +2065,8 @@ async function refreshMyDancersUI(){
     const dancers = r?.data?.dancers || [];
 
     if(!Array.isArray(dancers) || dancers.length === 0){
-      if(msgEl) msgEl.textContent = "";
-      if(emptyEl) emptyEl.style.display = "";
+      if(msgEl) msgEl.textContent = "No dancers linked yet.";
+      if(checkinsEl) checkinsEl.innerHTML = "";
       return;
     }
 
@@ -2092,19 +2106,20 @@ async function refreshMyDancersUI(){
         const dancerId = btn.getAttribute("data-open-dancer");
         if(!dancerId) return;
 
-        // If you have a “select a dancer” area, populate it here,
-        // otherwise we load that dancer’s check-ins into the PT recent list:
-        const recentWrap = document.getElementById("ptRecentCheckins");
-        if(recentWrap) recentWrap.innerHTML = `<div class="rowSub">Loading…</div>`;
-
+        const dancerName = window.ptDancerNameMap?.[dancerId] || dancerId;
+        if(titleEl) titleEl.textContent = dancerName || "Dancer";
+        if(subEl) subEl.textContent = "Loading recent check-ins…";
+        if(checkinsEl) checkinsEl.innerHTML = `<div class="rowSub">Loading…</div>`;
+        
         try{
           const rr = await callFn("getDancerRecentCheckins", "GET", null, { dancerId, limit: 12 });
           const items = Array.isArray(rr?.items) ? rr.items : [];
 
-          if(!recentWrap) return;
+          if(!checkinsEl) return;
 
           if(items.length === 0){
-            recentWrap.innerHTML = `<div class="rowSub">No check-ins yet for this dancer.</div>`;
+            checkinsEl.innerHTML = `<div class="rowSub">No check-ins yet for this dancer.</div>`;
+            if(subEl) subEl.textContent = "No recent check-ins.";
             return;
           }
 
@@ -2121,9 +2136,10 @@ async function refreshMyDancersUI(){
               </div>
             `;
           });
-          recentWrap.innerHTML = out;
-
-          recentWrap.querySelectorAll("[data-pt-open]").forEach(row=>{
+          if(subEl) subEl.textContent = "Recent check-ins.";
+          checkinsEl.innerHTML = out;
+          
+          checkinsEl.querySelectorAll("[data-pt-open]").forEach(row=>{
             row.addEventListener("click", ()=>{
               const key = row.getAttribute("data-pt-open") || "";
               const [did, date] = key.split("|");
@@ -2134,7 +2150,8 @@ async function refreshMyDancersUI(){
 
         }catch(err){
           console.error(err);
-          if(recentWrap) recentWrap.innerHTML = `<div class="rowSub">Failed to load dancer check-ins.</div>`;
+          if(checkinsEl) checkinsEl.innerHTML = `<div class="rowSub">Failed to load dancer check-ins.</div>`;
+          if(subEl) subEl.textContent = "Failed to load check-ins.";
         }
       });
     }
@@ -4430,6 +4447,10 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
   $("openCheckin").addEventListener("click", ()=> openCheckinModal());
   $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
   $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+    const refreshDancersBtn = $("refreshDancersBtn");
+  if(refreshDancersBtn){
+    refreshDancersBtn.addEventListener("click", ()=> refreshMyDancersUI());
+  }
 
   // ✅ Rest Day button (expects an element with id="restDayBtn" to exist)
   const restBtn = $("restDayBtn");
