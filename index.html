@@ -1077,6 +1077,114 @@ input, select, textarea, button{
   overflow:auto;
   -webkit-overflow-scrolling:touch;
 }
+/* =========================================================
+   FINAL MOBILE TUNING (iPhone + Android)
+   Paste at the VERY END of <style>
+   ========================================================= */
+
+/* 1) Make bottom spacing match the real tab-bar height (kills the huge empty gap) */
+:root{
+  --tabsOffset: 92px;          /* space reserved for the fixed tabs (not including safe-area) */
+  --tabsOffsetDesktop: 140px;
+}
+
+#appShell > main{
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--tabsOffset)) !important;
+}
+.container{
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--tabsOffset)) !important;
+}
+
+/* 2) Slimmer bottom tabs (less tall, more “native”) */
+.tabs{
+  padding: 6px 10px calc(env(safe-area-inset-bottom) + 8px) !important;
+}
+.tabRow{
+  gap: 8px !important;
+}
+.tab{
+  min-width: 78px !important;
+  padding: 8px 10px !important;
+  border-radius: 14px !important;
+  font-size: 10px !important;
+}
+.tab .emoji{
+  font-size: 14px !important;
+}
+
+/* 3) Top bar: keep it one clean row on phones (no big 2-row header) */
+@media (max-width: 520px){
+  .top{
+    padding: calc(env(safe-area-inset-top) + 8px) 12px 10px !important;
+  }
+
+  /* override the 2-row mobile reflow */
+  .brandRow{
+    grid-template-columns: 40px 1fr auto !important;
+    grid-template-rows: auto !important;
+    row-gap: 0 !important;
+  }
+
+  .logo{
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 10px !important;
+  }
+
+  .topActions{
+    grid-column: auto !important;
+    grid-row: auto !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+
+  .pillBtn{
+    padding: 8px 10px !important;
+    border-radius: 14px !important;
+    font-size: 12px !important;
+    min-height: 40px !important; /* still comfy to tap */
+  }
+
+  /* slightly cleaner top glass */
+  .top{
+    background-color: rgba(11,11,13,.78) !important;
+    background-image: linear-gradient(to bottom, rgba(11,11,13,.88), rgba(11,11,13,.60)) !important;
+  }
+}
+
+/* 4) “Everything is too big” fix specifically for the PT My Dancers screen */
+@media (max-width: 520px){
+  /* the PT polish block adds big padding/font sizes — tighten them */
+  #screen-dancers .card,
+  #linkCard{
+    padding: 14px !important;
+  }
+
+  #screen-dancers .cardTitle,
+  #linkCard .cardTitle{
+    font-size: 16px !important;
+    line-height: 1.15 !important;
+  }
+
+  #screen-dancers .cardSub,
+  #linkCard .cardSub{
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  #ptDancersList{ gap: 8px !important; }
+  #ptCheckinsList{ gap: 8px !important; }
+}
+
+/* 5) Desktop/tablet: keep a bit more breathing room */
+@media (min-width: 521px){
+  #appShell > main{
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--tabsOffsetDesktop)) !important;
+  }
+  .container{
+    padding-bottom: calc(env(safe-area-inset-bottom) + var(--tabsOffsetDesktop)) !important;
+  }
+}
 
   </style>
 </head>
