@@ -146,7 +146,7 @@
     main{ min-height: 100vh; }
     .container{
       padding: 14px var(--pad);
-      padding-bottom: calc(env(safe-area-inset-bottom) + 240px);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 320px);
     }
     .grid{display:grid; gap:12px}
     .card{
@@ -695,45 +695,53 @@
   color:rgba(255,255,255,.65);
   font-size:12px;
   margin-bottom:8px;
+  text-align:center;
 }
 .calGrid{
   display:grid;
   grid-template-columns:repeat(7,1fr);
   gap:8px;
 }
-.calDay{
+.calCell{
   border:1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.04);
-  border-radius:14px;
-  padding:10px 10px 12px;
+  border-radius:12px;
+  padding:8px;
   color: var(--text);
   text-align:left;
   cursor:pointer;
-  min-height:54px;
+  min-height:48px;
   position:relative;
 }
-.calDay:hover{ background: rgba(255,255,255,.06); }
-.calEmpty{
+.calCell:hover{ background: rgba(255,255,255,.06); }
+.calBlank{
   background: transparent;
-  border: 1px dashed rgba(255,255,255,.10);
+  border: 1px dashed rgba(255,255,255,.08);
   cursor:default;
 }
-.calNum{ font-weight:900; font-size:14px; }
-.calDot{
+.calNum{ font-weight:900; font-size:13px; }
+.calCount{
   position:absolute;
-  right:10px;
-  bottom:10px;
-  font-size:11px;
-  padding:2px 7px;
+  right:6px;
+  bottom:6px;
+  font-size:10px;
+  padding:2px 6px;
   border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-}
-.calDotEmpty{ opacity:.25; }
-.calHas .calDot{ opacity:1; }
-.calSel{
-  outline: 2px solid rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.08);
+  min-width:18px;
+  text-align:center;
+}
+.calSelected{
+  outline: 2px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.10);
+}
+@media (max-width: 420px){
+  .calWeekdays{ gap:6px; font-size:11px; }
+  .calGrid{ gap:6px; }
+  .calCell{ min-height:44px; padding:6px; border-radius:10px; }
+  .calNum{ font-size:12px; }
+  .calCount{ font-size:9px; right:4px; bottom:4px; }
 }   
 /* ===== Universal Modal Overlay (fix off-screen & close issues) ===== */
 .overlayModal{
@@ -945,7 +953,7 @@ html, body{
   flex:1 1 auto;
   overflow:auto;
   -webkit-overflow-scrolling:touch;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 12px); /* breathing room above tabs */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120px); /* breathing room above tabs */
 }
 
 /* Remove the giant bottom padding (it was for fixed tabs overlay) */
