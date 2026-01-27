@@ -923,53 +923,40 @@ input, select, textarea{
   html, body{ overflow-x: hidden; }
 }
 /* =========================================================
-   MOBILE SHELL PATCH (iOS + Android)
-   Paste at very end of <style>
+   MOBILE SCROLL + SPACING FIX (iOS + Android)
+   Ensures the page can scroll to the bottom without giant gaps.
    ========================================================= */
 
-/* 1) Make the app a real "screen" with internal scrolling */
+/* Let the document scroll normally (no locked body)  */
 html, body{
   height:100%;
-  overflow:hidden; /* IMPORTANT: stop body scroll */
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 
 #appShell{
-  height:100dvh; 
-  */
-  min-height:100dvh;/* iOS dynamic viewport */
-  display:flex;
-  flex-direction:column;
+  min-height:100dvh;
   background: inherit;
 }
 
-/* Top stays visible, main scrolls */
-#appShell > .top{
-  flex:0 0 auto;
-  position:sticky;
-  top:0;
-}
-
+/* Keep tabs fixed, but make room for them in the scroll area */
+    
 #appShell > main{
-  flex:1 1 auto;
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 120px); /* breathing room above tabs */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120px);
 }
 
-/* Remove the giant bottom padding (it was for fixed tabs overlay) */
 .container{
-  padding-bottom: 18px !important;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120px) !important;
 }
 
-/* 2) Tabs: make them sticky (not overlay) + horizontal scroll */
+/* 2) Keep tabs fixed at the bottom */
 .tabs{
-  position:sticky;   /* replaces fixed overlay behavior */
+  position:fixed;
   bottom:0;
-  left:auto;
-  right:auto;
+  left:0;
+  right:0;
   padding: 8px 10px calc(env(safe-area-inset-bottom) + 10px);
   z-index:40;
-  margin-top:auto;
 }
 
 .tabRow{
