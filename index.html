@@ -613,6 +613,47 @@
     }
     .toggleLine strong{font-size:12px}
     .toggleLine span{font-size:11px; color:rgba(255,255,255,.70)}
+        .toggleLine input[type="checkbox"]{
+      appearance:none;
+      width:42px;
+      height:22px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.18);
+      position:relative;
+      outline:none;
+      cursor:pointer;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .toggleLine input[type="checkbox"]::after{
+      content:"";
+      position:absolute;
+      top:2px;
+      left:2px;
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background: rgba(255,255,255,.85);
+      box-shadow: 0 4px 10px rgba(0,0,0,.35);
+      transition: transform .2s ease, background .2s ease;
+    }
+    .toggleLine input[type="checkbox"]:checked{
+      background: rgba(57,217,138,.25);
+      border-color: rgba(57,217,138,.6);
+    }
+    .toggleLine input[type="checkbox"]:checked::after{
+      transform: translateX(20px);
+      background: var(--ok);
+    }
+    .jumpSelect{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 10px;
+      font-size: 12px;
+      outline: none;
+    }
     .hr{
       height:1px; background: rgba(255,255,255,.08);
       border:0; margin: 8px 0;
@@ -1804,14 +1845,14 @@ input, select, textarea, button{
                 <label class="toggleLine" for="f_pointe" style="cursor:pointer;">
                   <strong>🩰 Pointe work</strong>
                   <span>
-                    <input id="f_pointe" type="checkbox" style="transform:scale(1.15); margin-left:10px;" />
+                    <input id="f_pointe" type="checkbox" />
                   </span>
                 </label>
 
                 <label class="toggleLine" for="f_partner" style="cursor:pointer;">
                   <strong>🤝 Partnering</strong>
                   <span>
-                    <input id="f_partner" type="checkbox" style="transform:scale(1.15); margin-left:10px;" />
+                    <input id="f_partner" type="checkbox" />
                   </span>
                 </label>
 
@@ -1820,11 +1861,12 @@ input, select, textarea, button{
                   <span>
                     <select
                       id="f_jumps"
-                      style="background: rgba(255,255,255,.04); border:1px solid var(--line); color: var(--text); border-radius: 12px; padding: 10px 10px; font-size: 12px; outline: none;"
-                    >
+                      class="jumpSelect"
+                            >
                       <option value="0">None</option>
-                      <option value="1">Moderate</option>
-                      <option value="2">High</option>
+                      <option value="1">Low</option>
+                      <option value="2">Moderate</option>
+                      <option value="3">High</option>
                     </select>
                   </span>
                 </div>
@@ -3777,7 +3819,15 @@ function renderRecent(entries){
 
   el.innerHTML = html;
 }
-
+    
+function formatJumpVolume(value){
+  const v = Number(value || 0);
+  if(!Number.isFinite(v) || v <= 0) return "None";
+  if(v === 1) return "Low";
+  if(v === 2) return "Moderate";
+  return "High";
+}
+    
 function renderHistory(entries){
   const el = $("historyList");
   el.innerHTML = "";
@@ -3786,13 +3836,6 @@ function renderHistory(entries){
     el.innerHTML = `<div class="row"><div class="rowMain"><div class="rowTitle">No saved check-ins</div><div class="rowSub">Use the Check-In tab to add your first entry.</div></div></div>`;
     return;
   }
-
-  const jumpsLabel = (n)=>{
-    const v = Number(n || 0);
-    if(v <= 0) return "Jumps: None";
-    if(v === 1) return "Jumps: Moderate";
-    return "Jumps: High";
-  };
 
   entries.forEach(e=>{
     const load = sessionLoad(e);
@@ -3809,7 +3852,7 @@ function renderHistory(entries){
     const chips = [];
     if(pointe) chips.push("🩰 Pointe");
     if(partner) chips.push("🤝 Partnering");
-    chips.push(`⬆️ ${jumpsLabel(jumps)}`);
+    chips.push(`⬆️ Jumps: ${formatJumpVolume(jumps)}`);
 
     const row = document.createElement("div");
     row.className = "row";
@@ -3899,25 +3942,26 @@ function renderHistory(entries){
 function openCheckinModal(existing=null){
   $("checkinModal").classList.add("show");
 
-  const d = existing ? existing.date : todayISO();
+  const fallback = existing || cachedCheckins.find(x=> x.date === todayISO()) || null;
+  const d = fallback ? fallback.date : todayISO();
   $("f_date").value = d;
 
-  $("f_minutes").value = existing ? existing.minutes : 60;
-  $("f_rpe").value     = existing ? existing.rpe : 6;
-  $("f_sleep").value   = existing ? existing.sleep : 7;
-  $("f_sore").value    = existing ? existing.sore : 3;
-  $("f_fatigue").value = existing ? existing.fatigue : 4;
-  $("f_notes").value   = existing ? (existing.notes||"") : "";
+  $("f_minutes").value = fallback ? fallback.minutes : 60;
+  $("f_rpe").value     = fallback ? fallback.rpe : 6;
+  $("f_sleep").value   = fallback ? fallback.sleep : 7;
+  $("f_sore").value    = fallback ? fallback.sore : 3;
+  $("f_fatigue").value = fallback ? fallback.fatigue : 4;
+  $("f_notes").value   = fallback ? (fallback.notes||"") : "";
 
   // NEW dancer markers (safe defaults if missing)
-  $("f_pointe").checked = !!(existing && existing.pointe);
-  $("f_partner").checked = !!(existing && existing.partner);
+  $("f_pointe").checked = !!(fallback && fallback.pointe);
+  $("f_partner").checked = !!(fallback && fallback.partner);
 
-  const jumpsVal = (existing && typeof existing.jumps !== "undefined") ? Number(existing.jumps) : 0;
-  $("f_jumps").value = String(isNaN(jumpsVal) ? 0 : Math.max(0, Math.min(2, jumpsVal)));
+  const jumpsVal = (fallback && typeof fallback.jumps !== "undefined") ? Number(fallback.jumps) : 0;
+  $("f_jumps").value = String(isNaN(jumpsVal) ? 0 : Math.max(0, Math.min(3, jumpsVal)));
 
   // exercise picks
-  setCheckinPicked(Array.isArray(existing?.exercises) ? existing.exercises : []);
+  setCheckinPicked(Array.isArray(fallback?.exercises) ? fallback.exercises : []);
 
   // keep picker collapsed by default
   $("exercisePicker").style.display = "none";
@@ -3987,10 +4031,10 @@ function renderRoutineList(){
     `;
 
     row.querySelector(`[data-use="${r.id}"]`).addEventListener("click", ()=>{
-      applyRoutineToToday(r.id);
-      toast("Routine added ✓");
       setTab("checkin");
       openCheckinModal(null);
+      applyRoutineToToday(r.id);
+      toast("Routine added ✓");
       // picker stays collapsed; user can open to view
     });
 
@@ -4209,7 +4253,9 @@ function openPtCheckinModal(entry){
   // Normalize fields (older check-ins may not have these)
   const pointe = entry?.pointe ? "Yes" : "No";
   const partner = entry?.partner ? "Yes" : "No";
-  const jumps = (entry?.jumps === undefined || entry?.jumps === null) ? "—" : String(entry.jumps);
+  const jumps = (entry?.jumps === undefined || entry?.jumps === null)
+    ? "—"
+    : formatJumpVolume(entry.jumps);
 
   // Exercises (array)
   const exArr = Array.isArray(entry?.exercises) ? entry.exercises : [];
@@ -4674,6 +4720,56 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
   $("openCheckin").addEventListener("click", ()=> openCheckinModal());
   $("openCheckin2").addEventListener("click", ()=> openCheckinModal());
   $("openExercises").addEventListener("click", ()=> setTab("exercises"));
+    const routinePickerBtn = $("openRoutinePicker");
+  if(routinePickerBtn){
+    routinePickerBtn.addEventListener("click", ()=>{
+      if(!currentUser){ toast("Not logged in"); return; }
+      renderRoutinePickerList();
+      $("routinePickerModal").classList.add("show");
+    });
+  }
+
+  const newRoutineBtn = $("newRoutineBtn");
+  if(newRoutineBtn){
+    newRoutineBtn.addEventListener("click", ()=>{
+      if(!currentUser){ toast("Not logged in"); return; }
+      showRoutineEditor(null);
+    });
+  }
+
+  const closeRoutinePicker = $("closeRoutinePicker");
+  if(closeRoutinePicker){
+    closeRoutinePicker.addEventListener("click", ()=> $("routinePickerModal").classList.remove("show"));
+  }
+
+  const closeRoutineEditor = $("closeRoutineEditor");
+  if(closeRoutineEditor){
+    closeRoutineEditor.addEventListener("click", ()=> $("routineEditorModal").classList.remove("show"));
+  }
+
+  const saveRoutineBtn = $("saveRoutineBtn");
+  if(saveRoutineBtn){
+    saveRoutineBtn.addEventListener("click", saveRoutineFromEditor);
+  }
+
+  const deleteRoutineBtn = $("deleteRoutineBtn");
+  if(deleteRoutineBtn){
+    deleteRoutineBtn.addEventListener("click", deleteRoutineFromEditor);
+  }
+
+  const routinePickerModal = $("routinePickerModal");
+  if(routinePickerModal){
+    routinePickerModal.addEventListener("click", (e)=>{
+      if(e.target === routinePickerModal) routinePickerModal.classList.remove("show");
+    });
+  }
+
+  const routineEditorModal = $("routineEditorModal");
+  if(routineEditorModal){
+    routineEditorModal.addEventListener("click", (e)=>{
+      if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
+    });
+  }
     const refreshDancersBtn = $("refreshDancersBtn");
   if(refreshDancersBtn){
     refreshDancersBtn.addEventListener("click", ()=> refreshMyDancersUI());
@@ -4739,6 +4835,9 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
       sleep: isNaN(sleep) ? 7 : sleep,
       sore: isNaN(sore) ? 3 : sore,
       fatigue: isNaN(fatigue) ? 4 : fatigue,
+      pointe: false,
+      partner: false,
+      jumps: 0,
       pointe: false,
       partner: false,
       jumps: 0,
