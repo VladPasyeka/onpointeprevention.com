@@ -4739,6 +4739,9 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
       sleep: isNaN(sleep) ? 7 : sleep,
       sore: isNaN(sore) ? 3 : sore,
       fatigue: isNaN(fatigue) ? 4 : fatigue,
+      pointe: false,
+      partner: false,
+      jumps: 0,
       notes: notes,
       exercises: []
     };
@@ -4847,6 +4850,9 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
       sleep: Number($("f_sleep").value),
       sore: Number($("f_sore").value),
       fatigue: Number($("f_fatigue").value),
+      pointe: $("f_pointe").checked,
+      partner: $("f_partner").checked,
+      jumps: Number($("f_jumps").value),
       notes: $("f_notes").value || "",
       exercises: getCheckinPicked()
     };
