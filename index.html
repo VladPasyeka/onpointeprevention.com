@@ -4186,77 +4186,94 @@ function applyRoutineToToday(routineId){
 function openPtCheckinModal(entry){
   const modal = document.getElementById("ptCheckinModal");
   const title = document.getElementById("ptCheckinTitle");
+  const sub   = document.getElementById("ptCheckinSub");
   const body  = document.getElementById("ptCheckinBody");
   const close = document.getElementById("ptCheckinCloseBtn");
+  if(!modal || !body) return;
 
-  if(!modal || !title || !body || !close){
-    console.error("PT modal missing (ptCheckinModal / ptCheckinTitle / ptCheckinBody / ptCheckinCloseBtn).");
-    return;
-  }
+  const safe = (v)=>{
+    if(v === undefined || v === null || v === "") return "—";
+    return escapeHTML(String(v));
+  };
 
-  // Fill content
-  const dancerId = entry?.dancerId || "";
-  const dancerName = (window.ptDancerNameMap && window.ptDancerNameMap[dancerId]) ? window.ptDancerNameMap[dancerId] : dancerId;
+  const dancerName =
+    (window.ptDancerNameMap && entry?.dancerId && window.ptDancerNameMap[entry.dancerId]) ||
+    entry?.dancerId ||
+    "Dancer";
 
-  const date = entry?.date || "";
-  const minutes = entry?.minutes ?? "—";
-  const rpe = entry?.rpe ?? "—";
-  const load = (typeof computeSessionLoad === "function") ? computeSessionLoad(entry) : "—";
+  const load = computeSessionLoad(entry);
 
-  title.textContent = `${dancerName || "Dancer"} · ${date || ""}`;
+  if(title) title.textContent = dancerName;
+  if(sub) sub.textContent = `${safe(entry?.date)} · ${safe(entry?.minutes)} min · RPE ${safe(entry?.rpe)} · Load ${safe(load)}`;
 
-  const safe = (v)=> escapeHTML(String(v ?? "—"));
+  // Normalize fields (older check-ins may not have these)
+  const pointe = entry?.pointe ? "Yes" : "No";
+  const partner = entry?.partner ? "Yes" : "No";
+  const jumps = (entry?.jumps === undefined || entry?.jumps === null) ? "—" : String(entry.jumps);
+
+  // Exercises (array)
+  const exArr = Array.isArray(entry?.exercises) ? entry.exercises : [];
+  const exHtml = exArr.length
+    ? exArr.map((x)=>{
+        const nm = safe(x?.name || x?.exerciseName || x?.title || "Exercise");
+        const parts = [];
+        if(x?.sets) parts.push(`${x.sets} sets`);
+        if(x?.reps) parts.push(`${x.reps} reps`);
+        if(x?.seconds) parts.push(`${x.seconds}s`);
+        if(x?.minutes) parts.push(`${x.minutes} min`);
+        const dose = parts.length ? safe(parts.join(" · ")) : "";
+        const note = safe(x?.note || x?.notes || "");
+
+        return `
+          <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px; margin-bottom:8px;">
+            <div style="font-weight:900;">${nm}</div>
+            ${dose ? `<div style="opacity:.7; font-size:12px; margin-top:2px;">${dose}</div>` : ``}
+            ${(note && note !== "—") ? `<div style="opacity:.85; margin-top:6px;">${note}</div>` : ``}
+          </div>
+        `;
+      }).join("")
+    : `<div style="opacity:.6;">—</div>`;
+
+  const metricCard = (label, value)=>`
+    <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
+      <div style="opacity:.65; font-size:12px;">${label}</div>
+      <div style="font-weight:900;">${value}</div>
+    </div>
+  `;
 
   body.innerHTML = `
-    <div style="margin-bottom:10px; opacity:.9;">
-      <div><b>Session:</b> ${safe(minutes)} min · <b>RPE:</b> ${safe(rpe)} · <b>Load:</b> ${safe(load)}</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+      ${metricCard("Sleep", safe(entry?.sleep))}
+      ${metricCard("Soreness", safe(entry?.sore))}
+      ${metricCard("Fatigue", safe(entry?.fatigue))}
+      ${metricCard("Pointe", safe(pointe))}
+      ${metricCard("Partnering", safe(partner))}
+      ${metricCard("Jumps", safe(jumps))}
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
-        <div style="opacity:.65; font-size:12px;">Sleep</div>
-        <div style="font-weight:900;">${safe(entry?.sleep)}</div>
-      </div>
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
-        <div style="opacity:.65; font-size:12px;">Soreness</div>
-        <div style="font-weight:900;">${safe(entry?.sore)}</div>
-      </div>
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
-        <div style="opacity:.65; font-size:12px;">Fatigue</div>
-        <div style="font-weight:900;">${safe(entry?.fatigue)}</div>
-      </div>
-      <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
-        <div style="opacity:.65; font-size:12px;">Jumps</div>
-        <div style="font-weight:900;">${safe(entry?.jumps)}</div>
-      </div>
+    <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px; margin-bottom:10px;">
+      <div style="opacity:.65; font-size:12px; margin-bottom:6px;">Exercises</div>
+      ${exHtml}
     </div>
 
     <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px;">
       <div style="opacity:.65; font-size:12px; margin-bottom:6px;">Notes</div>
-      <div>${safe(entry?.notes || "") || "<span style='opacity:.6;'>—</span>"}</div>
+      <div>${safe(entry?.notes)}</div>
     </div>
   `;
 
-  // Show modal
+  // Show + close
   modal.classList.add("show");
-
-  // Close bindings (always works)
   const closeFn = ()=> modal.classList.remove("show");
 
-  close.onclick = closeFn;
-
-  // Click backdrop to close
+  if(close) close.onclick = closeFn;
   modal.onclick = (e)=> { if(e.target === modal) closeFn(); };
-
-  // Escape to close (one-time bind each open)
-  window.onkeydown = (e)=>{
-    if(e.key === "Escape") closeFn();
-  };
+  window.onkeydown = (e)=> { if(e.key === "Escape") closeFn(); };
 }
 
 function closePtCheckinModal(){
   const modal = document.getElementById("ptCheckinModal");
-  if(modal) modal.style.display = "none";
+  if(modal) modal.classList.remove("show");
 }
 
     /***********************
