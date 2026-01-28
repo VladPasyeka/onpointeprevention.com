@@ -161,6 +161,17 @@
       display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
       margin-bottom:10px;
     }
+        .cardTitle{
+      font-weight:850;
+      font-size:15px;
+      letter-spacing:.2px;
+    }
+    .cardSub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+      line-height:1.3;
+    }
     .h{
       margin:0;
       font-size:14px;
@@ -302,6 +313,78 @@
       cursor:pointer;
       user-select:none;
       white-space:nowrap;
+    }
+    
+    /* ===== Messaging ===== */
+    .chatRoster{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+    .chatThread{
+      margin-top:10px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      max-height:320px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .chatEmpty{
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+      padding:18px 8px;
+    }
+    .chatMessage{
+      max-width:80%;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .chatMessage.me{
+      align-self:flex-end;
+      text-align:right;
+    }
+    .chatBubble{
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      white-space:pre-wrap;
+    }
+    .chatMessage.me .chatBubble{
+      background: rgba(255,255,255,.18);
+    }
+    .chatMeta{
+      font-size:11px;
+      color:rgba(255,255,255,.65);
+    }
+    .chatStatus{
+      color:rgba(255,255,255,.78);
+      font-weight:600;
+    }
+    .chatComposer{
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
+      margin-top:12px;
+    }
+    .chatInput{
+      flex:1;
+      min-height:44px;
+      max-height:160px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      font-size:13px;
+      resize:vertical;
+      outline:none;
     }
     
 /* ===== Inline Finish Setup (auth flow) ===== */
@@ -1375,7 +1458,129 @@ input, select, textarea, button{
   #logoutBtn span:last-child{ display:none; }
   #logoutBtn::after{ content:"Logout"; font-weight:900; }
 }
-    
+
+/* =========================================================
+   MESSAGING + ALERTS + SMART FLAGS (NEW)
+   ========================================================= */
+.chatWrap{
+  display:grid;
+  gap:10px;
+  max-height: 52vh;
+  overflow:auto;
+  padding: 6px 2px;
+}
+.chatBubble{
+  max-width: 84%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.06);
+  line-height:1.35;
+  word-break: break-word;
+}
+.chatBubble.me{
+  margin-left:auto;
+  background: rgba(255,255,255,.12);
+}
+.chatMeta{
+  font-size:11px;
+  color: rgba(255,255,255,.65);
+  margin-top:6px;
+}
+.chatInputRow{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:8px;
+  margin-top:10px;
+}
+.chatInputRow textarea{
+  min-height: 44px;
+  max-height: 120px;
+}
+.unreadDot{
+  width:8px;height:8px;border-radius:999px;
+  background: var(--high);
+  display:inline-block;
+}
+.unreadBadge{
+  min-width:22px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,92,92,.18);
+}
+.threadRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.threadMeta{
+  font-size:12px;
+  color:rgba(255,255,255,.70);
+}
+.flagBadge{
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid var(--line);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.flagBadge.green{ background: rgba(57,217,138,.15); color:#dff7ec; }
+.flagBadge.yellow{ background: rgba(255,176,32,.15); color:#ffe7b2; }
+.flagBadge.orange{ background: rgba(255,130,60,.18); color:#ffd7c0; }
+.flagBadge.red{ background: rgba(255,92,92,.18); color:#ffd0d0; }
+.alertDot{
+  width:10px;height:10px;border-radius:999px;
+}
+.alertDot.yellow{ background:#ffb020; }
+.alertDot.orange{ background:#ff7a3d; }
+.alertDot.red{ background:#ff5c5c; }
+.alertList{ display:grid; gap:10px; margin-top:10px; }
+.alertRow{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+  border:1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255,255,255,.04);
+}
+.alertRow .rowMain{ min-width:0; }
+.alertActions{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.tabBadge{
+  margin-left:6px;
+  min-width:18px;
+  height:18px;
+  border-radius:999px;
+  background: rgba(255,92,92,.18);
+  border:1px solid rgba(255,92,92,.45);
+  font-size:10px;
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 6px;
+}
+.messageHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.messageThreadList{
+  display:grid;
+  gap:10px;
+  margin-top:10px;
+}
+.messageEmpty{
+  font-size:12px;
+  color:rgba(255,255,255,.70);
+  margin-top:10px;
+}    
   </style>
 </head>
 
@@ -1533,6 +1738,34 @@ input, select, textarea, button{
   </div>
 </div>
 
+<!-- MESSAGING -->
+<div class="card" id="ptMessagesRosterCard" style="margin-bottom:14px; display:none;">
+  <div class="cardInner">
+    <div class="cardTitle">Messages</div>
+    <div class="cardSub" id="ptMessagesSub">Chat with your linked dancers.</div>
+    <div id="ptMessagesMsg" class="hint" style="margin-top:10px;"></div>
+    <div id="ptMessagesList" class="chatRoster"></div>
+  </div>
+</div>
+
+<div class="card" id="chatCard" style="margin-bottom:14px; display:none;">
+  <div class="cardInner">
+    <div class="cardHeader">
+      <div>
+        <div class="cardTitle" id="chatTitle">Messages</div>
+        <div class="cardSub" id="chatSub">Chat with your PT.</div>
+      </div>
+      <button class="mutedBtn" id="chatBackBtn" type="button" style="display:none;">Back</button>
+    </div>
+    <div id="chatThread" class="chatThread"></div>
+    <div class="chatComposer">
+      <textarea id="chatInput" class="chatInput" placeholder="Type a message..."></textarea>
+      <button class="pillBtn" id="chatSendBtn" type="button">Send</button>
+    </div>
+    <div class="small" id="chatStatusHint" style="margin-top:6px;">Messages show “Delivered” after send.</div>
+  </div>
+</div>
+
 <!-- PT DASHBOARD -->
 <div class="card" id="ptAvailabilityCard" style="display:none;">
   <div class="cardInner">
@@ -1577,6 +1810,45 @@ input, select, textarea, button{
     </div>
 
     <div id="ptRecentCheckins" style="margin-top:12px;"></div>
+  </div>
+</div>
+<!-- PT Alerts -->
+<div class="card" id="ptAlertsCard" style="display:none;">
+  <div class="cardInner">
+    <div class="cardHeader">
+      <div>
+        <p class="h">Red Flag Alerts</p>
+        <div class="small">High-risk check-ins from your linked dancers.</div>
+      </div>
+      <div class="badge" id="ptAlertsCount">
+        <span class="badgeDot"></span>
+        <span id="ptAlertsCountLabel">0</span>
+      </div>
+    </div>
+    <div id="ptAlertsList" class="alertList"></div>
+  </div>
+</div>
+
+<!-- Dancer Smart Feedback -->
+<div class="card" id="smartFlagCard" style="display:none;">
+  <div class="cardInner">
+    <div class="cardHeader">
+      <div>
+        <p class="h">Smart Check-In Feedback</p>
+        <div class="small">Real-time guidance based on your latest check-in.</div>
+      </div>
+      <div class="flagBadge green" id="smartFlagBadge">
+        <span>GREEN</span>
+      </div>
+    </div>
+    <div id="smartFlagEmpty" class="small">Submit a check-in to see feedback.</div>
+    <div id="smartFlagBody" style="display:none;">
+      <div class="rowSub" id="smartFlagReasons"></div>
+      <div class="rowSub" id="smartFlagAdvice" style="margin-top:8px;"></div>
+      <div class="btnRow" style="margin-top:12px;">
+        <button class="btn primary" id="smartFlagMessageBtn" type="button" style="display:none;">💬 Message PT</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1692,6 +1964,45 @@ input, select, textarea, button{
       <div class="cardTitle" id="ptDancerTitle">Select a dancer</div>
       <div class="cardSub" id="ptDancerSub">Their recent check-ins will appear here.</div>
       <div id="ptCheckinsList" style="display:grid; gap:10px; margin-top:12px;"></div>
+    </div>
+  </div>
+</section>
+
+      <!-- MESSAGES -->
+<section id="screen-messages" style="display:none;">
+  <div class="container">
+    <div class="card">
+      <div class="cardInner">
+        <div class="messageHeaderRow">
+          <div>
+            <div class="cardTitle">Messages</div>
+            <div class="cardSub">Chat with your linked PT or dancers.</div>
+          </div>
+          <button class="mutedBtn" id="refreshMessagesBtn" type="button">Refresh</button>
+        </div>
+        <div id="messagesThreadList" class="messageThreadList"></div>
+        <div id="messagesEmpty" class="messageEmpty"></div>
+      </div>
+    </div>
+
+    <div class="card" id="chatCard" style="margin-top:14px; display:none;">
+      <div class="cardInner">
+        <div class="messageHeaderRow">
+          <div>
+            <div class="cardTitle" id="chatTitle">Chat</div>
+            <div class="cardSub" id="chatSub">—</div>
+          </div>
+          <button class="mutedBtn" id="chatBackBtn" type="button">Back</button>
+        </div>
+
+        <div id="chatMessages" class="chatWrap"></div>
+
+        <form id="chatForm" class="chatInputRow">
+          <textarea id="chatInput" placeholder="Type a message…" required></textarea>
+          <button class="btn primary" id="chatSendBtn" type="submit">Send</button>
+        </form>
+        <div class="small" style="margin-top:8px;">Messages show “Delivered” after send.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -2184,6 +2495,23 @@ input, select, textarea, button{
   </div>
 </div>  
 
+    <!-- PT Alert Modal -->
+<div id="ptAlertModal" class="overlayModal">
+  <div class="modalCard">
+    <div class="modalHeader">
+      <div>
+        <div id="ptAlertTitle" style="font-weight:900;">Alert</div>
+        <div id="ptAlertSub" class="sub"></div>
+      </div>
+      <button id="ptAlertCloseBtn" class="iconBtn" type="button">Close</button>
+    </div>
+    <div id="ptAlertBody" style="color:rgba(255,255,255,.88); font-size:14px; line-height:1.35; margin-top:10px;"></div>
+    <div class="btnRow" style="margin-top:12px;">
+      <button class="btn primary" id="ptAlertResolveBtn" type="button">Mark Reviewed</button>
+    </div>
+  </div>
+</div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import {
@@ -2193,7 +2521,8 @@ input, select, textarea, button{
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
     import {
       getFirestore,
-      collection, doc, getDocs, getDoc, setDoc, deleteDoc, updateDoc,
+      collection, doc, getDocs, getDoc, setDoc, addDoc, deleteDoc, updateDoc,
+      query, orderBy, onSnapshot, limit,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
@@ -2591,6 +2920,7 @@ async function initLinkingUI(){
         if(!newPtId) throw new Error("No PT id returned.");
 
         await setLinkedUI(newPtId);
+        await loadDancerChat();
       }catch(e){
         linkMsg.textContent = `Error: ${e.message}`;
         linkBtn.disabled = false;
@@ -2611,6 +2941,7 @@ async function initLinkingUI(){
           unlinkBtn.disabled = false;
           unlinkBtn.textContent = "Unlink from PT";
           setUnlinkedUI();
+          await loadDancerChat();
         }catch(e){
           unlinkBtn.disabled = false;
           unlinkBtn.textContent = "Unlink from PT";
@@ -2680,6 +3011,14 @@ async function initLinkingUI(){
 
     const exercisesCol = (uid)=> collection(db, "users", uid, "exercises");
     const exerciseDoc  = (uid, exId)=> doc(db, "users", uid, "exercises", exId);
+
+    const threadDoc = (threadId)=> doc(db, "messageThreads", threadId);
+    const threadMessagesCol = (threadId)=> collection(db, "messageThreads", threadId, "messages");
+
+    let activeChatPartnerId = null;
+    let activeChatPartnerName = "";
+    let activeThreadId = null;
+    let chatUnsub = null;
 
     function makeId(){
       // simple unique id (good enough for Firestore doc id)
@@ -3697,10 +4036,16 @@ function applyRoleUI(role){
   });
 
   // PT-only cards inside dashboard (already exist in your HTML) :contentReference[oaicite:5]{index=5}
-  const ptCards = ["ptAvailabilityCard","ptRecentCard"];
+  const ptCards = ["ptAvailabilityCard","ptRecentCard","ptMessagesRosterCard"];
   ptCards.forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.style.display = (role === "pt") ? "" : "none";
+  });
+
+   const dancerCards = ["smartFlagCard"];
+  dancerCards.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = (role === "dancer") ? "" : "none";
   });
 
   // Dancer-only dashboard elements to hide for PT (keep dancer UI intact)
@@ -3735,7 +4080,542 @@ function applyRoleUI(role){
     wrap.remove();
   }
 }
-    
+
+/***********************
+ * MESSAGING + ALERTS + SMART FLAGS
+ ***********************/
+let threadsUnsub = null;
+let messagesUnsub = null;
+let alertsUnsub = null;
+let currentThreadId = null;
+let currentChatDancerId = null;
+let currentChatLabel = "";
+let threadCache = new Map();
+let ptLinkedDancersCache = [];
+let ptAlertsCache = [];
+
+function threadIdFor(ptUid, dancerUid){
+  return `${ptUid}__${dancerUid}`;
+}
+
+function formatTime(ts){
+  if(!ts) return "—";
+  try{
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  }catch(e){
+    return "—";
+  }
+}
+
+async function getLinkedPtIdForDancer(){
+  if(!currentUser) return null;
+  try{
+    const snap = await getDoc(doc(db, "users", currentUser.uid));
+    if(snap.exists()){
+      return snap.data().linkedPtId || null;
+    }
+  }catch(e){}
+  try{
+    const r = await callFn("getMyPt", "GET");
+    return r?.data?.ptId || r?.ptId || null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function loadPtLinkedDancers(){
+  try{
+    const r = await callFn("getMyDancers", "GET");
+    const dancers = Array.isArray(r?.data?.dancers) ? r.data.dancers : [];
+    ptLinkedDancersCache = dancers.map(d=>({
+      dancerId: d.dancerId,
+      name: d.name || d.email || d.dancerId
+    }));
+    ptLinkedDancersCache.forEach(d=>{
+      if(d?.dancerId) window.ptDancerNameMap = {
+        ...(window.ptDancerNameMap || {}),
+        [d.dancerId]: d.name || d.dancerId
+      };
+    });
+  }catch(e){
+    ptLinkedDancersCache = [];
+  }
+}
+
+function updateMessagesTabBadge(){
+  const badge = $("messagesTabBadge");
+  if(!badge) return;
+  const uid = currentUser?.uid;
+  if(!uid){
+    badge.style.display = "none";
+    return;
+  }
+  let total = 0;
+  threadCache.forEach(t=>{
+    const n = Number(t?.unreadFor?.[uid] || 0);
+    total += n;
+  });
+  if(total > 0){
+    badge.textContent = total > 99 ? "99+" : String(total);
+    badge.style.display = "inline-flex";
+  }else{
+    badge.style.display = "none";
+  }
+}
+
+function startThreadsListener(){
+  if(!currentUser) return;
+  if(threadsUnsub) threadsUnsub();
+  const q = query(
+    collection(db, "threads"),
+    where("participants", "array-contains", currentUser.uid)
+  );
+  threadsUnsub = onSnapshot(q, (snap)=>{
+    threadCache.clear();
+    snap.forEach(docSnap=>{
+      threadCache.set(docSnap.id, { id: docSnap.id, ...(docSnap.data() || {}) });
+    });
+    updateMessagesTabBadge();
+    renderThreadsList();
+  }, (err)=>{
+    console.error("threads snapshot failed", err);
+  });
+}
+
+function stopThreadsListener(){
+  if(threadsUnsub) threadsUnsub();
+  threadsUnsub = null;
+}
+
+function stopMessagesListener(){
+  if(messagesUnsub) messagesUnsub();
+  messagesUnsub = null;
+}
+
+async function renderThreadsList(){
+  const list = $("messagesThreadList");
+  const empty = $("messagesEmpty");
+  if(!list || !empty) return;
+  list.innerHTML = "";
+  empty.textContent = "";
+
+  if(!currentUser){
+    empty.textContent = "Log in to view messages.";
+    return;
+  }
+
+  if(currentRole === "pt"){
+    if(!ptLinkedDancersCache.length){
+      await loadPtLinkedDancers();
+    }
+    if(ptLinkedDancersCache.length === 0){
+      empty.textContent = "No linked dancers yet.";
+      return;
+    }
+
+    let html = "";
+    ptLinkedDancersCache.forEach(d=>{
+      const threadId = threadIdFor(currentUser.uid, d.dancerId);
+      const thread = threadCache.get(threadId);
+      const unread = Number(thread?.unreadFor?.[currentUser.uid] || 0);
+      const lastMsg = thread?.lastMessage || "Start a conversation";
+      const lastAt = thread?.lastAt ? formatTime(thread.lastAt) : "—";
+
+      html += `
+        <div class="row">
+          <div class="threadRow">
+            <div class="rowMain">
+              <div class="rowTitle">${escapeHTML(d.name || "Dancer")}</div>
+              <div class="threadMeta">${escapeHTML(lastMsg)}</div>
+            </div>
+            <div class="rowRight">
+              <div class="threadMeta">${lastAt}</div>
+              ${unread ? `<div class="unreadBadge">${unread}</div>` : ``}
+              <button class="iconBtn" type="button" data-open-thread="${escapeHTML(d.dancerId)}">Open</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    list.innerHTML = html;
+  } else {
+    const ptId = await getLinkedPtIdForDancer();
+    if(!ptId){
+      empty.textContent = "Link to a PT to message.";
+      return;
+    }
+
+    const threadId = threadIdFor(ptId, currentUser.uid);
+    const thread = threadCache.get(threadId);
+    const unread = Number(thread?.unreadFor?.[currentUser.uid] || 0);
+    const lastMsg = thread?.lastMessage || "Start a conversation";
+    const lastAt = thread?.lastAt ? formatTime(thread.lastAt) : "—";
+
+    list.innerHTML = `
+      <div class="row">
+        <div class="threadRow">
+          <div class="rowMain">
+            <div class="rowTitle">Your PT</div>
+            <div class="threadMeta">${escapeHTML(lastMsg)}</div>
+          </div>
+          <div class="rowRight">
+            <div class="threadMeta">${lastAt}</div>
+            ${unread ? `<div class="unreadBadge">${unread}</div>` : ``}
+            <button class="iconBtn" type="button" data-open-thread="${escapeHTML(currentUser.uid)}">Open</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if(!list.dataset.bound){
+    list.dataset.bound = "1";
+    list.addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-open-thread]");
+      if(!btn) return;
+      const dancerId = btn.getAttribute("data-open-thread");
+      if(!dancerId) return;
+      if(currentRole === "pt"){
+        const name = (window.ptDancerNameMap && window.ptDancerNameMap[dancerId]) || dancerId;
+        openChatThread(dancerId, name);
+      } else {
+        openChatThread(currentUser.uid, "Your PT");
+      }
+    });
+  }
+}
+
+async function openChatThread(dancerId, label){
+  if(!currentUser) return;
+  const ptId = currentRole === "pt" ? currentUser.uid : await getLinkedPtIdForDancer();
+  if(!ptId) return;
+
+  currentChatDancerId = dancerId;
+  currentChatLabel = label || "Chat";
+  currentThreadId = threadIdFor(ptId, dancerId);
+
+  $("chatTitle").textContent = currentChatLabel;
+  $("chatSub").textContent = currentRole === "pt" ? "Dancer" : "Your PT";
+  $("chatCard").style.display = "";
+
+  await markThreadRead(currentThreadId);
+  subscribeToMessages(currentThreadId);
+}
+
+function closeChatThread(){
+  stopMessagesListener();
+  currentThreadId = null;
+  currentChatDancerId = null;
+  $("chatCard").style.display = "none";
+  $("chatMessages").innerHTML = "";
+}
+
+function subscribeToMessages(threadId){
+  stopMessagesListener();
+  const q = query(
+    collection(db, "threads", threadId, "messages"),
+    orderBy("createdAt", "asc"),
+    limit(200)
+  );
+  messagesUnsub = onSnapshot(q, (snap)=>{
+    const items = [];
+    snap.forEach(docSnap=> items.push({ id: docSnap.id, ...(docSnap.data() || {}) }));
+    renderMessages(items);
+  }, (err)=>{
+    console.error("messages snapshot failed", err);
+  });
+}
+
+function renderMessages(items){
+  const wrap = $("chatMessages");
+  if(!wrap) return;
+  if(!items || items.length === 0){
+    wrap.innerHTML = `<div class="rowSub">No messages yet. Say hello.</div>`;
+    return;
+  }
+
+  let html = "";
+  items.forEach(m=>{
+    const mine = m.senderId === currentUser.uid;
+    const text = escapeHTML(m.text || "");
+    const time = formatTime(m.createdAt);
+    html += `
+      <div class="chatBubble ${mine ? "me" : ""}">
+        <div>${text}</div>
+        <div class="chatMeta">${time}${mine ? " · Delivered" : ""}</div>
+      </div>
+    `;
+  });
+  wrap.innerHTML = html;
+  wrap.scrollTop = wrap.scrollHeight + 200;
+}
+
+async function sendChatMessage(text){
+  if(!currentUser) return;
+  const trimmed = (text || "").trim();
+  if(!trimmed) return;
+  if(!currentChatDancerId) return;
+  try{
+    await callFn("sendMessage", "POST", { dancerId: currentChatDancerId, text: trimmed });
+  }catch(e){
+    toast(e.message || "Send failed");
+  }
+}
+
+async function markThreadRead(threadId){
+  if(!threadId) return;
+  try{
+    await callFn("markThreadRead", "POST", { threadId });
+  }catch(e){}
+}
+
+function startAlertsListener(){
+  if(!currentUser || currentRole !== "pt") return;
+  if(alertsUnsub) alertsUnsub();
+  const q = query(
+    collection(db, "alerts", currentUser.uid, "items"),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
+  alertsUnsub = onSnapshot(q, (snap)=>{
+    ptAlertsCache = [];
+    snap.forEach(docSnap=>{
+      ptAlertsCache.push({ id: docSnap.id, ...(docSnap.data() || {}) });
+    });
+    renderPtAlerts();
+  }, (err)=>{
+    console.error("alerts snapshot failed", err);
+  });
+}
+
+function stopAlertsListener(){
+  if(alertsUnsub) alertsUnsub();
+  alertsUnsub = null;
+}
+
+function renderPtAlerts(){
+  const list = $("ptAlertsList");
+  const count = $("ptAlertsCountLabel");
+  if(!list || !count) return;
+
+  if(ptAlertsCache.length === 0){
+    list.innerHTML = `<div class="rowSub">No alerts yet.</div>`;
+    count.textContent = "0";
+    return;
+  }
+
+  const unresolved = ptAlertsCache.filter(a=> !a.resolved).length;
+  count.textContent = String(unresolved);
+
+  list.innerHTML = ptAlertsCache.map(a=>{
+    const severity = a.severity || "yellow";
+    const dotCls = severity === "red" ? "red" : (severity === "orange" ? "orange" : "yellow");
+    const dancerName = (window.ptDancerNameMap && window.ptDancerNameMap[a.dancerUid]) || a.dancerUid || "Dancer";
+    const reason = Array.isArray(a.reasons) ? a.reasons.slice(0,2).join(" · ") : "";
+    const date = a.createdAt ? formatTime(a.createdAt) : "—";
+    return `
+      <div class="alertRow">
+        <div class="rowMain">
+          <div class="rowTop">
+            <div class="rowTitle">${escapeHTML(dancerName)}</div>
+            <div class="rowMeta">${escapeHTML(String(a.entryId || ""))}</div>
+          </div>
+          <div class="rowSub">${escapeHTML(reason || "View details")}</div>
+        </div>
+        <div class="alertActions">
+          <div class="alertDot ${dotCls}"></div>
+          <div class="threadMeta">${date}</div>
+          <button class="iconBtn" type="button" data-alert-open="${escapeHTML(a.id)}">Open</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  if(!list.dataset.bound){
+    list.dataset.bound = "1";
+    list.addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-alert-open]");
+      if(!btn) return;
+      const id = btn.getAttribute("data-alert-open");
+      const alert = ptAlertsCache.find(a=> a.id === id);
+      if(alert) openAlertModal(alert);
+    });
+  }
+}
+
+function openAlertModal(alert){
+  const modal = $("ptAlertModal");
+  if(!modal) return;
+  const title = $("ptAlertTitle");
+  const sub = $("ptAlertSub");
+  const body = $("ptAlertBody");
+  const resolveBtn = $("ptAlertResolveBtn");
+
+  const dancerName = (window.ptDancerNameMap && alert.dancerUid && window.ptDancerNameMap[alert.dancerUid]) || alert.dancerUid || "Dancer";
+  if(title) title.textContent = `${dancerName} · ${String(alert.severity || "").toUpperCase()}`;
+  if(sub) sub.textContent = alert.entryId || "";
+
+  const reasons = Array.isArray(alert.reasons) ? alert.reasons : [];
+  const snapshot = alert.snapshot || {};
+
+  body.innerHTML = `
+    <div class="rowSub"><strong>Reasons:</strong> ${escapeHTML(reasons.join(" · ") || "—")}</div>
+    <div class="rowSub" style="margin-top:8px;"><strong>Metrics:</strong></div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px;">
+      <div class="metric"><div class="k">Minutes</div><div class="v">${escapeHTML(String(snapshot.minutes ?? "—"))}</div></div>
+      <div class="metric"><div class="k">RPE</div><div class="v">${escapeHTML(String(snapshot.rpe ?? "—"))}</div></div>
+      <div class="metric"><div class="k">Load</div><div class="v">${escapeHTML(String(snapshot.load ?? "—"))}</div></div>
+      <div class="metric"><div class="k">ACWR</div><div class="v">${escapeHTML(String(snapshot.acwr ?? "—"))}</div></div>
+      <div class="metric"><div class="k">Fatigue</div><div class="v">${escapeHTML(String(snapshot.fatigue ?? "—"))}</div></div>
+      <div class="metric"><div class="k">Soreness</div><div class="v">${escapeHTML(String(snapshot.sore ?? "—"))}</div></div>
+    </div>
+    <div class="rowSub" style="margin-top:10px;"><strong>Notes:</strong> ${escapeHTML(snapshot.notes || "—")}</div>
+  `;
+
+  if(resolveBtn){
+    resolveBtn.disabled = !!alert.resolved;
+    resolveBtn.textContent = alert.resolved ? "Reviewed ✓" : "Mark Reviewed";
+    resolveBtn.onclick = async ()=>{
+      try{
+        await callFn("markAlertResolved", "POST", { alertId: alert.id });
+        toast("Alert marked reviewed");
+      }catch(e){
+        toast("Failed to update alert");
+      }
+    };
+  }
+
+  modal.classList.add("show");
+  const closeBtn = $("ptAlertCloseBtn");
+  const closeFn = ()=> modal.classList.remove("show");
+  if(closeBtn) closeBtn.onclick = closeFn;
+  modal.onclick = (e)=>{ if(e.target === modal) closeFn(); };
+}
+
+function buildAdviceForSeverity(severity){
+  const sev = severity || "green";
+  if(sev === "red"){
+    return [
+      "Pause high-impact training today.",
+      "Contact your PT now or seek urgent care if symptoms are severe.",
+      "Focus on safety first; this is not a diagnosis."
+    ];
+  }
+  if(sev === "orange"){
+    return [
+      "Reduce load in the next 24–72 hours.",
+      "Prioritize sleep, hydration, and recovery.",
+      "Check in with your PT for modifications."
+    ];
+  }
+  if(sev === "yellow"){
+    return [
+      "Monitor symptoms and avoid adding extra volume.",
+      "Keep technique quality high and recover well.",
+      "Message your PT if symptoms persist."
+    ];
+  }
+  return [
+    "Load looks stable. Keep steady habits.",
+    "Keep logging check-ins to refine guidance."
+  ];
+}
+
+function updateSmartFlagCard(result){
+  const card = $("smartFlagCard");
+  if(!card) return;
+  if(currentRole !== "dancer"){
+    card.style.display = "none";
+    return;
+  }
+  card.style.display = "";
+
+  const badge = $("smartFlagBadge");
+  const empty = $("smartFlagEmpty");
+  const body = $("smartFlagBody");
+  const reasonsEl = $("smartFlagReasons");
+  const adviceEl = $("smartFlagAdvice");
+  const msgBtn = $("smartFlagMessageBtn");
+
+  if(!result){
+    if(empty) empty.style.display = "";
+    if(body) body.style.display = "none";
+    return;
+  }
+
+  const severity = result.severity || "green";
+  if(badge){
+    badge.className = `flagBadge ${severity}`;
+    badge.textContent = severity.toUpperCase();
+  }
+  if(empty) empty.style.display = "none";
+  if(body) body.style.display = "";
+  if(reasonsEl){
+    const reasons = Array.isArray(result.reasons) ? result.reasons.slice(0,5) : [];
+    reasonsEl.innerHTML = `<strong>Reasons:</strong> ${escapeHTML(reasons.join(" · ") || "—")}`;
+  }
+  if(adviceEl){
+    const advice = Array.isArray(result.advice) ? result.advice : buildAdviceForSeverity(severity);
+    adviceEl.innerHTML = `<strong>Recommended:</strong> ${escapeHTML(advice.join(" · "))}`;
+  }
+  if(msgBtn){
+    msgBtn.style.display = (severity === "orange" || severity === "red") ? "" : "none";
+  }
+}
+
+function evaluateLocalFlags(entry, history){
+  const reasons = [];
+  const load = computeSessionLoad(entry || {});
+  const fatigue = safeNum(entry?.fatigue, 0);
+  const sore = safeNum(entry?.sore, 0);
+  const notes = String(entry?.notes || "");
+  const lcNotes = notes.toLowerCase();
+
+  if(fatigue >= 7 || sore >= 7){
+    reasons.push("High fatigue or soreness");
+  }
+
+  const keywordsOrange = ["sharp pain","swelling","tingling","can’t bear weight","can't bear weight","cannot bear weight"];
+  if(keywordsOrange.some(k => lcNotes.includes(k))){
+    reasons.push("Notes mention concerning symptoms");
+  }
+
+  let severity = "green";
+  if(fatigue >= 9 || sore >= 9){
+    severity = "orange";
+  }else if(fatigue >= 7 || sore >= 7){
+    severity = "yellow";
+  }
+
+  if(load >= 500 && (fatigue >= 7 || sore >= 7)){
+    severity = "orange";
+    reasons.push("High load with fatigue/soreness");
+  }
+
+  return {
+    severity,
+    reasons,
+    advice: buildAdviceForSeverity(severity)
+  };
+}
+
+async function handleCheckinFeedback(entry){
+  if(currentRole !== "dancer") return;
+  try{
+    const r = await callFn("evaluateCheckinFlags", "POST", { entry });
+    const data = r?.data || r;
+    const result = {
+      severity: data?.severity || "green",
+      reasons: data?.reasons || [],
+      advice: data?.advice || buildAdviceForSeverity(data?.severity || "green")
+    };
+    updateSmartFlagCard(result);
+  }catch(e){
+    const result = evaluateLocalFlags(entry, cachedCheckins || []);
+    updateSmartFlagCard(result);
+  }
+}    
     /***********************
      * UI RENDER (dashboard/history)
      ***********************/
@@ -4354,6 +5234,17 @@ function openPtCheckinModal(entry){
       <div style="opacity:.65; font-size:12px; margin-bottom:6px;">Notes</div>
       <div>${safe(entry?.notes)}</div>
     </div>
+        ${
+      entry?.redFlag
+        ? `
+          <div style="border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:10px; margin-top:10px;">
+            <div style="opacity:.65; font-size:12px; margin-bottom:6px;">Red Flag Summary</div>
+            <div><strong>${safe(entry.redFlag.severity || "").toUpperCase()}</strong></div>
+            <div style="margin-top:6px;">${safe(Array.isArray(entry.redFlag.reasons) ? entry.redFlag.reasons.join(" · ") : "")}</div>
+          </div>
+        `
+        : ""
+    }
   `;
 
   // Show + close
@@ -4379,7 +5270,7 @@ function setTab(tab){
     tab = "dashboard";
   }
 
-  const screens = ["dashboard","checkin","dancers","exercises","history"];
+  const screens = ["dashboard","checkin","dancers","messages","exercises","history"];
   screens.forEach(s=>{
     const el = document.getElementById("screen-"+s);
     if(el) el.style.display = (s===tab) ? "" : "none";
@@ -4410,6 +5301,8 @@ function setTab(tab){
     if(currentRole === "pt"){
       refreshMyDancersUI();
     }
+      } else if(tab === "messages"){
+    renderThreadsList();
   }
 }
 
@@ -4620,6 +5513,28 @@ async function onUserSignedIn(user){
 
   // linking card is useful for both (dancer links to PT, PT sees code etc)
   await initLinkingUI();
+  
+  // messaging + alerts listeners
+  startThreadsListener();
+  if(currentRole === "pt"){
+    startAlertsListener();
+  }else{
+    stopAlertsListener();
+  }
+
+  // smart flag card on load (use latest check-in if available)
+  if(currentRole === "dancer" && cachedCheckins.length){
+    const latest = cachedCheckins.slice().sort((a,b)=> (a.date < b.date ? 1 : -1))[0];
+    if(latest?.redFlag){
+      updateSmartFlagCard({
+        severity: latest.redFlag.severity || "green",
+        reasons: latest.redFlag.reasons || [],
+        advice: buildAdviceForSeverity(latest.redFlag.severity || "green")
+      });
+    }else{
+      updateSmartFlagCard(null);
+    }
+  }
 }
 
     /***********************
@@ -4818,9 +5733,44 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
       if(e.target === routineEditorModal) routineEditorModal.classList.remove("show");
     });
   }
-    const refreshDancersBtn = $("refreshDancersBtn");
+  const refreshDancersBtn = $("refreshDancersBtn");
   if(refreshDancersBtn){
     refreshDancersBtn.addEventListener("click", ()=> refreshMyDancersUI());
+  }
+   const refreshMessagesBtn = $("refreshMessagesBtn");
+  if(refreshMessagesBtn){
+    refreshMessagesBtn.addEventListener("click", ()=> renderThreadsList());
+  }
+
+  const chatBackBtn = $("chatBackBtn");
+  if(chatBackBtn){
+    chatBackBtn.addEventListener("click", closeChatThread);
+  }
+
+  const chatForm = $("chatForm");
+  if(chatForm){
+    chatForm.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const input = $("chatInput");
+      if(!input) return;
+      const text = input.value;
+      input.value = "";
+      await sendChatMessage(text);
+    });
+  }
+
+  const smartFlagMessageBtn = $("smartFlagMessageBtn");
+  if(smartFlagMessageBtn){
+    smartFlagMessageBtn.addEventListener("click", async ()=>{
+      setTab("messages");
+      if(currentRole !== "dancer") return;
+      const ptId = await getLinkedPtIdForDancer();
+      if(!ptId){
+        toast("Link to a PT first");
+        return;
+      }
+      openChatThread(currentUser.uid, "Your PT");
+    });
   }
 
   // ✅ Rest Day button (expects an element with id="restDayBtn" to exist)
@@ -4901,6 +5851,7 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
       else cachedCheckins.push(entry);
 
       toast("Rest Day saved ✓");
+      await handleCheckinFeedback(entry);
       closeRestModal();
       render();
       setTab("dashboard");
@@ -5013,6 +5964,7 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
 
       toast("Saved ✓");
       closeCheckinModal();
+      await handleCheckinFeedback(entry);
       render();
     }catch(err){
       console.error(err);
@@ -5088,6 +6040,8 @@ if(gated) return; // stop here until user chooses role
           if(currentRole === "pt"){
       await initLinkingUI();        // keep PT connection UI alive
       await renderPtDashboard();    // your new PT dashboard renderer
+      startThreadsListener();
+      startAlertsListener();
       return;
     }
           await onUserSignedIn(user);
@@ -5095,6 +6049,9 @@ if(gated) return; // stop here until user chooses role
           currentUser = null;
           cachedCheckins = [];
           cachedExercises = [];
+          stopThreadsListener();
+          stopMessagesListener();
+          stopAlertsListener();
           showAuth();
         }
       });
@@ -5257,9 +6214,11 @@ async function renderPtDashboard(){
   try{
     const availCard = document.getElementById("ptAvailabilityCard");
     const recentCard = document.getElementById("ptRecentCard");
+    const alertsCard = document.getElementById("ptAlertsCard");
     if(availCard) availCard.style.display = "";
     if(recentCard) recentCard.style.display = "";
-
+    if(alertsCard) alertsCard.style.display = "";
+    
     applyRoleUI("pt");
 
     // IMPORTANT: wire + init calendar before loading data
@@ -5268,6 +6227,7 @@ async function renderPtDashboard(){
 
     if(typeof loadPtAvailability === "function") await loadPtAvailability();
     if(typeof loadPtRecentCheckins === "function") await loadPtRecentCheckins();
+    startAlertsListener();
 
   }catch(e){
     console.error("renderPtDashboard crashed:", e);
