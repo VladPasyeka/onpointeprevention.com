@@ -1557,9 +1557,41 @@ input, select, textarea, button{
   justify-content:space-between;
   gap:10px;
 }
+.threadInfo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  flex:1;
+}
+.threadAvatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:900;
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.20);
+  box-shadow: 0 8px 16px rgba(0,0,0,.28);
+  flex:0 0 auto;
+}
+.threadText{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
 .threadMeta{
   font-size:12px;
   color:rgba(255,255,255,.70);
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
 }
 .flagBadge{
   padding:6px 10px;
@@ -1615,6 +1647,15 @@ input, select, textarea, button{
   display:grid;
   gap:10px;
   margin-top:10px;
+}
+.messageThreadList .row{
+  padding:14px;
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.14);
+}
+.messageThreadList .rowRight{
+  align-items:flex-end;
+  justify-content:center;
 }
 .messageEmpty{
   font-size:12px;
@@ -2546,7 +2587,7 @@ input, select, textarea, button{
       getFirestore,
       collection, doc, getDocs, getDoc, setDoc, addDoc, deleteDoc, updateDoc,
       query, orderBy, onSnapshot, limit,
-      serverTimestamp
+      serverTimestamp, increment
     } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -2693,6 +2734,11 @@ async function callFn(path, method = "GET", body = null, query = null){
   }
 
   return data;
+}
+
+function shouldFallbackOnFunctionsError(err){
+  const msg = String(err?.message || "");
+  return msg.includes("CORS") || msg.includes("Network") || msg.includes("Failed to fetch");
 }
     
 async function refreshMyDancersUI(){
@@ -4275,13 +4321,13 @@ async function renderThreadsList(){
       const unread = Number(thread?.unreadFor?.[currentUser.uid] || 0);
       const lastMsg = thread?.lastMessage || "Start a conversation";
       const lastAt = thread?.lastAt ? formatTime(thread.lastAt) : "—";
+      const displayName = d.name || "Dancer";
+      const initials = getInitials(displayName);
 
       html += `
         <div class="row">
-          <div class="threadRow">
-            <div class="rowMain">
-              <div class="rowTitle">${escapeHTML(d.name || "Dancer")}</div>
-              <div class="threadMeta">${escapeHTML(lastMsg)}</div>
+          const displayName = d.name || "Dancer";
+      const initials = getInitials(displayName);
             </div>
             <div class="rowRight">
               <div class="threadMeta">${lastAt}</div>
@@ -4307,13 +4353,17 @@ async function renderThreadsList(){
     const lastMsg = thread?.lastMessage || "Start a conversation";
     const lastAt = thread?.lastAt ? formatTime(thread.lastAt) : "—";
     const ptLabel = ptProfile?.name || "Your PT";
+    const initials = getInitials(ptLabel);
     
     list.innerHTML = `
       <div class="row">
         <div class="threadRow">
-          <div class="rowMain">
-            <div class="rowTitle">${escapeHTML(ptLabel)}</div>
-            <div class="threadMeta">${escapeHTML(lastMsg)}</div>
+          <div class="threadInfo">
+            <div class="threadAvatar" aria-hidden="true">${escapeHTML(initials)}</div>
+            <div class="threadText">
+              <div class="rowTitle">${escapeHTML(ptLabel)}</div>
+              <div class="threadMeta">${escapeHTML(lastMsg)}</div>
+            </div>
           </div>
           <div class="rowRight">
             <div class="threadMeta">${lastAt}</div>
@@ -4412,6 +4462,35 @@ function renderMessages(items){
   wrap.innerHTML = html;
   wrap.scrollTop = wrap.scrollHeight + 200;
 }
+    
+async function sendChatMessageDirect(text){
+  if(!currentUser || !currentThreadId) return;
+  const ptId = currentRole === "pt" ? currentUser.uid : await getLinkedPtIdForDancer();
+  const dancerId = currentRole === "pt" ? currentChatDancerId : currentUser.uid;
+  if(!ptId || !dancerId) return;
+
+  const threadRef = doc(db, "threads", currentThreadId);
+  const messagesRef = collection(db, "threads", currentThreadId, "messages");
+  const recipientId = currentRole === "pt" ? dancerId : ptId;
+
+  await addDoc(messagesRef, {
+    text,
+    senderId: currentUser.uid,
+    createdAt: serverTimestamp()
+  });
+
+  await setDoc(threadRef, {
+    participants: [ptId, dancerId],
+    lastMessage: text,
+    lastAt: serverTimestamp()
+  }, { merge: true });
+
+  try{
+    await updateDoc(threadRef, { [`unreadFor.${recipientId}`]: increment(1) });
+  }catch(err){
+    await setDoc(threadRef, { unreadFor: { [recipientId]: 1 } }, { merge: true });
+  }
+}
 
 async function sendChatMessage(text){
   if(!currentUser) return;
@@ -4421,15 +4500,31 @@ async function sendChatMessage(text){
   try{
     await callFn("sendMessage", "POST", { dancerId: currentChatDancerId, text: trimmed });
   }catch(e){
+    if(shouldFallbackOnFunctionsError(e)){
+      try{
+        await sendChatMessageDirect(trimmed);
+        return;
+      }catch(err){
+        console.error(err);
+      }
+    }
     toast(e.message || "Send failed");
   }
 }
 
 async function markThreadRead(threadId){
-  if(!threadId) return;
+  if(!threadId || !currentUser) return;
   try{
     await callFn("markThreadRead", "POST", { threadId });
-  }catch(e){}
+  }catch(e){
+    if(!shouldFallbackOnFunctionsError(e)) return;
+    try{
+      const threadRef = doc(db, "threads", threadId);
+      await updateDoc(threadRef, { [`unreadFor.${currentUser.uid}`]: 0 });
+    }catch(err){
+      await setDoc(doc(db, "threads", threadId), { unreadFor: { [currentUser.uid]: 0 } }, { merge: true });
+    }
+  }
 }
 
 function startAlertsListener(){
