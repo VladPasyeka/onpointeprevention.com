@@ -2102,6 +2102,7 @@ input, select, textarea, button{
       <div class="tabRow">
         <button class="tab active" data-tab="dashboard" type="button"><div class="emoji">📊</div>Dashboard</button>
         <button class="tab" data-tab="checkin" type="button"><div class="emoji">📝</div>Check-In</button>         <button class="tab" data-tab="dancers" type="button"><div class="emoji">💃</div>My Dancers</button>
+        <button class="tab" data-tab="messages" type="button"><div class="emoji">💬</div>Messages <span class="tabBadge" id="messagesTabBadge" style="display:none;">0</span></button>
         <button class="tab" data-tab="exercises" type="button"><div class="emoji">🩰</div>Exercises</button>
 
         <button class="tab" data-tab="history" type="button"><div class="emoji">🗓️</div>History</button>
@@ -5825,7 +5826,8 @@ $("savePtRoleBtn").addEventListener("click", async ()=>{
     smartFlagMessageBtn.addEventListener("click", async ()=>{
       setTab("messages");
       if(currentRole !== "dancer") return;
-      const ptId = await getLinkedPtIdForDancer();
+      const ptProfile = await loadLinkedPtProfile();
+      const ptId = ptProfile?.id || await getLinkedPtIdForDancer();
       if(!ptId){
         toast("Link to a PT first");
         return;
