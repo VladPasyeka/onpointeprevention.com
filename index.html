@@ -4406,8 +4406,16 @@ async function openChatThread(dancerId, label){
   $("chatSub").textContent = currentRole === "pt" ? "Dancer" : "Your PT";
   $("chatCard").style.display = "";
 
-  await markThreadRead(currentThreadId);
+    try{
+    const payload = currentRole === "pt" ? { dancerId } : {};
+    await callFn("ensureThread", "POST", payload);
+  }catch(e){
+    toast(e.message || "Unable to open chat");
+    return;
+  }
+
   subscribeToMessages(currentThreadId);
+  await markThreadRead(currentThreadId);
 }
 
 function closeChatThread(){
@@ -4462,35 +4470,6 @@ function renderMessages(items){
   wrap.innerHTML = html;
   wrap.scrollTop = wrap.scrollHeight + 200;
 }
-    
-async function sendChatMessageDirect(text){
-  if(!currentUser || !currentThreadId) return;
-  const ptId = currentRole === "pt" ? currentUser.uid : await getLinkedPtIdForDancer();
-  const dancerId = currentRole === "pt" ? currentChatDancerId : currentUser.uid;
-  if(!ptId || !dancerId) return;
-
-  const threadRef = doc(db, "threads", currentThreadId);
-  const messagesRef = collection(db, "threads", currentThreadId, "messages");
-  const recipientId = currentRole === "pt" ? dancerId : ptId;
-
-  await addDoc(messagesRef, {
-    text,
-    senderId: currentUser.uid,
-    createdAt: serverTimestamp()
-  });
-
-  await setDoc(threadRef, {
-    participants: [ptId, dancerId],
-    lastMessage: text,
-    lastAt: serverTimestamp()
-  }, { merge: true });
-
-  try{
-    await updateDoc(threadRef, { [`unreadFor.${recipientId}`]: increment(1) });
-  }catch(err){
-    await setDoc(threadRef, { unreadFor: { [recipientId]: 1 } }, { merge: true });
-  }
-}
 
 async function sendChatMessage(text){
   if(!currentUser) return;
@@ -4500,14 +4479,6 @@ async function sendChatMessage(text){
   try{
     await callFn("sendMessage", "POST", { dancerId: currentChatDancerId, text: trimmed });
   }catch(e){
-    if(shouldFallbackOnFunctionsError(e)){
-      try{
-        await sendChatMessageDirect(trimmed);
-        return;
-      }catch(err){
-        console.error(err);
-      }
-    }
     toast(e.message || "Send failed");
   }
 }
@@ -4517,13 +4488,7 @@ async function markThreadRead(threadId){
   try{
     await callFn("markThreadRead", "POST", { threadId });
   }catch(e){
-    if(!shouldFallbackOnFunctionsError(e)) return;
-    try{
-      const threadRef = doc(db, "threads", threadId);
-      await updateDoc(threadRef, { [`unreadFor.${currentUser.uid}`]: 0 });
-    }catch(err){
-      await setDoc(doc(db, "threads", threadId), { unreadFor: { [currentUser.uid]: 0 } }, { merge: true });
-    }
+    console.error(e);
   }
 }
 
