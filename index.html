@@ -2,808 +2,208 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0B0B0D" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0b0d" />
   <title>OnPointe Prevention</title>
-  <style>
-    :root{
-      --bg:#0B0B0D;
-      --card:#141418;
-      --text:#F4F5F7;
-      --muted:#A0A6AD;
-      --line:rgba(255,255,255,.10);
-      --ok:#39d98a;
-      --warn:#ffb020;
-      --high:#ff5c5c;
-      --radius:16px;
-      --pad:16px;
-      --shadow: 0 16px 38px rgba(0,0,0,.35);
-      --font: -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:var(--font); color:var(--text);
-      background:
-        radial-gradient(900px 600px at 65% 15%, rgba(255, 214, 222, .45), transparent 60%),
-        radial-gradient(900px 700px at 25% 5%, rgba(234, 200, 210, .35), transparent 55%),
-        radial-gradient(900px 700px at 50% 110%, rgba(190, 120, 140, .20), transparent 55%),
-        linear-gradient(180deg, #2a1018 0%, #12080c 60%, #0b0b0d 100%);
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    }
-    main{max-width:980px; margin:0 auto; padding:18px 14px 84px}
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      padding:14px 14px; position:sticky; top:0; backdrop-filter: blur(10px);
-      background: linear-gradient(180deg, rgba(11,11,13,.88) 0%, rgba(11,11,13,.55) 100%);
-      border-bottom:1px solid var(--line); z-index:20;
-    }
-    .brand{font-weight:900; letter-spacing:.2px}
-    .pill{border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--text);
-      padding:10px 12px; border-radius:999px; cursor:pointer}
-    .pill:active{transform:translateY(1px)}
-    .grid{display:grid; gap:12px}
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
-      padding:var(--pad);
-    }
-    .h{font-weight:900; margin:0 0 6px}
-    .sub{color:var(--muted); font-size:13px; margin:0}
-    .row{display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 0; border-top:1px solid var(--line)}
-    .row:first-child{border-top:0; padding-top:0}
-    label{display:block; font-size:12px; color:var(--muted); margin:10px 0 6px}
-    input,select,textarea{
-      width:100%; padding:12px 12px; border-radius:12px; border:1px solid var(--line);
-      background:rgba(0,0,0,.25); color:var(--text); outline:none;
-    }
-    textarea{min-height:90px; resize:vertical}
-    .btn{
-      width:100%; margin-top:12px; padding:12px 14px; border-radius:12px; border:0;
-      background:#ffffff; color:#0b0b0d; font-weight:800; cursor:pointer;
-    }
-    .btn.secondary{background:rgba(255,255,255,.10); color:var(--text); border:1px solid var(--line)}
-    .tabs{
-      position:fixed; left:0; right:0; bottom:0; z-index:30;
-      display:flex; gap:8px; padding:10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: linear-gradient(180deg, rgba(11,11,13,.2), rgba(11,11,13,.92));
-      border-top:1px solid var(--line); justify-content:center;
-    }
-    .tab{min-width:110px; text-align:center; padding:10px 12px; border-radius:999px;
-      border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--text); cursor:pointer;
-      font-weight:800; font-size:13px;
-    }
-    .tab.active{background:rgba(255,255,255,.18)}
-    .hidden{display:none !important}
-    .sev{font-weight:900; padding:6px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px}
-    .sev.green{background:rgba(57,217,138,.14); color:var(--ok)}
-    .sev.yellow{background:rgba(255,176,32,.14); color:var(--warn)}
-    .sev.orange{background:rgba(255,140,66,.14); color:#ffb48a}
-    .sev.red{background:rgba(255,92,92,.14); color:var(--high)}
-    .toast{
-      position:fixed; left:50%; transform:translateX(-50%);
-      bottom:76px; background:rgba(0,0,0,.65); border:1px solid var(--line);
-      padding:10px 12px; border-radius:999px; color:var(--text);
-      opacity:0; pointer-events:none; transition:.2s; z-index:50;
-    }
-    .toast.show{opacity:1}
-    a{color:#ffd6de}
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="topbar">
-    <div class="brand">OnPointe Prevention</div>
-    <button class="pill" id="btnSignOut">Sign out</button>
-  </div>
+  <header class="topbar">
+    <strong>OnPointe Prevention</strong>
+    <button id="out" class="pill hidden" type="button">Sign out</button>
+  </header>
 
   <main>
-    <!-- AUTH -->
-    <section id="screenAuth" class="grid">
-      <div class="card">
-        <p class="h">Sign in</p>
-        <p class="sub">Use any email + password for the demo.</p>
-        <label>Email</label><input id="authEmail" type="email" autocomplete="email" />
-        <label>Password</label><input id="authPass" type="password" autocomplete="current-password" />
-        <button class="btn" id="btnSignIn">Sign in</button>
-        <button class="btn secondary" id="btnSignUp">Create account</button>
-        <p class="sub" id="authMsg" style="margin-top:10px"></p>
-      </div>
+    <section id="auth" class="screen">
+      <article class="card">
+        <h2>Sign in</h2>
+        <p class="muted">Use email + password.</p>
+
+        <label for="em">Email</label>
+        <input id="em" type="email" autocomplete="email" />
+
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" />
+
+        <button id="in" class="btn" type="button">Sign in</button>
+        <button id="up" class="pill" type="button">Create account</button>
+        <p id="am" class="muted"></p>
+      </article>
     </section>
 
-    <!-- ROLE PICKER -->
-    <section id="screenRole" class="grid hidden">
-      <div class="card">
-        <p class="h">Choose your role</p>
-        <p class="sub">This controls what you see in the app.</p>
-        <label>Role</label>
-        <select id="roleSelect">
+    <section id="role" class="screen hidden">
+      <article class="card">
+        <h2>Choose role</h2>
+
+        <label for="rv">Role</label>
+        <select id="rv">
           <option value="dancer">Dancer</option>
           <option value="pt">PT</option>
         </select>
-        <label>Name (optional)</label>
-        <input id="profileName" placeholder="e.g., Alex" />
-        <button class="btn" id="btnSaveRole">Save</button>
-        <p class="sub" id="roleMsg" style="margin-top:10px"></p>
-      </div>
-    </section>
-<!-- CHECK-IN (dancer) -->
-    <section id="screenCheckin" class="grid hidden">
-      <div class="card">
-        <p class="h">Daily check-in</p>
-        <p class="sub">Session load = minutes × RPE.</p>
 
-        <label>Date</label><input id="ciDate" type="date" />
-        <label>Minutes</label><input id="ciMin" type="number" min="0" step="1" />
-        <label>RPE (0–10)</label><input id="ciRpe" type="number" min="0" max="10" step="1" />
-        <label>Fatigue (0–10)</label><input id="ciFatigue" type="number" min="0" max="10" step="1" />
-        <label>Soreness (0–10)</label><input id="ciSore" type="number" min="0" max="10" step="1" />
-        <label>Sleep (hours)</label><input id="ciSleep" type="number" min="0" max="24" step="0.5" />
-        <label>Notes (optional)</label><textarea id="ciNotes" placeholder="Any pain, swelling, unusual symptoms, etc."></textarea>
+        <label for="nm">Name</label>
+        <input id="nm" />
 
-        <button class="btn" id="btnSaveCheckin">Save check-in</button>
-        <p class="sub" id="checkinMsg" style="margin-top:10px"></p>
-      </div>
+        <button id="saveRole" class="btn" type="button">Save role</button>
+        <p id="rm" class="muted"></p>
+      </article>
     </section>
 
-    <!-- PT PORTAL (PT) -->
-    <section id="screenPT" class="grid hidden">
-      <div class="card">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div>
-            <p class="h" style="margin-bottom:2px;">My dancers</p>
-            <p class="sub">Read recent check-ins from linked dancers.</p>
-          </div>
+    <section id="check" class="screen hidden">
+      <article class="card">
+        <h2>Daily check-in</h2>
 
+        <label for="cd">Date</label>
+        <input id="cd" type="date" />
 
-      <div class="card" id="ptLinkCard">
-        <p class="h">Link a dancer</p>
-        <p class="sub" id="ptLinkSub">Generate a code and share it with a dancer to link.</p>
-        <button class="btn" id="btnGenCode">Generate link code</button>
+        <label for="cm">Minutes</label>
+        <input id="cm" type="number" min="0" />
+
+        <label for="cr">RPE</label>
+        <input id="cr" type="number" min="0" max="10" />
+
+        <label for="cf">Fatigue</label>
+        <input id="cf" type="number" min="0" max="10" />
+
+        <label for="cs">Soreness</label>
+        <input id="cs" type="number" min="0" max="10" />
+
+        <label for="csl">Sleep</label>
+        <input id="csl" type="number" min="0" max="24" step="0.5" />
+
+        <label for="cn">Notes</label>
+        <textarea id="cn"></textarea>
+
+        <button id="saveC" class="btn" type="button">Save check-in</button>
+        <p id="cmg" class="muted"></p>
+      </article>
+
+      <article class="card">
+        <h2>Load monitoring</h2>
+        <div id="loads"></div>
+      </article>
+    </section>
+
+    <section id="pt" class="screen hidden">
+      <article class="card">
+        <h2>PT linking tools</h2>
+        <p class="muted">Generate a code and share with dancers.</p>
+
+        <button id="gen" class="btn" type="button">Generate link code</button>
+
         <div class="row">
-          <div>
-            <div style="font-weight:900">Your PT code</div>
-            <div class="sub">Share with dancer to link.</div>
-          </div>
-          <div style="font-weight:900" id="ptCodeOut">—</div>
+          <div><strong>Current code</strong></div>
+          <strong id="code">--</strong>
         </div>
-        <p class="sub" id="linkMsg" style="margin-top:10px"></p>
-      </div>
 
-          <button class="pill" id="btnRefreshRoster">Refresh</button>
+        <button id="seed" class="pill" type="button">Seed demo dancer + chat</button>
+        <p id="plm" class="muted"></p>
+      </article>
+
+      <article class="card">
+        <div class="row row-head">
+          <div><strong>My Dancers</strong></div>
+          <button id="rr" class="pill" type="button">Refresh</button>
         </div>
-        <div id="rosterList" style="margin-top:12px"></div>
-        <p class="sub" id="rosterMsg" style="margin-top:10px"></p>
-      </div>
+        <div id="roster"></div>
+        <p id="rmsg" class="muted"></p>
+      </article>
 
-      <div class="card">
-        <p class="h" id="ptSelectedTitle">Select a dancer</p>
-        <p class="sub" id="ptSelectedSub">Their last check-ins will show here.</p>
-        <div id="ptCheckinsList" style="margin-top:12px"></div>
-      </div>
+      <article class="card">
+        <h2 id="dt">Dancer detail</h2>
+        <p id="ds" class="muted">Select a dancer.</p>
+        <div id="detail"></div>
+      </article>
 
-      <div class="card">
-        <p class="h">Alerts</p>
-        <p class="sub">Auto-generated when severity is not green.</p>
-        <div id="ptAlertsList" style="margin-top:12px"></div>
-      </div>
+      <article class="card">
+        <h2>Risk alerts</h2>
+        <div id="alerts"></div>
+      </article>
     </section>
 
-    <!-- AVAILABILITY (both) -->
-    <section id="screenAvail" class="grid hidden">
-      <div class="card">
-        <p class="h">Availability</p>
-        <p class="sub" id="availSub">Loading…</p>
+    <section id="avail" class="screen hidden">
+      <article class="card">
+        <h2>Availability</h2>
+        <p id="asub" class="muted"></p>
 
-        <div id="ptAvailForm" class="hidden">
-          <label>Date</label><input id="avDate" type="date" />
-          <label>Start (e.g., 18:00)</label><input id="avStart" placeholder="18:00" />
-          <label>End (e.g., 18:30)</label><input id="avEnd" placeholder="18:30" />
-          <label>Note (optional)</label><input id="avNote" placeholder="Zoom only" />
-          <button class="btn" id="btnAddSlot">Add slot</button>
+        <div id="aform" class="hidden">
+          <label for="ad">Date</label>
+          <input id="ad" type="date" />
+
+          <label for="ast">Start</label>
+          <input id="ast" />
+
+          <label for="ae">End</label>
+          <input id="ae" />
+
+          <label for="an">Note</label>
+          <input id="an" />
+
+          <button id="addA" class="btn" type="button">Add slot</button>
         </div>
 
-        <div id="availList" style="margin-top:12px"></div>
-        <p class="sub" id="availMsg" style="margin-top:10px"></p>
-      </div>
+        <div id="alist"></div>
+        <p id="amsg" class="muted"></p>
+      </article>
     </section>
 
-    <!-- MESSAGES (both) -->
-    <section id="screenMsg" class="grid hidden">
-      <div class="card">
-        <p class="h">Messages</p>
-        <p class="sub">Chat with your linked PT / dancers.</p>
+    <section id="msg" class="screen hidden">
+      <div class="split">
+        <article class="card">
+          <h2>Conversations</h2>
+          <div id="threads"></div>
+          <p id="tmsg" class="muted"></p>
+        </article>
 
+        <article class="card">
+          <h2 id="ct">Select a conversation</h2>
+          <p id="csub" class="muted">Messages are private to participants.</p>
+          <div id="chatE" class="muted">Select a thread to chat.</div>
 
-        <div class="card hidden" id="msgLinkCard" style="margin-bottom:12px;">
-          <p class="h">Link your PT</p>
-          <p class="sub" id="linkSub">Not linked yet.</p>
-          <label>Enter PT code</label>
-          <input id="ptCodeInput" placeholder="e.g., K7P3QW" />
-          <button class="btn" id="btnLink">Link</button>
-          <button class="btn secondary" id="btnUnlink">Unlink</button>
-          <p class="sub" id="msgLinkMsg" style="margin-top:10px"></p>
-        </div>
-
-
-        <div id="threadRow" class="row hidden">
-          <div>
-            <div style="font-weight:900" id="threadTitle">Thread</div>
-            <div class="sub" id="threadSub">—</div>
-          </div>
-          <button class="pill" id="btnOpenThread">Open</button>
-        </div>
-
-        <div id="chatBox" class="hidden" style="margin-top:12px">
-          <div class="row" style="margin-bottom:10px;">
-            <div>
-              <div style="font-weight:900" id="chatTitle">Chat</div>
-              <div class="sub" id="chatSub">—</div>
+          <div id="chatB" class="hidden">
+            <div id="chat" class="chat"></div>
+            <div class="chat-input-row">
+              <input id="txt" placeholder="Type..." />
+              <button id="send" class="pill" type="button">Send</button>
             </div>
-            <button class="pill" id="btnCloseChat">Close</button>
           </div>
-          <div id="chatLog" style="display:grid; gap:8px; margin-bottom:10px; max-height:360px; overflow:auto; padding:6px;"></div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <input id="chatText" placeholder="Type a message…" style="flex:1" />
-            <button class="pill" id="btnSend" style="min-width:90px;">Send</button>
-          </div>
-        </div>
-        <p class="sub" id="msgInfo" style="margin-top:10px"></p>
+        </article>
       </div>
     </section>
 
-    <!-- RESOURCES -->
-    <section id="screenResources" class="grid hidden">
-      <div class="card">
-        <p class="h">Resources</p>
-        <p class="sub">Phase 1 placeholder: curated links to dancer-specific education.</p>
+    <section id="res" class="screen hidden">
+      <article class="card">
+        <h2>Education hub</h2>
         <div class="row">
           <div>
-            <div style="font-weight:900">Emergency symptoms</div>
-            <div class="sub">If chest pain, fainting, severe weakness, or shortness of breath: seek urgent care.</div>
+            <strong>Prehab basics</strong>
+            <div class="muted">Warm-up, progression, recovery pacing.</div>
           </div>
         </div>
         <div class="row">
           <div>
-            <div style="font-weight:900">Injury prevention basics</div>
-            <div class="sub">Warm-up, load progression, sleep, nutrition.</div>
+            <strong>Risk response</strong>
+            <div class="muted">When to deload and when to contact PT.</div>
           </div>
         </div>
-        <p class="sub">We’ll replace this with your actual education hub content later.</p>
-      </div>
+        <div class="row">
+          <div>
+            <strong>Privacy and ownership</strong>
+            <div class="muted">Role-based access for dancer/PT only.</div>
+          </div>
+        </div>
+      </article>
     </section>
   </main>
 
-  <nav class="tabs" id="tabs">
-<button class="tab" data-screen="screenCheckin" id="tabCheckin">Check-in</button>
-    <button class="tab" data-screen="screenPT" id="tabPT">PT Portal</button>
-    <button class="tab" data-screen="screenAvail" id="tabAvail">Availability</button>
-    <button class="tab" data-screen="screenMsg" id="tabMsg">Messages</button>
-    <button class="tab" data-screen="screenResources" id="tabRes">Resources</button>
+  <nav id="tabs" class="tabs hidden">
+    <button class="tab" data-s="check" data-r="dancer" type="button">Check-in</button>
+    <button class="tab" data-s="pt" data-r="pt" type="button">PT Portal</button>
+    <button class="tab" data-s="avail" data-r="pt" type="button">Availability</button>
+    <button class="tab" data-s="msg" data-r="pt,dancer" type="button">Messages</button>
+    <button class="tab" data-s="res" data-r="pt,dancer" type="button">Resources</button>
   </nav>
 
-  <div class="toast" id="toast">Saved</div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-
-    // ⚠️ Keep your existing project config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmgTapl6qs29Cdr_WlNOKTq_yttO9kqW8",
-      authDomain: "on-pointe-prevention.firebaseapp.com",
-      projectId: "on-pointe-prevention",
-      storageBucket: "on-pointe-prevention.firebasestorage.app",
-      messagingSenderId: "235349964683",
-      appId: "1:235349964683:web:0b1a3b3e494bd86fc0a18e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const $ = (id) => document.getElementById(id);
-    const toast = (msg) => { const t=$("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1200); };
-
-    // Functions base
-    const REGION = "us-central1";
-    const PROJECT = "on-pointe-prevention";
-    const FN_BASE = `https://${REGION}-${PROJECT}.cloudfunctions.net`;
-
-    async function callFn(path, method="GET", body=null, queryObj=null){
-      if(!auth.currentUser) throw new Error("Not logged in");
-      const token = await auth.currentUser.getIdToken();
-      let url = `${FN_BASE}/${path}`;
-      if(queryObj && typeof queryObj === "object"){
-        const qs = new URLSearchParams();
-        for(const [k,v] of Object.entries(queryObj)){
-          if(v !== undefined && v !== null) qs.set(k, String(v));
-        }
-        const s = qs.toString();
-        if(s) url += (url.includes("?") ? "&" : "?") + s;
-      }
-      const opts = { method, headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${token}` } };
-      if(body) opts.body = JSON.stringify(body);
-      const res = await fetch(url, opts);
-      const data = await res.json().catch(()=> ({}));
-      if(!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-      return data;
-    }
-
-    function todayISO(){
-      const d=new Date();
-      const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0");
-      return `${y}-${m}-${day}`;
-    }
-    function computeLoad(entry){ return Math.round((Number(entry?.minutes)||0) * (Number(entry?.rpe)||0)); }
-    function sevClass(sev){ return ["green","yellow","orange","red"].includes(sev) ? sev : "green"; }
-
-    // UI routing
-    const screens = ["screenAuth","screenRole","screenCheckin","screenPT","screenAvail","screenMsg","screenResources"];
-    function showScreen(id){
-      screens.forEach(s=> $(s)?.classList.add("hidden"));
-      $(id)?.classList.remove("hidden");
-      document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.screen === id));
-    }
-        function applyRoleUI(role){
-      // Tabs visibility
-      $("tabCheckin")?.classList.toggle("hidden", role !== "dancer");
-      $("tabPT")?.classList.toggle("hidden", role !== "pt");
-
-      // Availability form only for PT
-      $("ptAvailForm")?.classList.toggle("hidden", role !== "pt");
-
-      // PT portal link-code card only for PT
-      $("ptLinkCard")?.classList.toggle("hidden", role !== "pt");
-
-      // Messages: dancer link card only for dancer (handled in refreshThread too, but keep consistent)
-      $("msgLinkCard")?.classList.toggle("hidden", role !== "dancer");
-    }
-
-    // Auth buttons
-    $("btnSignIn").onclick = async ()=>{
-      $("authMsg").textContent="";
-      try{
-        await signInWithEmailAndPassword(auth, $("authEmail").value.trim(), $("authPass").value);
-      }catch(e){ $("authMsg").textContent = e.message || "Failed"; }
-    };
-    $("btnSignUp").onclick = async ()=>{
-      $("authMsg").textContent="";
-      try{
-        await createUserWithEmailAndPassword(auth, $("authEmail").value.trim(), $("authPass").value);
-      }catch(e){ $("authMsg").textContent = e.message || "Failed"; }
-    };
-    $("btnSignOut").onclick = async ()=>{ await signOut(auth); };
-
-    // Role save
-    $("btnSaveRole").onclick = async ()=>{
-      $("roleMsg").textContent="";
-      const role = $("roleSelect").value;
-      const name = $("profileName").value.trim();
-      try{
-        await setDoc(doc(db,"users",auth.currentUser.uid), { role, name: name || null, email: auth.currentUser.email || null }, { merge:true });
-        toast("Saved");
-      }catch(e){ $("roleMsg").textContent = e.message || "Failed"; }
-    };
-
-    // Tabs
-    document.querySelectorAll(".tab").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const target = btn.dataset.screen;
-        if(target) showScreen(target);
-      });
-    });
-
-    // Linking
-    $("btnGenCode").onclick = async ()=>{
-      if($("msgLinkMsg")) $("msgLinkMsg").textContent="";
-      if($("linkMsg")) $("linkMsg").textContent="";
-      try{
-        const r = await callFn("generatePtCode","POST", {});
-        $("ptCodeOut").textContent = r.code || "—";
-        toast("Code generated");
-      }catch(e){ if($("msgLinkMsg")) $("msgLinkMsg").textContent = e.message || "Failed";
-        if($("linkMsg")) $("linkMsg").textContent = e.message || "Failed"; }
-    };
-    $("btnLink").onclick = async ()=>{
-      if($("msgLinkMsg")) $("msgLinkMsg").textContent="";
-      if($("linkMsg")) $("linkMsg").textContent="";
-      try{
-        const code = $("ptCodeInput").value.trim().toUpperCase();
-        await callFn("linkWithPtCode","POST",{ code });
-        toast("Linked");
-        await refreshLinkStatus();
-        await refreshThread();
-      }catch(e){ if($("msgLinkMsg")) $("msgLinkMsg").textContent = e.message || "Failed";
-        if($("linkMsg")) $("linkMsg").textContent = e.message || "Failed"; }
-    };
-    $("btnUnlink").onclick = async ()=>{
-      if($("msgLinkMsg")) $("msgLinkMsg").textContent="";
-      if($("linkMsg")) $("linkMsg").textContent="";
-      try{
-        await callFn("unlinkFromPt","POST",{});
-        toast("Unlinked");
-        await refreshLinkStatus();
-        await refreshThread();
-      }catch(e){ if($("msgLinkMsg")) $("msgLinkMsg").textContent = e.message || "Failed";
-        if($("linkMsg")) $("linkMsg").textContent = e.message || "Failed"; }
-    };
-
-    // Check-in save (client can write their own subcollection per rules)
-    $("btnSaveCheckin").onclick = async ()=>{
-      $("checkinMsg").textContent="";
-      try{
-        const entry = {
-          date: $("ciDate").value || todayISO(),
-          minutes: Number($("ciMin").value || 0),
-          rpe: Number($("ciRpe").value || 0),
-          fatigue: Number($("ciFatigue").value || 0),
-          sore: Number($("ciSore").value || 0),
-          sleep: Number($("ciSleep").value || 0),
-          notes: $("ciNotes").value.trim()
-        };
-        // Use date as doc id for easy overwrites
-        await setDoc(doc(db, "users", auth.currentUser.uid, "checkins", entry.date), entry, { merge:true });
-        toast("Saved");
-}catch(e){ $("checkinMsg").textContent = e.message || "Failed"; }
-    };
-
-    // PT roster
-    $("btnRefreshRoster").onclick = ()=> refreshRoster();
-
-    async function refreshRoster(){
-      $("rosterMsg").textContent="";
-      $("rosterList").innerHTML="";
-      try{
-        const r = await callFn("getMyDancers","GET");
-        const dancers = Array.isArray(r.dancers) ? r.dancers : [];
-        if(dancers.length === 0){
-          $("rosterMsg").textContent = "No dancers linked yet.";
-          return;
-        }
-        $("rosterList").innerHTML = dancers.map(d=> `
-          <div class="row">
-            <div>
-              <div style="font-weight:900">${(d.name || d.email || d.dancerId)}</div>
-              <div class="sub">${d.dancerId}</div>
-            </div>
-            <button class="pill" data-open-dancer="${d.dancerId}">Open</button>
-          </div>
-        `).join("");
-        $("rosterList").querySelectorAll("[data-open-dancer]").forEach(btn=>{
-          btn.addEventListener("click", ()=> openDancer(btn.getAttribute("data-open-dancer")));
-        });
-      }catch(e){
-        $("rosterMsg").textContent = e.message || "Failed";
-      }
-    }
-        $("dashRosterList").innerHTML = dancers.map(d=> `
-          <div class="row">
-            <div>
-              <div style="font-weight:900">${(d.name || d.email || d.dancerId)}</div>
-              <div class="sub">${d.dancerId}</div>
-            </div>
-            <button class="pill" data-open-dash-dancer="${d.dancerId}">Open</button>
-          </div>
-        `).join("");
-        $("dashRosterList").querySelectorAll("[data-open-dash-dancer]").forEach(btn=>{
-          btn.addEventListener("click", ()=>{
-            // Jump to PT Portal and open dancer
-            showScreen("screenPT");
-            openDancer(btn.getAttribute("data-open-dash-dancer"));
-          });
-        });
-      }catch(e){
-        $("dashRosterMsg").textContent = e.message || "Failed";
-      }
-    }
-
-    async function openDancer(dancerId){
-      $("ptSelectedTitle").textContent = dancerId;
-      $("ptSelectedSub").textContent = "Loading…";
-      $("ptCheckinsList").innerHTML = "";
-      try{
-        const r = await callFn("getDancerRecentCheckins","GET",null,{ dancerId, limit: 14 });
-        const items = Array.isArray(r.items) ? r.items : [];
-        if(items.length === 0){
-          $("ptSelectedSub").textContent = "No check-ins yet.";
-          $("ptCheckinsList").innerHTML = `<div class="sub">No entries.</div>`;
-          return;
-        }
-        $("ptSelectedSub").textContent = "Recent check-ins";
-        $("ptCheckinsList").innerHTML = items.map(it=>{
-          const sev = it?.risk?.severity || "green";
-          const load = it?.risk?.load ?? computeLoad(it);
-          const acwr = it?.risk?.acwr;
-          return `
-            <div class="row">
-              <div>
-                <div style="font-weight:900">${it.date} · ${it.minutes||0} min · RPE ${it.rpe||0} · Load ${load}</div>
-                <div class="sub">${(it.notes||"").slice(0,120)}</div>
-                <div class="sub">${acwr ? `ACWR ${Number(acwr).toFixed(2)}` : ""}</div>
-              </div>
-              <div class="sev ${sevClass(sev)}">${sev.toUpperCase()}</div>
-            </div>
-          `;
-        }).join("");
-      }catch(e){
-        $("ptSelectedSub").textContent = "Failed to load.";
-        $("ptCheckinsList").innerHTML = `<div class="sub">${e.message || "Failed"}</div>`;
-      }
-    }
-
-    // Availability
-    $("btnAddSlot").onclick = async ()=>{
-      $("availMsg").textContent="";
-      try{
-        const body = {
-          date: $("avDate").value || todayISO(),
-          start: $("avStart").value.trim(),
-          end: $("avEnd").value.trim(),
-          note: $("avNote").value.trim()
-        };
-        await callFn("setMyAvailability","POST",body);
-        toast("Added");
-        await refreshAvailability();
-      }catch(e){ $("availMsg").textContent = e.message || "Failed"; }
-    };
-
-    async function refreshAvailability(){
-      $("availMsg").textContent="";
-      $("availList").innerHTML="";
-      try{
-        // both roles read: PT reads own; dancer reads linked PT
-        const me = window.__role;
-        const r = me === "pt"
-          ? await callFn("getMyAvailability","GET")
-          : await callFn("getLinkedPtAvailability","GET");
-        const slots = Array.isArray(r.slots) ? r.slots : [];
-        $("availSub").textContent = (me === "pt") ? "Your upcoming slots" : "Your PT's upcoming slots";
-        if(slots.length === 0){
-          $("availList").innerHTML = `<div class="sub">No slots yet.</div>`;
-          return;
-        }
-        // sort by date+start
-        slots.sort((a,b)=> (a.date+a.start).localeCompare(b.date+b.start));
-        $("availList").innerHTML = slots.map(s=>{
-          const right = me === "pt"
-            ? `<button class="pill" data-del="${s.slotId}">Delete</button>`
-            : "";
-          return `
-            <div class="row">
-              <div>
-                <div style="font-weight:900">${s.date} · ${s.start}–${s.end}</div>
-                <div class="sub">${s.note || ""}</div>
-              </div>
-              ${right}
-            </div>
-          `;
-        }).join("");
-        if(me === "pt"){
-          $("availList").querySelectorAll("[data-del]").forEach(btn=>{
-            btn.addEventListener("click", async ()=>{
-              try{
-                await callFn("deleteMyAvailability","POST",{ slotId: btn.getAttribute("data-del") });
-                toast("Deleted");
-                await refreshAvailability();
-              }catch(e){ $("availMsg").textContent = e.message || "Failed"; }
-            });
-          });
-        }
-      }catch(e){ $("availMsg").textContent = e.message || "Failed"; }
-    }
-
-    // Messages (single thread MVP: dancer <-> linked PT, PT opens by selecting a dancer later)
-    let unsubChat = null;
-        // Messages
-    let unsubChat = null;
-
-    async function refreshThread(){
-      $("threadRow").classList.add("hidden");
-      $("chatBox").classList.add("hidden");
-      $("msgInfo").textContent = "";
-      if($("msgLinkMsg")) $("msgLinkMsg").textContent = "";
-
-      const role = window.__role;
-
-      // Dancer: link + single thread with linked PT
-      if(role === "dancer"){
-        $("msgLinkCard").classList.remove("hidden");
-        await refreshLinkStatus();
-
-        try{
-          const r = await callFn("getMyPt","GET");
-          const pt = r.pt;
-          if(!pt?.uid){
-            $("msgInfo").textContent = "Link a PT to start messaging.";
-            return;
-          }
-          const r2 = await callFn("ensureThread","POST",{ otherUid: pt.uid });
-          const tid = r2.threadId;
-
-          $("threadTitle").textContent = pt.name || pt.email || pt.uid;
-          $("threadSub").textContent = "Tap Open to view chat.";
-          $("threadRow").classList.remove("hidden");
-
-          $("btnOpenThread").textContent = "Open";
-          $("btnOpenThread").onclick = ()=> openThread(tid, pt.name || pt.email || pt.uid);
-        }catch(e){
-          $("msgInfo").textContent = e.message || "Failed";
-        }
-        return;
-      }
-
-      // PT: pick a dancer to open chat
-      $("msgLinkCard").classList.add("hidden");
-
-      try{
-        const r = await callFn("getMyDancers","GET");
-        const dancers = Array.isArray(r.dancers) ? r.dancers : [];
-        if(dancers.length === 0){
-          $("msgInfo").textContent = "No dancers linked yet.";
-          return;
-        }
-
-        $("threadTitle").textContent = "My dancers";
-        $("threadSub").textContent = "Pick a dancer to open chat.";
-        $("threadRow").classList.remove("hidden");
-        $("btnOpenThread").textContent = "Pick";
-
-        $("btnOpenThread").onclick = ()=>{
-          $("msgInfo").innerHTML = dancers.map(d=>`
-            <div class="row">
-              <div>
-                <div style="font-weight:900">${(d.name || d.email || d.dancerId)}</div>
-                <div class="sub">${d.dancerId}</div>
-              </div>
-              <button class="pill" data-chat="${d.dancerId}" data-name="${(d.name||d.email||d.dancerId)}">Chat</button>
-            </div>
-          `).join("");
-
-          $("msgInfo").querySelectorAll("[data-chat]").forEach(btn=>{
-            btn.addEventListener("click", async ()=>{
-              const dancerId = btn.getAttribute("data-chat");
-              const label = btn.getAttribute("data-name");
-              try{
-                const r2 = await callFn("ensureThread","POST",{ otherUid: dancerId });
-                openThread(r2.threadId, label);
-              }catch(e){ toast(e.message || "Failed"); }
-            });
-          });
-        };
-
-      }catch(e){
-        $("msgInfo").textContent = e.message || "Failed";
-      }
-    }
-
-    async function openThread(threadId, label){
-      $("chatBox").classList.remove("hidden");
-      $("chatTitle").textContent = label || "Chat";
-      $("chatSub").textContent = "Messages are private to participants.";
-      $("chatLog").innerHTML = "";
-      if(unsubChat) { unsubChat(); unsubChat=null; }
-
-      $("btnCloseChat").onclick = ()=>{
-        $("chatBox").classList.add("hidden");
-        if(unsubChat) { unsubChat(); unsubChat=null; }
-      };
-
-      const q = query(collection(db,"threads",threadId,"messages"), orderBy("createdAt","desc"), limit(60));
-      unsubChat = onSnapshot(q, (snap)=>{
-        const items = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
-        items.sort((a,b)=> (a.createdAt?.seconds||0) - (b.createdAt?.seconds||0));
-
-        $("chatLog").innerHTML = items.map(m=>{
-          const mine = m.senderUid === auth.currentUser.uid;
-          const align = mine ? "end" : "start";
-          const bg = mine ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.20)";
-          return `<div style="justify-self:${align}; max-width:76%; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:${bg}; white-space:pre-wrap;">${m.text}</div>`;
-        }).join("");
-
-        const el = $("chatLog");
-        el.scrollTop = el.scrollHeight;
-      });
-
-      $("btnSend").onclick = async ()=>{
-        const text = $("chatText").value.trim();
-        if(!text) return;
-        $("chatText").value = "";
-        try{
-          await callFn("sendMessage","POST",{ threadId, text });
-        }catch(e){ toast(e.message || "Failed"); }
-      };
-    }
-
-
-    
-
-    // Linking status + dashboard summary
-        async function refreshLinkStatus(){
-      const role = window.__role;
-
-      if(role === "dancer"){
-        const snap = await getDoc(doc(db,"users",auth.currentUser.uid));
-        const linkedPtId = snap.exists() ? snap.data().linkedPtId : null;
-        if(linkedPtId){
-          $("linkSub").textContent = `Linked to PT: ${linkedPtId}`;
-        }else{
-          $("linkSub").textContent = "Not linked yet.";
-        }
-      }else{
-        if($("ptLinkSub")) $("ptLinkSub").textContent = "Generate a code and share it with a dancer to link.";
-      }
-    }
-
-
-    
-
-    // App bootstrap
-    onAuthStateChanged(auth, async (user)=>{
-      if(!user){
-        window.__role = null;
-        showScreen("screenAuth");
-        $("btnSignOut").style.visibility = "hidden";
-        return;
-      }
-      $("btnSignOut").style.visibility = "visible";
-      $("ciDate").value = todayISO();
-      $("avDate").value = todayISO();
-
-      // read role
-      const uSnap = await getDoc(doc(db,"users",user.uid));
-      const role = uSnap.exists() ? (uSnap.data().role || null) : null;
-      window.__role = role;
-
-      if(!role){
-        showScreen("screenRole");
-        return;
-      }
-
-      applyRoleUI(role);
-      showScreen(role === "pt" ? "screenPT" : "screenCheckin");
-
-      await refreshLinkStatus();
-await refreshAvailability();
-      await refreshThread();
-
-      if(role === "pt"){
-        await refreshRoster();
-// PT alerts listener
-        const alertsCol = collection(db,"alerts",user.uid,"items");
-        onSnapshot(query(alertsCol, orderBy("createdAt","desc"), limit(20)), (snap)=>{
-          const items = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
-          if(items.length === 0){
-            $("ptAlertsList").innerHTML = `<div class="sub">No alerts yet.</div>`;
-            return;
-          }
-          $("ptAlertsList").innerHTML = items.map(a=>{
-            const sev = a.severity || "orange";
-            const top = `${a.snapshot?.date || a.id} · Load ${a.snapshot?.load ?? "—"}`;
-            return `
-              <div class="row">
-                <div>
-                  <div style="font-weight:900">${a.dancerUid} · ${top}</div>
-                  <div class="sub">${(a.reasons||[]).join(", ")}</div>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center;">
-                  <div class="sev ${sevClass(sev)}">${sev.toUpperCase()}</div>
-                  <button class="pill" data-review="${a.id}">Reviewed</button>
-                </div>
-              </div>
-            `;
-          }).join("");
-          $("ptAlertsList").querySelectorAll("[data-review]").forEach(btn=>{
-            btn.addEventListener("click", async ()=>{
-              try{
-                await callFn("markAlertReviewed","POST",{ alertId: btn.getAttribute("data-review") });
-                toast("Reviewed");
-              }catch(e){ toast(e.message || "Failed"); }
-            });
-          });
-        });
-      }
-    });
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
