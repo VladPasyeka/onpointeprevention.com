@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isThreadParticipant(threadId) {
+      return isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSelf(uid);
+
+      match /checkins/{checkinId} {
+        allow read, write: if isSelf(uid);
+      }
+    }
+
+    match /threads/{threadId} {
+      allow read: if isThreadParticipant(threadId);
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participants;
+      allow update: if isThreadParticipant(threadId);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isThreadParticipant(threadId);
+        allow create: if isThreadParticipant(threadId)
+          && request.resource.data.senderUid == request.auth.uid;
+        allow update: if isThreadParticipant(threadId);
+        allow delete: if false;
+      }
+    }
+
+    match /alerts/{ptUid}/items/{alertId} {
+      allow read: if isSelf(ptUid);
+      allow write: if false;
+    }
+
+    match /ptCodes/{docId} {
+      allow read, write: if false;
+    }
+
+    match /ptLinks/{ptUid}/dancers/{dancerUid} {
+      allow read, write: if false;
+    }
+
+    match /ptAvailability/{slotId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
