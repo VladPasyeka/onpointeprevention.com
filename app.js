@@ -59,6 +59,7 @@ const state = {
   role: null,
   activeThreadId: null,
   threads: [],
+  dancerDirectory: {},
   isSending: false,
   unsubscribeChat: null,
   unsubscribeAlerts: null,
@@ -107,6 +108,13 @@ function stopListener(unsubscribe) {
 
 function formatDateTime(ms) {
   return new Date(ms || 0).toLocaleString();
+}
+
+function displayNameFor(uid) {
+  const entry = state.dancerDirectory?.[uid] || null;
+  if (entry?.name) return entry.name;
+  if (entry?.email) return entry.email;
+  return "Dancer";
 }
 
 function setNavVisible(visible) {
@@ -242,7 +250,7 @@ async function refreshLoads() {
         return `
           <div class="row">
             <div>
-              <strong>${escapeHtml(item.date)} · Load ${load}</strong>
+              <strong>${escapeHtml(item.date)} &middot; Load ${load}</strong>
               <div class="muted">${escapeHtml(reasons)}</div>
             </div>
             <div class="sev ${severity}">${severity.toUpperCase()}</div>
@@ -270,16 +278,29 @@ async function refreshRoster() {
       return;
     }
 
+    dancers.forEach((dancer) => {
+      if (!dancer?.dancerId) return;
+      state.dancerDirectory[dancer.dancerId] = {
+        name: dancer.name || null,
+        email: dancer.email || null,
+      };
+    });
+
     $("roster").innerHTML = dancers
-      .map((dancer) => `
-        <div class="row">
-          <div>
-            <strong>${escapeHtml(dancer.name || dancer.email || dancer.dancerId)}</strong>
-            <div class="muted">${escapeHtml(dancer.dancerId)}</div>
+      .map((dancer) => {
+        const label = displayNameFor(dancer.dancerId);
+        const sub = dancer.email || "Linked dancer";
+
+        return `
+          <div class="row">
+            <div>
+              <strong>${escapeHtml(label)}</strong>
+              <div class="muted">${escapeHtml(sub)}</div>
+            </div>
+            <button class="pill" type="button" data-dancer-id="${escapeHtml(dancer.dancerId)}">Open</button>
           </div>
-          <button class="pill" type="button" data-dancer-id="${escapeHtml(dancer.dancerId)}">Open</button>
-        </div>
-      `)
+        `;
+      })
       .join("");
 
     $("roster").querySelectorAll("[data-dancer-id]").forEach((button) => {
@@ -291,8 +312,9 @@ async function refreshRoster() {
 }
 
 async function openDancerDetail(dancerId) {
-  $("dt").textContent = dancerId;
-  $("ds").textContent = "Loading...";
+  const label = displayNameFor(dancerId);
+  $("dt").textContent = label;
+  $("ds").textContent = `Loading ${label}...`;
 
   try {
     const response = await callFn("getDancerRecentCheckins", "GET", null, {
@@ -303,12 +325,12 @@ async function openDancerDetail(dancerId) {
     const items = Array.isArray(response.items) ? response.items : [];
 
     if (!items.length) {
-      $("ds").textContent = "No check-ins yet.";
+      $("ds").textContent = `No check-ins yet for ${label}.`;
       $("detail").innerHTML = '<div class="muted">No entries.</div>';
       return;
     }
 
-    $("ds").textContent = "Recent check-ins and risk.";
+    $("ds").textContent = `Recent check-ins and risk for ${label}.`;
 
     $("detail").innerHTML = items
       .map((item) => {
@@ -322,7 +344,7 @@ async function openDancerDetail(dancerId) {
           <div class="row">
             <div>
               <strong>
-                ${escapeHtml(item.date)} · ${Number(item.minutes || 0)} min · RPE ${Number(item.rpe || 0)} · Load ${load}
+                ${escapeHtml(item.date)} &middot; ${Number(item.minutes || 0)} min &middot; RPE ${Number(item.rpe || 0)} &middot; Load ${load}
               </strong>
               <div class="muted">${escapeHtml((item.notes || "").slice(0, 100))}</div>
               <div class="muted">${acwr}</div>
@@ -365,7 +387,7 @@ async function refreshAvailability() {
       .map((slot) => `
         <div class="row">
           <div>
-            <strong>${escapeHtml(slot.date)} · ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
+            <strong>${escapeHtml(slot.date)} &middot; ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
             <div class="muted">${escapeHtml(slot.note || "")}</div>
           </div>
           ${
@@ -416,27 +438,49 @@ async function refreshThreads() {
     }
 
     $("threads").innerHTML = threads
-      .map((thread) => `
-        <div class="thread ${state.activeThreadId === thread.threadId ? "on" : ""}" data-thread-id="${escapeHtml(thread.threadId)}">
-          <div class="row row-head">
-            <strong>${escapeHtml(thread.peerName || thread.peerUid)}</strong>
-            ${thread.unreadCount ? `<span class="sev orange">${thread.unreadCount} new</span>` : ""}
+      .map((thread) => {
+        const fallbackLabel =
+          state.role === ROLE.PT ? displayNameFor(thread.peerUid) : "PT";
+        const label =
+          thread.peerName && thread.peerName !== thread.peerUid
+            ? thread.peerName
+            : fallbackLabel;
+
+        return `
+          <div class="thread ${state.activeThreadId === thread.threadId ? "on" : ""}" data-thread-id="${escapeHtml(thread.threadId)}">
+            <div class="row row-head">
+              <strong>${escapeHtml(label)}</strong>
+              ${thread.unreadCount ? `<span class="sev orange">${thread.unreadCount} new</span>` : ""}
+            </div>
+            <div class="muted">${escapeHtml(thread.lastMessageText || "No messages yet")}</div>
+            <div class="muted">${escapeHtml(formatDateTime(thread.lastMessageAt))}</div>
           </div>
-          <div class="muted">${escapeHtml(thread.lastMessageText || "No messages yet")}</div>
-          <div class="muted">${escapeHtml(formatDateTime(thread.lastMessageAt))}</div>
-        </div>
-      `)
+        `;
+      })
       .join("");
 
     $("threads").querySelectorAll("[data-thread-id]").forEach((el) => {
       el.addEventListener("click", () => {
         const thread = state.threads.find((t) => t.threadId === el.dataset.threadId);
-        openThread(el.dataset.threadId, thread?.peerName || "Chat");
+        const fallbackLabel =
+          state.role === ROLE.PT ? displayNameFor(thread?.peerUid) : "PT";
+        const label =
+          thread?.peerName && thread.peerName !== thread.peerUid
+            ? thread.peerName
+            : fallbackLabel;
+        openThread(el.dataset.threadId, label || "Chat");
       });
     });
 
     if (!state.activeThreadId && threads[0]) {
-      openThread(threads[0].threadId, threads[0].peerName || "Chat");
+      const first = threads[0];
+      const fallbackLabel =
+        state.role === ROLE.PT ? displayNameFor(first.peerUid) : "PT";
+      const label =
+        first.peerName && first.peerName !== first.peerUid
+          ? first.peerName
+          : fallbackLabel;
+      openThread(first.threadId, label || "Chat");
     }
   } catch (error) {
     $("tmsg").textContent = error.message;
@@ -537,22 +581,39 @@ function subscribeAlerts() {
     }
 
     $("alerts").innerHTML = items
-      .map((alert) => `
-        <div class="row">
-          <div>
-            <strong>
-              ${escapeHtml(alert.dancerUid)} ·
-              ${escapeHtml((alert.snapshot?.date || alert.id) + " · Load " + (alert.snapshot?.load ?? "--"))}
-            </strong>
-            <div class="muted">${escapeHtml((alert.reasons || []).join(", "))}</div>
+      .map((alert) => {
+        const label = displayNameFor(alert.dancerUid);
+        const reviewed = Boolean(alert.reviewed);
+        const load = alert.snapshot?.load ?? "--";
+        const alertDate = alert.snapshot?.date || alert.id;
+        const severity = alert.severity || "orange";
+
+        return `
+          <div class="row">
+            <div>
+              <strong>
+                ${escapeHtml(label)} &middot; ${escapeHtml(alertDate)} &middot; Load ${escapeHtml(load)}
+              </strong>
+              <div class="muted">${escapeHtml((alert.reasons || []).join(", "))}</div>
+            </div>
+            <div class="row-actions">
+              <span class="sev ${escapeHtml(severity)}">${escapeHtml(severity.toUpperCase())}</span>
+              <button class="pill" type="button" data-view-dancer-id="${escapeHtml(alert.dancerUid)}">View</button>
+              <button class="pill" type="button" data-review-alert-id="${escapeHtml(alert.id)}" ${reviewed ? "disabled" : ""}>
+                ${reviewed ? "Reviewed" : "Mark reviewed"}
+              </button>
+            </div>
           </div>
-          <div>
-            <span class="sev ${alert.severity || "orange"}">${escapeHtml((alert.severity || "orange").toUpperCase())}</span>
-            <button class="pill" type="button" data-review-alert-id="${escapeHtml(alert.id)}">Reviewed</button>
-          </div>
-        </div>
-      `)
+        `;
+      })
       .join("");
+
+    $("alerts").querySelectorAll("[data-view-dancer-id]").forEach((button) => {
+      button.addEventListener("click", () => {
+        navigate("pt");
+        openDancerDetail(button.dataset.viewDancerId);
+      });
+    });
 
     $("alerts").querySelectorAll("[data-review-alert-id]").forEach((button) => {
       button.addEventListener("click", () =>
@@ -647,7 +708,7 @@ $("seed").addEventListener("click", async () => {
   try {
     $("plm").textContent = "";
     const response = await callFn("seedDemoData", "POST", {});
-    $("plm").textContent = `Seeded ${response.demoDancerId}`;
+    $("plm").textContent = "Seeded demo dancer.";
     refreshRoster();
     refreshThreads();
   } catch (error) {

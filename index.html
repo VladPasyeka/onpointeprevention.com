@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0b0d" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#c3a5a5" />
   <title>OnPointe Prevention</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -14,21 +14,28 @@
   </header>
 
   <main>
-    <section id="auth" class="screen">
-      <article class="card">
-        <h2>Sign in</h2>
-        <p class="muted">Use email + password.</p>
+    <section id="auth" class="screen auth-screen">
+      <div class="auth-hero">
+        <div class="auth-logo" role="img" aria-label="OnPointe logo"></div>
+        <div class="auth-title">ONPOINTE</div>
+        <div class="auth-subtitle">LOGIN</div>
+        <div class="auth-tagline">Your leap, safely landed.</div>
+      </div>
 
-        <label for="em">Email</label>
-        <input id="em" type="email" autocomplete="email" />
+      <div class="auth-form">
+        <label class="label" for="em">Username</label>
+        <input id="em" class="input under" type="email" autocomplete="email" placeholder="" />
 
-        <label for="pw">Password</label>
-        <input id="pw" type="password" autocomplete="current-password" />
+        <label class="label" for="pw">Password</label>
+        <input id="pw" class="input under" type="password" autocomplete="current-password" placeholder="" />
 
-        <button id="in" class="btn" type="button">Sign in</button>
-        <button id="up" class="pill" type="button">Create account</button>
+        <button id="in" class="btn auth-btn" type="button">Log in</button>
+        <button class="link auth-link" type="button">Forgot Password</button>
+        <button id="up" class="btn secondary auth-btn" type="button">Create</button>
+        <div class="auth-note muted">Don’t have an account?</div>
+        <div class="auth-site muted">www.onpointeprevention.com</div>
         <p id="am" class="muted"></p>
-      </article>
+      </div>
     </section>
 
     <section id="role" class="screen hidden">
