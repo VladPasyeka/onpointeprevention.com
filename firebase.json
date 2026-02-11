@@ -3,7 +3,7 @@
     {
       "source": "functions",
       "codebase": "default",
-      "runtime": "nodejs20",
+      "runtime": "nodejs22",
       "gen": 2,
       "disallowLegacyRuntimeConfig": true,
       "ignore": [
@@ -40,3 +40,4 @@
     ]
   }
 }
+
