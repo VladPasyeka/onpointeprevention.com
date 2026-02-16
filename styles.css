@@ -22,7 +22,8 @@
   --s-3: 14px;
   --s-4: 18px;
   --s-5: 24px;
-  --nav-h: 68px;
+  --s-6: 32px;
+  --navH: 68px;
   color-scheme: light;
 }
 
@@ -59,12 +60,15 @@ body::before {
 
 body::after { content: none; }
 
-main {
+.appShell {
+  min-height: 100dvh;
+}
+
+main.app-content {
   max-width: 900px;
   margin: 0 auto;
-  padding: calc(var(--s-4) + env(safe-area-inset-top)) var(--s-3)
-    calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s-4));
-  min-height: 100dvh;
+  padding: var(--s-4) var(--s-4)
+    calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-4));
   background: transparent;
 }
 
@@ -78,7 +82,8 @@ main {
   align-items: center;
   gap: var(--s-2);
   height: 56px;
-  padding: calc(var(--s-2) + env(safe-area-inset-top)) var(--s-3) var(--s-2);
+  padding: 0 var(--s-4);
+  margin-top: env(safe-area-inset-top);
   background: rgba(255, 255, 255, 0.7);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(12px);
@@ -93,15 +98,17 @@ main {
 /* Layout */
 .screen {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-5);
 }
 
 .stack {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s-5);
 }
 
 .card {
+  display: grid;
+  gap: var(--s-3);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
@@ -109,8 +116,9 @@ main {
   box-shadow: var(--shadow);
 }
 
-h2 {
-  margin: 0 0 var(--s-3);
+h2,
+h3 {
+  margin: 0 0 var(--s-2);
   font-family: "Playfair Display", "Times New Roman", serif;
   font-size: clamp(24px, 5vw, 30px);
   letter-spacing: 0.02em;
@@ -120,12 +128,17 @@ h2 {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
+  margin: 0;
+}
+
+.muted.subtitle {
+  margin-bottom: var(--s-4);
 }
 
 .label,
 label {
   display: block;
-  margin: var(--s-3) 0 var(--s-1);
+  margin: 0;
   font-size: 12px;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -235,7 +248,7 @@ textarea:focus {
   min-height: 100dvh;
   align-content: start;
   justify-items: center;
-  padding: calc(var(--s-5) + env(safe-area-inset-top)) var(--s-3)
+  padding: calc(var(--s-5) + env(safe-area-inset-top)) var(--s-4)
     calc(var(--s-5) + env(safe-area-inset-bottom));
   gap: var(--s-4);
 }
@@ -329,11 +342,11 @@ textarea:focus {
   bottom: 0;
   z-index: 20;
   display: flex;
-  gap: var(--s-1);
-  flex-wrap: wrap;
+  gap: var(--s-2);
+  flex-wrap: nowrap;
   justify-content: center;
-  padding: var(--s-1) var(--s-3) calc(env(safe-area-inset-bottom) + var(--s-1));
-  min-height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding: var(--s-2) var(--s-4) calc(env(safe-area-inset-bottom) + var(--s-2));
+  height: var(--navH);
   background: rgba(255, 255, 255, 0.78);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(14px);
@@ -357,7 +370,7 @@ textarea:focus {
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--s-2);
-  padding: var(--s-2) 0;
+  padding: var(--s-3) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -377,6 +390,28 @@ textarea:focus {
 .row:first-child,
 .row-head {
   border-top: 0;
+}
+
+.row-head {
+  align-items: center;
+  padding-top: 0;
+}
+
+.pt-tools .btn {
+  margin-top: var(--s-3);
+}
+
+.pt-tools .row {
+  align-items: center;
+}
+
+.pt-tools .current-code {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dancers-card .row {
+  padding: var(--s-3) 0;
 }
 
 .sev {
@@ -464,20 +499,16 @@ textarea:focus-visible {
 }
 
 @media (max-width: 390px) {
-  main {
-    padding: calc(var(--s-3) + env(safe-area-inset-top)) var(--s-2)
-      calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s-3));
-  }
-
-  .card {
-    padding: var(--s-4);
+  main.app-content {
+    padding: var(--s-3) var(--s-3)
+      calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-3));
   }
 }
 
 @media (min-width: 420px) {
-  main {
-    padding: calc(var(--s-5) + env(safe-area-inset-top)) var(--s-4)
-      calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--s-4));
+  main.app-content {
+    padding: var(--s-5) var(--s-5)
+      calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-5));
   }
 
   .tab {

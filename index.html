@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <strong>OnPointe Prevention</strong>
-    <button id="out" class="pill hidden" type="button">Sign out</button>
-  </header>
+  <div class="appShell">
+    <header class="topbar">
+      <strong>OnPointe Prevention</strong>
+      <button id="out" class="pill hidden" type="button">Sign out</button>
+    </header>
 
-  <main>
+    <main class="app-content">
     <section id="auth" class="screen auth-screen">
       <div class="auth-hero">
         <div class="auth-logo" role="img" aria-label="OnPointe logo"></div>
@@ -92,13 +93,13 @@
     </section>
 
     <section id="pt" class="screen hidden">
-      <article class="card">
+      <article class="card pt-tools">
         <h2>PT linking tools</h2>
-        <p class="muted">Generate a code and share with dancers.</p>
+        <p class="muted subtitle">Generate a code and share with dancers.</p>
 
         <button id="gen" class="btn" type="button">Generate link code</button>
 
-        <div class="row">
+        <div class="row current-code">
           <div><strong>Current code</strong></div>
           <strong id="code">--</strong>
         </div>
@@ -107,7 +108,7 @@
         <p id="plm" class="muted"></p>
       </article>
 
-      <article class="card">
+      <article class="card dancers-card">
         <div class="row row-head">
           <div><strong>My Dancers</strong></div>
           <button id="rr" class="pill" type="button">Refresh</button>
@@ -118,7 +119,7 @@
 
       <article class="card">
         <h2 id="dt">Dancer detail</h2>
-        <p id="ds" class="muted">Select a dancer.</p>
+        <p id="ds" class="muted subtitle">Select a dancer.</p>
         <div id="detail"></div>
       </article>
 
@@ -131,7 +132,7 @@
     <section id="avail" class="screen hidden">
       <article class="card">
         <h2>Availability</h2>
-        <p id="asub" class="muted"></p>
+        <p id="asub" class="muted subtitle"></p>
 
         <div id="aform" class="hidden">
           <label for="ad">Date</label>
@@ -164,7 +165,7 @@
 
         <article class="card">
           <h2 id="ct">Select a conversation</h2>
-          <p id="csub" class="muted">Messages are private to participants.</p>
+          <p id="csub" class="muted subtitle">Messages are private to participants.</p>
           <div id="chatE" class="muted">Select a thread to chat.</div>
 
           <div id="chatB" class="hidden">
@@ -203,13 +204,16 @@
     </section>
   </main>
 
-  <nav id="tabs" class="tabs hidden">
-    <button class="tab" data-s="check" data-r="dancer" type="button">Check-in</button>
-    <button class="tab" data-s="pt" data-r="pt" type="button">PT Portal</button>
-    <button class="tab" data-s="avail" data-r="pt" type="button">Availability</button>
-    <button class="tab" data-s="msg" data-r="pt,dancer" type="button">Messages</button>
-    <button class="tab" data-s="res" data-r="pt,dancer" type="button">Resources</button>
-  </nav>
+    </main>
+
+    <nav id="tabs" class="tabs hidden">
+      <button class="tab" data-s="check" data-r="dancer" type="button">Check-in</button>
+      <button class="tab" data-s="pt" data-r="pt" type="button">PT Portal</button>
+      <button class="tab" data-s="avail" data-r="pt" type="button">Availability</button>
+      <button class="tab" data-s="msg" data-r="pt,dancer" type="button">Messages</button>
+      <button class="tab" data-s="res" data-r="pt,dancer" type="button">Resources</button>
+    </nav>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>
