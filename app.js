@@ -589,15 +589,15 @@ function subscribeAlerts() {
         const severity = alert.severity || "orange";
 
         return `
-          <div class="row">
-            <div>
+          <div class="alertRow">
+            <div class="alertContent">
               <strong>
                 ${escapeHtml(label)} &middot; ${escapeHtml(alertDate)} &middot; Load ${escapeHtml(load)}
               </strong>
               <div class="muted">${escapeHtml((alert.reasons || []).join(", "))}</div>
             </div>
-            <div class="row-actions">
-              <span class="sev ${escapeHtml(severity)}">${escapeHtml(severity.toUpperCase())}</span>
+            <div class="alertActions">
+              <span class="sev badge ${escapeHtml(severity)}">${escapeHtml(severity.toUpperCase())}</span>
               <button class="pill" type="button" data-view-dancer-id="${escapeHtml(alert.dancerUid)}">View</button>
               <button class="pill" type="button" data-review-alert-id="${escapeHtml(alert.id)}" ${reviewed ? "disabled" : ""}>
                 ${reviewed ? "Reviewed" : "Mark reviewed"}

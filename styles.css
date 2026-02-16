@@ -15,16 +15,23 @@
 
   --r-lg: 22px;
   --r-md: 16px;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  --shadow: 0 10px 28px rgba(26, 26, 26, 0.12);
 
-  --s-1: 6px;
-  --s-2: 10px;
-  --s-3: 14px;
-  --s-4: 18px;
-  --s-5: 24px;
-  --s-6: 32px;
+  --s1: 6px;
+  --s2: 10px;
+  --s3: 14px;
+  --s4: 18px;
+  --s5: 24px;
+  --s6: 32px;
   --navH: 68px;
+  --iosToolbarExtra: 0px;
   color-scheme: light;
+}
+
+@supports (-webkit-touch-callout: none) {
+  :root {
+    --iosToolbarExtra: 18px;
+  }
 }
 
 * {
@@ -67,8 +74,8 @@ body::after { content: none; }
 main.app-content {
   max-width: 900px;
   margin: 0 auto;
-  padding: var(--s-4) var(--s-4)
-    calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-4));
+  padding: var(--s4) var(--s4)
+    calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s4));
   background: transparent;
 }
 
@@ -80,9 +87,9 @@ main.app-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s2);
   height: 56px;
-  padding: 0 var(--s-4);
+  padding: 0 var(--s4);
   margin-top: env(safe-area-inset-top);
   background: rgba(255, 255, 255, 0.7);
   border-bottom: 1px solid var(--line);
@@ -91,34 +98,40 @@ main.app-content {
 
 .topbar strong {
   font-family: "Playfair Display", "Times New Roman", serif;
-  font-size: clamp(18px, 4.5vw, 22px);
+  font-size: clamp(16px, 4vw, 20px);
   letter-spacing: 0.02em;
+}
+
+.topbar .pill {
+  min-height: 38px;
+  padding: 8px 14px;
+  font-size: 14px;
 }
 
 /* Layout */
 .screen {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s5);
 }
 
 .stack {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s5);
 }
 
 .card {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s4);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: var(--s-5);
+  padding: var(--s5);
   box-shadow: var(--shadow);
 }
 
 h2,
 h3 {
-  margin: 0 0 var(--s-2);
+  margin: 0 0 var(--s3);
   font-family: "Playfair Display", "Times New Roman", serif;
   font-size: clamp(24px, 5vw, 30px);
   letter-spacing: 0.02em;
@@ -132,7 +145,7 @@ h3 {
 }
 
 .muted.subtitle {
-  margin-bottom: var(--s-4);
+  margin-bottom: var(--s4);
 }
 
 .label,
@@ -157,7 +170,7 @@ input,
 select,
 textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   min-height: 44px;
   border-radius: 999px;
   border: 1px solid rgba(54, 36, 40, 0.18);
@@ -248,17 +261,17 @@ textarea:focus {
   min-height: 100dvh;
   align-content: start;
   justify-items: center;
-  padding: calc(var(--s-5) + env(safe-area-inset-top)) var(--s-4)
-    calc(var(--s-5) + env(safe-area-inset-bottom));
-  gap: var(--s-4);
+  padding: calc(var(--s5) + env(safe-area-inset-top)) var(--s4)
+    calc(var(--s5) + env(safe-area-inset-bottom));
+  gap: var(--s4);
 }
 
 .auth-hero {
   display: grid;
   justify-items: center;
   text-align: center;
-  gap: var(--s-2);
-  margin-top: var(--s-3);
+  gap: var(--s2);
+  margin-top: var(--s3);
 }
 
 .auth-logo {
@@ -298,7 +311,7 @@ textarea:focus {
 .auth-form {
   width: min(92vw, 520px);
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s3);
   text-align: center;
 }
 
@@ -342,10 +355,10 @@ textarea:focus {
   bottom: 0;
   z-index: 20;
   display: flex;
-  gap: var(--s-2);
+  gap: var(--s2);
   flex-wrap: nowrap;
   justify-content: center;
-  padding: var(--s-2) var(--s-4) calc(env(safe-area-inset-bottom) + var(--s-2));
+  padding: var(--s2) var(--s4) calc(env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s2));
   height: var(--navH);
   background: rgba(255, 255, 255, 0.78);
   border-top: 1px solid var(--line);
@@ -369,8 +382,8 @@ textarea:focus {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--s-2);
-  padding: var(--s-3) 0;
+  gap: var(--s2);
+  padding: var(--s3) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -382,7 +395,7 @@ textarea:focus {
 .row-actions {
   display: flex;
   align-items: center;
-  gap: var(--s-1);
+  gap: var(--s1);
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -398,7 +411,7 @@ textarea:focus {
 }
 
 .pt-tools .btn {
-  margin-top: var(--s-3);
+  margin-top: var(--s3);
 }
 
 .pt-tools .row {
@@ -411,7 +424,7 @@ textarea:focus {
 }
 
 .dancers-card .row {
-  padding: var(--s-3) 0;
+  padding: var(--s3) 0;
 }
 
 .sev {
@@ -422,6 +435,46 @@ textarea:focus {
   font-weight: 800;
 }
 
+.badge,
+.sev {
+  white-space: nowrap;
+}
+
+.alertRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s4);
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--line);
+}
+
+.alertRow:first-child {
+  border-top: 0;
+}
+
+.alertActions {
+  display: grid;
+  gap: var(--s2);
+  justify-items: end;
+  align-content: start;
+}
+
+.alertActions .pill {
+  width: 118px;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.alertActions .badge {
+  justify-self: end;
+}
+
+.alertContent {
+  display: grid;
+  gap: var(--s2);
+}
+
 .green { color: #1b8f63; }
 .yellow { color: #c08a1d; }
 .orange { color: #c7662d; }
@@ -430,15 +483,15 @@ textarea:focus {
 /* Messaging */
 .split {
   display: grid;
-  gap: var(--s-3);
+  gap: var(--s3);
   grid-template-columns: 1fr;
 }
 
 .thread {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
-  padding: var(--s-2);
-  margin: var(--s-1) 0;
+  padding: var(--s2);
+  margin: var(--s1) 0;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.85);
 }
@@ -452,16 +505,16 @@ textarea:focus {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--r-md);
-  padding: var(--s-2);
+  padding: var(--s2);
   background: rgba(255, 255, 255, 0.9);
 }
 
 .bubble {
   max-width: 78%;
-  padding: var(--s-1) var(--s-2);
+  padding: var(--s1) var(--s2);
   border: 1px solid var(--line);
   border-radius: 12px;
-  margin: var(--s-1) 0;
+  margin: var(--s1) 0;
   background: rgba(255, 255, 255, 0.95);
 }
 
@@ -478,12 +531,29 @@ textarea:focus {
 
 .chat-input-row {
   display: flex;
-  gap: var(--s-1);
-  margin-top: var(--s-2);
+  gap: var(--s1);
+  margin-top: var(--s2);
 }
 
 .chat-input-row input {
   flex: 1;
+}
+
+#aform {
+  display: grid;
+  gap: var(--s3);
+}
+
+#aform label {
+  margin-top: var(--s3);
+}
+
+#aform label:first-of-type {
+  margin-top: 0;
+}
+
+#aform input {
+  padding: 10px 14px;
 }
 
 /* Focus */
@@ -500,15 +570,15 @@ textarea:focus-visible {
 
 @media (max-width: 390px) {
   main.app-content {
-    padding: var(--s-3) var(--s-3)
-      calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-3));
+    padding: var(--s3) var(--s3)
+      calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s3));
   }
 }
 
 @media (min-width: 420px) {
   main.app-content {
-    padding: var(--s-5) var(--s-5)
-      calc(var(--navH) + env(safe-area-inset-bottom) + var(--s-5));
+    padding: var(--s5) var(--s5)
+      calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s5));
   }
 
   .tab {
@@ -534,3 +604,4 @@ textarea:focus-visible {
   border-bottom-color: var(--text);
   box-shadow: none;
 }
+
