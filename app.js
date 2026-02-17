@@ -94,6 +94,32 @@ function computeLoad(entry) {
   return Math.round((Number(entry?.minutes) || 0) * (Number(entry?.rpe) || 0));
 }
 
+const RED_FLAG_KEYWORDS = [
+  "shortness of breath",
+  "sob",
+  "faint",
+  "syncope",
+  "numbness",
+  "tingling",
+  "saddle anesthesia",
+  "bowel",
+  "bladder",
+  "severe headache",
+  "vision",
+];
+
+function computeSeverityFromEntry(entry) {
+  const notes = String(entry?.notes || "").toLowerCase();
+
+  if (notes.includes("chest pain")) return "red";
+  if (RED_FLAG_KEYWORDS.some((keyword) => notes.includes(keyword))) return "red";
+
+  const riskSeverity = String(entry?.risk?.severity || "").toLowerCase();
+  if (["green", "yellow", "orange", "red"].includes(riskSeverity)) return riskSeverity;
+
+  return "green";
+}
+
 function timestampToMillis(value) {
   if (!value) return 0;
   if (typeof value.toMillis === "function") return value.toMillis();
@@ -241,7 +267,7 @@ async function refreshLoads() {
     $("loads").innerHTML = snap.docs
       .map((docSnap) => {
         const item = docSnap.data();
-        const severity = item?.risk?.severity || "green";
+        const severity = computeSeverityFromEntry(item);
         const load = item?.risk?.load ?? computeLoad(item);
         const reasons = Array.isArray(item?.risk?.reasons)
           ? item.risk.reasons.join(", ")
@@ -334,7 +360,7 @@ async function openDancerDetail(dancerId) {
 
     $("detail").innerHTML = items
       .map((item) => {
-        const severity = item?.risk?.severity || "green";
+        const severity = computeSeverityFromEntry(item);
         const load = item?.risk?.load ?? computeLoad(item);
         const acwr = item?.risk?.acwr
           ? `ACWR ${Number(item.risk.acwr).toFixed(2)}`

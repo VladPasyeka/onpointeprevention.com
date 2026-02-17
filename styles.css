@@ -3,19 +3,19 @@
 :root {
   --brand: #c3a5a5;
   --bg: #c3a5a5;
-  --bg-soft: rgba(195, 165, 165, 0.30);
-  --bg-soft2: rgba(195, 165, 165, 0.18);
-  --card: rgba(255, 255, 255, 0.78);
+  --bg-soft: rgba(195, 165, 165, 0.34);
+  --bg-soft2: rgba(195, 165, 165, 0.2);
+  --card: rgba(255, 255, 255, 0.85);
   --card-solid: #f7f1f1;
   --text: #1a1a1a;
   --muted: rgba(26, 26, 26, 0.60);
-  --line: rgba(26, 26, 26, 0.12);
+  --line: rgba(26, 26, 26, 0.16);
   --accent: #c61f2b;
   --accent-soft: rgba(198, 31, 43, 0.12);
 
   --r-lg: 22px;
   --r-md: 16px;
-  --shadow: 0 10px 28px rgba(26, 26, 26, 0.12);
+  --shadow: 0 12px 26px rgba(94, 68, 68, 0.14);
 
   --s1: 6px;
   --s2: 10px;
@@ -25,6 +25,12 @@
   --s6: 32px;
   --navH: 68px;
   --iosToolbarExtra: 0px;
+  --safeTop: env(safe-area-inset-top);
+  --safeBottom: env(safe-area-inset-bottom);
+  --contentMax: 720px;
+  --screenGap: var(--s4);
+  --cardPad: var(--s4);
+  --rowPad: var(--s3);
   color-scheme: light;
 }
 
@@ -58,10 +64,10 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at 50% 35%,
-      rgba(255, 255, 255, 0.55) 0%,
-      rgba(255, 255, 255, 0.25) 22%,
-      rgba(195, 165, 165, 0.35) 48%,
+    radial-gradient(circle at 50% 32%,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.45) 20%,
+      rgba(235, 223, 223, 0.58) 42%,
       rgba(195, 165, 165, 1) 100%);
 }
 
@@ -72,10 +78,10 @@ body::after { content: none; }
 }
 
 main.app-content {
-  max-width: 900px;
+  max-width: var(--contentMax);
   margin: 0 auto;
-  padding: var(--s4) var(--s4)
-    calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s4));
+  padding: var(--screenGap) var(--s4)
+    calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s5));
   background: transparent;
 }
 
@@ -88,9 +94,8 @@ main.app-content {
   justify-content: space-between;
   align-items: center;
   gap: var(--s2);
-  height: 56px;
-  padding: 0 var(--s4);
-  margin-top: env(safe-area-inset-top);
+  min-height: calc(56px + var(--safeTop));
+  padding: calc(var(--safeTop) + var(--s2)) var(--s4) var(--s2);
   background: rgba(255, 255, 255, 0.7);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(12px);
@@ -111,12 +116,12 @@ main.app-content {
 /* Layout */
 .screen {
   display: grid;
-  gap: var(--s5);
+  gap: var(--screenGap);
 }
 
 .stack {
   display: grid;
-  gap: var(--s5);
+  gap: var(--screenGap);
 }
 
 .card {
@@ -125,8 +130,20 @@ main.app-content {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: var(--s5);
+  padding: var(--cardPad);
   box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0) 46%),
+    radial-gradient(circle at 15% 86%, rgba(245, 234, 234, 0.35) 0%, rgba(245, 234, 234, 0) 40%);
 }
 
 h2,
@@ -383,7 +400,7 @@ textarea:focus {
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--s2);
-  padding: var(--s3) 0;
+  padding: var(--rowPad) 0;
   border-top: 1px solid var(--line);
 }
 
@@ -424,7 +441,7 @@ textarea:focus {
 }
 
 .dancers-card .row {
-  padding: var(--s3) 0;
+  padding: var(--rowPad) 0;
 }
 
 .sev {
@@ -443,9 +460,10 @@ textarea:focus {
 .alertRow {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: var(--s4);
-  padding: var(--s4) 0;
+  gap: var(--s3);
+  padding: var(--s3) 0;
   border-top: 1px solid var(--line);
+  align-items: start;
 }
 
 .alertRow:first-child {
@@ -454,25 +472,31 @@ textarea:focus {
 
 .alertActions {
   display: grid;
-  gap: var(--s2);
+  gap: var(--s1);
   justify-items: end;
   align-content: start;
 }
 
 .alertActions .pill {
-  width: 118px;
-  min-height: 40px;
-  padding: 8px 12px;
-  font-size: 14px;
+  width: auto;
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 13px;
 }
 
 .alertActions .badge {
   justify-self: end;
 }
 
+.alertActions [data-review-alert-id] {
+  border-color: rgba(26, 26, 26, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
 .alertContent {
   display: grid;
-  gap: var(--s2);
+  gap: var(--s1);
 }
 
 .green { color: #1b8f63; }
@@ -541,19 +565,19 @@ textarea:focus {
 
 #aform {
   display: grid;
-  gap: var(--s3);
+  gap: var(--s2);
 }
 
 #aform label {
-  margin-top: var(--s3);
-}
-
-#aform label:first-of-type {
   margin-top: 0;
 }
 
 #aform input {
   padding: 10px 14px;
+}
+
+#addA {
+  margin-top: var(--s2);
 }
 
 /* Focus */
@@ -571,14 +595,26 @@ textarea:focus-visible {
 @media (max-width: 390px) {
   main.app-content {
     padding: var(--s3) var(--s3)
-      calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s3));
+      calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s4));
+  }
+
+  .alertRow {
+    grid-template-columns: 1fr;
+    gap: var(--s2);
+  }
+
+  .alertActions {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    justify-content: end;
+    align-items: center;
   }
 }
 
 @media (min-width: 420px) {
   main.app-content {
     padding: var(--s5) var(--s5)
-      calc(var(--navH) + env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s5));
+      calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s6));
   }
 
   .tab {
