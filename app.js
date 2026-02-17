@@ -94,30 +94,52 @@ function computeLoad(entry) {
   return Math.round((Number(entry?.minutes) || 0) * (Number(entry?.rpe) || 0));
 }
 
-const RED_FLAG_KEYWORDS = [
-  "shortness of breath",
-  "sob",
-  "faint",
-  "syncope",
-  "numbness",
-  "tingling",
-  "saddle anesthesia",
-  "bowel",
-  "bladder",
-  "severe headache",
-  "vision",
+const RED_FLAG_KEYWORD_PATTERNS = [
+  /chest\s*pain/i,
+  /\bcp\b/i,
+  /\bpressure\b/i,
+  /\btightness\b/i,
+  /\bpalpitations?\b/i,
+  /heart\s*racing/i,
+  /shortness\s+of\s+breath/i,
+  /\bsob\b/i,
+  /\bfaint/i,
+  /\bsyncope\b/i,
+  /\bnumbness\b/i,
+  /\btingling\b/i,
+  /saddle\s+anesthesia/i,
+  /\bbowel\b/i,
+  /\bbladder\b/i,
+  /severe\s+headache/i,
+  /\bvision\b/i,
 ];
 
-function computeSeverityFromEntry(entry) {
-  const notes = String(entry?.notes || "").toLowerCase();
+function normalizeNotes(value) {
+  return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
 
-  if (notes.includes("chest pain")) return "red";
-  if (RED_FLAG_KEYWORDS.some((keyword) => notes.includes(keyword))) return "red";
+function notesContainUrgentSymptoms(entry) {
+  const notes = normalizeNotes(entry?.notes);
+  return RED_FLAG_KEYWORD_PATTERNS.some((pattern) => pattern.test(notes));
+}
+
+function computeSeverityFromEntry(entry) {
+  if (notesContainUrgentSymptoms(entry)) return "red";
 
   const riskSeverity = String(entry?.risk?.severity || "").toLowerCase();
   if (["green", "yellow", "orange", "red"].includes(riskSeverity)) return riskSeverity;
 
   return "green";
+}
+
+function getRiskReasonText(entry, severity) {
+  const reasons = Array.isArray(entry?.risk?.reasons)
+    ? entry.risk.reasons.filter(Boolean).join(", ").trim()
+    : "";
+
+  if (reasons) return reasons;
+  if (severity === "red") return "Notes mention urgent symptoms";
+  return "No active risk flags";
 }
 
 function timestampToMillis(value) {
@@ -150,6 +172,7 @@ function setNavVisible(visible) {
 function showScreen(screenId) {
   screens.forEach((id) => $(id).classList.add("hidden"));
   $(screenId).classList.remove("hidden");
+  document.body.classList.toggle("auth-mode", screenId === "auth");
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.toggle("on", tab.dataset.s === screenId);
@@ -269,15 +292,14 @@ async function refreshLoads() {
         const item = docSnap.data();
         const severity = computeSeverityFromEntry(item);
         const load = item?.risk?.load ?? computeLoad(item);
-        const reasons = Array.isArray(item?.risk?.reasons)
-          ? item.risk.reasons.join(", ")
-          : "No active risk flags";
+        const reasons = getRiskReasonText(item, severity);
+        const riskLine = severity === "green" ? "No active risk flags" : reasons;
 
         return `
           <div class="row">
             <div>
               <strong>${escapeHtml(item.date)} &middot; Load ${load}</strong>
-              <div class="muted">${escapeHtml(reasons)}</div>
+              <div class="muted">${escapeHtml(riskLine)}</div>
             </div>
             <div class="sev ${severity}">${severity.toUpperCase()}</div>
           </div>
@@ -362,6 +384,7 @@ async function openDancerDetail(dancerId) {
       .map((item) => {
         const severity = computeSeverityFromEntry(item);
         const load = item?.risk?.load ?? computeLoad(item);
+        const riskReason = getRiskReasonText(item, severity);
         const acwr = item?.risk?.acwr
           ? `ACWR ${Number(item.risk.acwr).toFixed(2)}`
           : "";
@@ -372,6 +395,7 @@ async function openDancerDetail(dancerId) {
               <strong>
                 ${escapeHtml(item.date)} &middot; ${Number(item.minutes || 0)} min &middot; RPE ${Number(item.rpe || 0)} &middot; Load ${load}
               </strong>
+              <div class="muted">${escapeHtml(riskReason)}</div>
               <div class="muted">${escapeHtml((item.notes || "").slice(0, 100))}</div>
               <div class="muted">${acwr}</div>
             </div>

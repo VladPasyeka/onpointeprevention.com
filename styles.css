@@ -75,6 +75,7 @@ body::after { content: none; }
 
 .appShell {
   min-height: 100dvh;
+  background: transparent;
 }
 
 main.app-content {
@@ -275,12 +276,13 @@ textarea:focus {
 
 /* Auth screen - phone mock */
 .auth-screen {
-  min-height: 100dvh;
-  align-content: start;
+  min-height: calc(100dvh - var(--safeTop) - var(--safeBottom));
+  width: min(92vw, 430px);
+  margin: 0 auto;
+  align-content: center;
   justify-items: center;
-  padding: calc(var(--s5) + env(safe-area-inset-top)) var(--s4)
-    calc(var(--s5) + env(safe-area-inset-bottom));
-  gap: var(--s4);
+  padding: var(--s5) var(--s4);
+  gap: var(--s5);
 }
 
 .auth-hero {
@@ -288,7 +290,21 @@ textarea:focus {
   justify-items: center;
   text-align: center;
   gap: var(--s2);
-  margin-top: var(--s3);
+  margin-top: 0;
+  position: relative;
+}
+
+.auth-hero::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 68%);
 }
 
 .auth-logo {
@@ -326,7 +342,7 @@ textarea:focus {
 }
 
 .auth-form {
-  width: min(92vw, 520px);
+  width: min(92vw, 360px);
   display: grid;
   gap: var(--s3);
   text-align: center;
@@ -364,6 +380,15 @@ textarea:focus {
   font-size: 11px;
 }
 
+body.auth-mode .topbar {
+  display: none;
+}
+
+body.auth-mode main.app-content {
+  padding-top: calc(var(--safeTop) + var(--s2));
+  padding-bottom: calc(var(--safeBottom) + var(--s2));
+}
+
 /* Tabs */
 .tabs {
   position: fixed;
@@ -374,8 +399,8 @@ textarea:focus {
   display: flex;
   gap: var(--s2);
   flex-wrap: nowrap;
-  justify-content: center;
-  padding: var(--s2) var(--s4) calc(env(safe-area-inset-bottom) + var(--iosToolbarExtra) + var(--s2));
+  justify-content: stretch;
+  padding: var(--s1) var(--s2) calc(var(--safeBottom) + var(--iosToolbarExtra) + var(--s1));
   height: var(--navH);
   background: rgba(255, 255, 255, 0.78);
   border-top: 1px solid var(--line);
@@ -383,9 +408,16 @@ textarea:focus {
 }
 
 .tab {
+  flex: 1 1 0;
+  min-width: 0;
   background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  padding: 10px 14px;
+  padding: 9px 8px;
+  font-size: 13px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .tab.on {
@@ -407,6 +439,7 @@ textarea:focus {
 .row > div {
   display: grid;
   gap: 4px;
+  min-width: 0;
 }
 
 .row-actions {
@@ -475,10 +508,13 @@ textarea:focus {
   gap: var(--s1);
   justify-items: end;
   align-content: start;
+  align-items: end;
+  grid-auto-rows: max-content;
 }
 
 .alertActions .pill {
   width: auto;
+  min-width: 96px;
   min-height: 34px;
   padding: 6px 12px;
   font-size: 13px;
@@ -497,6 +533,7 @@ textarea:focus {
 .alertContent {
   display: grid;
   gap: var(--s1);
+  min-width: 0;
 }
 
 .green { color: #1b8f63; }
@@ -561,6 +598,7 @@ textarea:focus {
 
 .chat-input-row input {
   flex: 1;
+  min-width: 0;
 }
 
 #aform {
@@ -574,6 +612,12 @@ textarea:focus {
 
 #aform input {
   padding: 10px 14px;
+}
+
+input[type="date"],
+input[type="time"] {
+  max-width: 100%;
+  min-width: 0;
 }
 
 #addA {
@@ -618,7 +662,8 @@ textarea:focus-visible {
   }
 
   .tab {
-    padding: 10px 16px;
+    padding: 10px;
+    font-size: 14px;
   }
 }
 
