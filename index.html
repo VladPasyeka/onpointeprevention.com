@@ -32,10 +32,51 @@
 
         <button id="in" class="btn auth-btn" type="button">Log in</button>
         <button class="link auth-link" type="button">FORGOT PASSWORD</button>
-        <button id="up" class="btn secondary auth-btn" type="button">Create</button>
-        <div class="auth-note muted">Dont have an account?</div>
+        <button id="up" class="btn secondary auth-btn" type="button">Create account</button>
+        <div class="auth-note muted">Don't have an account?</div>
         <div class="auth-site muted">www.onpointeprevention.com</div>
         <p id="am" class="muted"></p>
+      </div>
+    </section>
+
+    <section id="register" class="screen auth-screen hidden">
+      <div class="auth-hero">
+        <div class="auth-logo" role="img" aria-label="OnPointe logo"></div>
+        <div class="auth-title">ONPOINTE</div>
+        <div class="auth-subtitle">REGISTER</div>
+        <div class="auth-tagline">Create your professional account.</div>
+      </div>
+
+      <div class="auth-form">
+        <label class="label" for="rname">Full name</label>
+        <input id="rname" class="input under" type="text" autocomplete="name" />
+
+        <label class="label" for="rem">Email</label>
+        <input id="rem" class="input under" type="email" autocomplete="email" />
+
+        <label class="label" for="rpw">Password</label>
+        <input id="rpw" class="input under" type="password" autocomplete="new-password" />
+
+        <label class="label">Role</label>
+        <div class="role-picker" role="radiogroup" aria-label="Role">
+          <label class="role-option">
+            <input type="radio" name="rrole" value="dancer" checked />
+            <span>Dancer</span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="rrole" value="pt" />
+            <span>PT</span>
+          </label>
+        </div>
+
+        <div id="ptCodeWrap" class="hidden">
+          <label class="label" for="ptCode">PT Registration Code</label>
+          <input id="ptCode" class="input under" type="text" autocomplete="off" />
+        </div>
+
+        <button id="createAccount" class="btn auth-btn" type="button">Create</button>
+        <button id="backToLogin" class="link auth-link" type="button">Back to login</button>
+        <p id="rmAuth" class="muted"></p>
       </div>
     </section>
 

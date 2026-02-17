@@ -24,6 +24,9 @@
   --s5: 24px;
   --s6: 32px;
   --navH: 68px;
+  --tabBarPadBottom: calc(12px + env(safe-area-inset-bottom));
+  --tabBarPadTop: 8px;
+  --tabBarTextH: 36px;
   --iosToolbarExtra: 0px;
   --safeTop: env(safe-area-inset-top);
   --safeBottom: env(safe-area-inset-bottom);
@@ -82,7 +85,7 @@ main.app-content {
   max-width: var(--contentMax);
   margin: 0 auto;
   padding: var(--screenGap) var(--s4)
-    calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s5));
+    calc(var(--navH) + var(--tabBarPadBottom) + var(--s4));
   background: transparent;
 }
 
@@ -276,6 +279,7 @@ textarea:focus {
 
 /* Auth screen - phone mock */
 .auth-screen {
+  min-height: 100vh;
   min-height: calc(100dvh - var(--safeTop) - var(--safeBottom));
   width: min(92vw, 430px);
   margin: 0 auto;
@@ -352,6 +356,33 @@ textarea:focus {
   text-align: left;
 }
 
+.role-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s2);
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid rgba(54, 36, 40, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 8px 12px;
+  text-transform: none;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.role-option input {
+  width: auto;
+  min-height: auto;
+  margin: 0;
+}
+
 .auth-btn {
   background: #fff;
   color: var(--text);
@@ -385,8 +416,10 @@ body.auth-mode .topbar {
 }
 
 body.auth-mode main.app-content {
-  padding-top: calc(var(--safeTop) + var(--s2));
-  padding-bottom: calc(var(--safeBottom) + var(--s2));
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: var(--safeTop);
+  padding-bottom: var(--safeBottom);
 }
 
 /* Tabs */
@@ -400,8 +433,8 @@ body.auth-mode main.app-content {
   gap: var(--s2);
   flex-wrap: nowrap;
   justify-content: stretch;
-  padding: var(--s1) var(--s2) calc(var(--safeBottom) + var(--iosToolbarExtra) + var(--s1));
-  height: var(--navH);
+  padding: var(--tabBarPadTop) var(--s2) var(--tabBarPadBottom);
+  min-height: var(--navH);
   background: rgba(255, 255, 255, 0.78);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(14px);
@@ -412,12 +445,16 @@ body.auth-mode main.app-content {
   min-width: 0;
   background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  padding: 9px 8px;
+  min-height: var(--tabBarTextH);
+  padding: 7px 6px;
   font-size: 13px;
-  line-height: 1.15;
+  line-height: 1.2;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .tab.on {
@@ -620,6 +657,47 @@ input[type="time"] {
   min-width: 0;
 }
 
+.calendar,
+.calendar-wrap,
+.calendar-grid {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-head,
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+  min-width: 0;
+}
+
+.calendar-head > *,
+.calendar-controls > * {
+  min-width: 0;
+}
+
+.calendar-month {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal,
+.modal-content {
+  overflow-x: hidden;
+}
+
+.modal-content {
+  overflow-y: auto;
+}
+
 #addA {
   margin-top: var(--s2);
 }
@@ -639,7 +717,7 @@ textarea:focus-visible {
 @media (max-width: 390px) {
   main.app-content {
     padding: var(--s3) var(--s3)
-      calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s4));
+      calc(var(--navH) + var(--tabBarPadBottom) + var(--s3));
   }
 
   .alertRow {
@@ -658,11 +736,11 @@ textarea:focus-visible {
 @media (min-width: 420px) {
   main.app-content {
     padding: var(--s5) var(--s5)
-      calc(var(--navH) + var(--safeBottom) + var(--iosToolbarExtra) + var(--s6));
+      calc(var(--navH) + var(--tabBarPadBottom) + var(--s5));
   }
 
   .tab {
-    padding: 10px;
+    padding: 8px;
     font-size: 14px;
   }
 }

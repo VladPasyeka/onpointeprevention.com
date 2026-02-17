@@ -11,6 +11,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  serverTimestamp,
   collection,
   query,
   orderBy,
@@ -65,7 +66,8 @@ const state = {
   unsubscribeAlerts: null,
 };
 
-const screens = ["auth", "role", "check", "pt", "avail", "msg", "res"];
+const screens = ["auth", "register", "role", "check", "pt", "avail", "msg", "res"];
+const PT_REG_CODE = "SECRET_CHANGE_ME";
 
 const FN_BASE =
   location.hostname === "localhost" || location.hostname === "127.0.0.1"
@@ -92,6 +94,10 @@ function escapeHtml(value) {
 
 function computeLoad(entry) {
   return Math.round((Number(entry?.minutes) || 0) * (Number(entry?.rpe) || 0));
+}
+
+function getRiskObject(entry) {
+  return entry?.risk || entry?.redFlag || null;
 }
 
 const RED_FLAG_KEYWORD_PATTERNS = [
@@ -124,17 +130,19 @@ function notesContainUrgentSymptoms(entry) {
 }
 
 function computeSeverityFromEntry(entry) {
+  const riskObj = getRiskObject(entry);
   if (notesContainUrgentSymptoms(entry)) return "red";
 
-  const riskSeverity = String(entry?.risk?.severity || "").toLowerCase();
+  const riskSeverity = String(riskObj?.severity || "").toLowerCase();
   if (["green", "yellow", "orange", "red"].includes(riskSeverity)) return riskSeverity;
 
   return "green";
 }
 
 function getRiskReasonText(entry, severity) {
-  const reasons = Array.isArray(entry?.risk?.reasons)
-    ? entry.risk.reasons.filter(Boolean).join(", ").trim()
+  const riskObj = getRiskObject(entry);
+  const reasons = Array.isArray(riskObj?.reasons)
+    ? riskObj.reasons.filter(Boolean).join(", ").trim()
     : "";
 
   if (reasons) return reasons;
@@ -172,7 +180,7 @@ function setNavVisible(visible) {
 function showScreen(screenId) {
   screens.forEach((id) => $(id).classList.add("hidden"));
   $(screenId).classList.remove("hidden");
-  document.body.classList.toggle("auth-mode", screenId === "auth");
+  document.body.classList.toggle("auth-mode", screenId === "auth" || screenId === "register");
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.toggle("on", tab.dataset.s === screenId);
@@ -290,8 +298,9 @@ async function refreshLoads() {
     $("loads").innerHTML = snap.docs
       .map((docSnap) => {
         const item = docSnap.data();
+        const riskObj = getRiskObject(item);
         const severity = computeSeverityFromEntry(item);
-        const load = item?.risk?.load ?? computeLoad(item);
+        const load = riskObj?.load ?? computeLoad(item);
         const reasons = getRiskReasonText(item, severity);
         const riskLine = severity === "green" ? "No active risk flags" : reasons;
 
@@ -382,11 +391,12 @@ async function openDancerDetail(dancerId) {
 
     $("detail").innerHTML = items
       .map((item) => {
+        const riskObj = getRiskObject(item);
         const severity = computeSeverityFromEntry(item);
-        const load = item?.risk?.load ?? computeLoad(item);
+        const load = riskObj?.load ?? computeLoad(item);
         const riskReason = getRiskReasonText(item, severity);
-        const acwr = item?.risk?.acwr
-          ? `ACWR ${Number(item.risk.acwr).toFixed(2)}`
+        const acwr = riskObj?.acwr
+          ? `ACWR ${Number(riskObj.acwr).toFixed(2)}`
           : "";
 
         return `
@@ -684,12 +694,59 @@ $("in").addEventListener("click", async () => {
   }
 });
 
-$("up").addEventListener("click", async () => {
+$("up").addEventListener("click", () => {
+  $("am").textContent = "";
+  showScreen("register");
+});
+
+$("backToLogin").addEventListener("click", () => {
+  $("rmAuth").textContent = "";
+  showScreen("auth");
+});
+
+document.querySelectorAll('input[name="rrole"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    const role = document.querySelector('input[name="rrole"]:checked')?.value || ROLE.DANCER;
+    $("ptCodeWrap").classList.toggle("hidden", role !== ROLE.PT);
+  });
+});
+
+$("createAccount").addEventListener("click", async () => {
   try {
-    $("am").textContent = "";
-    await createUserWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value);
+    $("rmAuth").textContent = "";
+
+    const name = $("rname").value.trim();
+    const email = $("rem").value.trim();
+    const password = $("rpw").value;
+    const role = document.querySelector('input[name="rrole"]:checked')?.value || ROLE.DANCER;
+    const ptCode = $("ptCode").value.trim();
+
+    if (!name) throw new Error("Full name is required.");
+    if (!email) throw new Error("Email is required.");
+    if (!password) throw new Error("Password is required.");
+    if (role === ROLE.PT && ptCode !== PT_REG_CODE) {
+      throw new Error("Invalid PT registration code.");
+    }
+
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = credential.user.uid;
+
+    await setDoc(
+      doc(db, COLLECTIONS.USERS, uid),
+      {
+        name,
+        email,
+        role,
+        createdAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    applyRoleUi(role);
+    navigate(START_SCREEN_BY_ROLE[role]);
+    bootstrapRoleData();
   } catch (error) {
-    $("am").textContent = error.message;
+    $("rmAuth").textContent = error.message;
   }
 });
 
