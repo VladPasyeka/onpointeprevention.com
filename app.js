@@ -82,6 +82,17 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function formatFriendlyDate(isoDate) {
+  if (!isoDate) return "";
+  const date = new Date(`${isoDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
     "&": "&amp;",
@@ -201,6 +212,7 @@ function applyRoleUi(role) {
   });
 
   $("aform").classList.toggle("hidden", role !== ROLE.PT);
+  $("ptLinkCard").classList.toggle("hidden", role !== ROLE.DANCER);
 }
 
 function navigate(screenId) {
@@ -276,6 +288,77 @@ async function bootstrapRoleData() {
   refreshAvailability();
   refreshThreads();
   refreshLoads();
+  refreshPtLinkStatus();
+}
+
+function setSliderValue(inputId, outputId) {
+  const input = $(inputId);
+  const output = $(outputId);
+  if (!input || !output) return;
+  output.textContent = Number(input.value || 0).toString();
+}
+
+function initCheckinSliders() {
+  // Keep range controls and visible value chips in sync.
+  const pairs = [
+    ["cm", "cmv"],
+    ["cr", "crv"],
+    ["cf", "cfv"],
+    ["cs", "csv"],
+    ["csl", "cslv"],
+  ];
+
+  pairs.forEach(([inputId, outputId]) => {
+    const input = $(inputId);
+    if (!input) return;
+    setSliderValue(inputId, outputId);
+    input.addEventListener("input", () => setSliderValue(inputId, outputId));
+  });
+}
+
+function validateAvailabilityTimes() {
+  // Keep Add slot disabled when start/end order is invalid.
+  const start = $("ast").value;
+  const end = $("ae").value;
+  const invalid = Boolean(start && end && end <= start);
+  $("aerr").classList.toggle("hidden", !invalid);
+  $("addA").disabled = invalid;
+  return !invalid;
+}
+
+async function refreshPtLinkStatus() {
+  // Dancer-only card: show one-time PT code input until linked.
+  if (state.role !== ROLE.DANCER || !state.user) return;
+
+  $("ptLinkMsg").textContent = "";
+
+  try {
+    const response = await callFn("getMyPt");
+    const pt = response?.pt || null;
+    const isLinked = Boolean(pt?.uid);
+    $("ptLinkForm").classList.toggle("hidden", isLinked);
+    $("ptLinkedStatus").classList.toggle("hidden", !isLinked);
+
+    if (isLinked) {
+      const label = pt?.name || pt?.uid || "Linked";
+      $("ptLinkedText").textContent = `Linked to PT: ${label}`;
+    } else {
+      $("ptLinkedText").textContent = "Not linked";
+    }
+  } catch (error) {
+    $("ptLinkMsg").textContent = error.message || "Unable to fetch PT link status.";
+  }
+}
+
+function openResourceModal(title, subtitle) {
+  // Lightweight placeholder modal for Education hub rows.
+  $("resourceModalTitle").textContent = title || "Resource";
+  $("resourceModalSubtitle").textContent = subtitle || "";
+  $("resourceModal").classList.remove("hidden");
+}
+
+function closeResourceModal() {
+  $("resourceModal").classList.add("hidden");
 }
 
 async function refreshLoads() {
@@ -307,7 +390,7 @@ async function refreshLoads() {
         return `
           <div class="row">
             <div>
-              <strong>${escapeHtml(item.date)} &middot; Load ${load}</strong>
+              <strong>${escapeHtml(formatFriendlyDate(item.date))} &middot; Load ${load}</strong>
               <div class="muted">${escapeHtml(riskLine)}</div>
             </div>
             <div class="sev ${severity}">${severity.toUpperCase()}</div>
@@ -403,7 +486,7 @@ async function openDancerDetail(dancerId) {
           <div class="row">
             <div>
               <strong>
-                ${escapeHtml(item.date)} &middot; ${Number(item.minutes || 0)} min &middot; RPE ${Number(item.rpe || 0)} &middot; Load ${load}
+                ${escapeHtml(formatFriendlyDate(item.date))} &middot; ${Number(item.minutes || 0)} min &middot; RPE ${Number(item.rpe || 0)} &middot; Load ${load}
               </strong>
               <div class="muted">${escapeHtml(riskReason)}</div>
               <div class="muted">${escapeHtml((item.notes || "").slice(0, 100))}</div>
@@ -447,7 +530,7 @@ async function refreshAvailability() {
       .map((slot) => `
         <div class="row">
           <div>
-            <strong>${escapeHtml(slot.date)} &middot; ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
+            <strong>${escapeHtml(formatFriendlyDate(slot.date))} &middot; ${escapeHtml(slot.start)}-${escapeHtml(slot.end)}</strong>
             <div class="muted">${escapeHtml(slot.note || "")}</div>
           </div>
           ${
@@ -688,7 +771,10 @@ function subscribeAlerts() {
 $("in").addEventListener("click", async () => {
   try {
     $("am").textContent = "";
-    await signInWithEmailAndPassword(auth, $("em").value.trim(), $("pw").value);
+    const email = $("em").value.trim();
+    const password = $("pw").value;
+    if (!email || !password) throw new Error("Enter email and password.");
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
     $("am").textContent = error.message;
   }
@@ -801,6 +887,21 @@ $("saveC").addEventListener("click", async () => {
   }
 });
 
+$("linkPtBtn").addEventListener("click", async () => {
+  try {
+    $("ptLinkMsg").textContent = "";
+    const code = $("dancerPtCode").value.trim().toUpperCase();
+    if (!code) throw new Error("Enter a PT code.");
+    await callFn("linkWithPtCode", "POST", { code });
+    $("dancerPtCode").value = "";
+    await refreshPtLinkStatus();
+    refreshThreads();
+    refreshAvailability();
+  } catch (error) {
+    $("ptLinkMsg").textContent = error.message;
+  }
+});
+
 $("gen").addEventListener("click", async () => {
   try {
     $("plm").textContent = "";
@@ -828,14 +929,24 @@ $("rr").addEventListener("click", refreshRoster);
 $("addA").addEventListener("click", async () => {
   try {
     $("amsg").textContent = "";
+    if (!validateAvailabilityTimes()) {
+      throw new Error("End must be after Start.");
+    }
+    const start = $("ast").value;
+    const end = $("ae").value;
+    if (!start || !end) throw new Error("Start and End are required.");
 
     await callFn("setMyAvailability", "POST", {
       date: $("ad").value || todayIso(),
-      start: $("ast").value.trim(),
-      end: $("ae").value.trim(),
+      start,
+      end,
       note: $("an").value.trim(),
     });
 
+    $("ast").value = "";
+    $("ae").value = "";
+    $("an").value = "";
+    validateAvailabilityTimes();
     refreshAvailability();
   } catch (error) {
     $("amsg").textContent = error.message;
@@ -849,6 +960,20 @@ $("txt").addEventListener("keydown", (event) => {
     event.preventDefault();
     sendMessage();
   }
+});
+
+$("ast").addEventListener("input", validateAvailabilityTimes);
+$("ae").addEventListener("input", validateAvailabilityTimes);
+
+document.querySelectorAll(".resource-row").forEach((row) => {
+  row.addEventListener("click", () => {
+    openResourceModal(row.dataset.resourceTitle, row.dataset.resourceSubtitle);
+  });
+});
+
+$("resourceModalClose").addEventListener("click", closeResourceModal);
+$("resourceModal").addEventListener("click", (event) => {
+  if (event.target === $("resourceModal")) closeResourceModal();
 });
 
 document.querySelectorAll(".tab").forEach((tab) => {
@@ -865,6 +990,7 @@ onAuthStateChanged(auth, async (user) => {
   $("out").classList.remove("hidden");
   $("cd").value = todayIso();
   $("ad").value = todayIso();
+  validateAvailabilityTimes();
 
   let role = null;
   try {
@@ -884,3 +1010,5 @@ onAuthStateChanged(auth, async (user) => {
   navigate(START_SCREEN_BY_ROLE[role]);
   bootstrapRoleData();
 });
+
+initCheckinSliders();

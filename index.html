@@ -103,28 +103,66 @@
         <h2>Daily check-in</h2>
 
         <label for="cd">Date</label>
-        <input id="cd" type="date" />
+        <input id="cd" class="full-input" type="date" />
 
-        <label for="cm">Minutes</label>
-        <input id="cm" type="number" min="0" />
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cm">Minutes</label>
+            <output id="cmv" for="cm">0</output>
+          </div>
+          <input id="cm" type="range" min="0" max="120" step="1" value="0" />
+        </div>
 
-        <label for="cr">RPE</label>
-        <input id="cr" type="number" min="0" max="10" />
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cr">RPE</label>
+            <output id="crv" for="cr">0</output>
+          </div>
+          <input id="cr" type="range" min="0" max="10" step="1" value="0" />
+        </div>
 
-        <label for="cf">Fatigue</label>
-        <input id="cf" type="number" min="0" max="10" />
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cf">Fatigue</label>
+            <output id="cfv" for="cf">0</output>
+          </div>
+          <input id="cf" type="range" min="0" max="10" step="1" value="0" />
+        </div>
 
-        <label for="cs">Soreness</label>
-        <input id="cs" type="number" min="0" max="10" />
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cs">Soreness</label>
+            <output id="csv" for="cs">0</output>
+          </div>
+          <input id="cs" type="range" min="0" max="10" step="1" value="0" />
+        </div>
 
-        <label for="csl">Sleep</label>
-        <input id="csl" type="number" min="0" max="24" step="0.5" />
+        <div class="range-field">
+          <div class="range-head">
+            <label for="csl">Sleep</label>
+            <output id="cslv" for="csl">0</output>
+          </div>
+          <input id="csl" type="range" min="0" max="12" step="0.5" value="0" />
+        </div>
 
         <label for="cn">Notes</label>
         <textarea id="cn"></textarea>
 
         <button id="saveC" class="btn" type="button">Save check-in</button>
         <p id="cmg" class="muted"></p>
+      </article>
+
+      <article id="ptLinkCard" class="card hidden">
+        <h2>PT link</h2>
+        <p class="muted subtitle">Link to your PT (enter code once)</p>
+        <div id="ptLinkForm" class="inline-form">
+          <input id="dancerPtCode" type="text" autocomplete="off" placeholder="PT code" />
+          <button id="linkPtBtn" class="pill" type="button">Link</button>
+        </div>
+        <div id="ptLinkedStatus" class="hidden">
+          <strong id="ptLinkedText">Linked</strong>
+        </div>
+        <p id="ptLinkMsg" class="muted"></p>
       </article>
 
       <article class="card">
@@ -177,16 +215,18 @@
 
         <div id="aform" class="hidden">
           <label for="ad">Date</label>
-          <input id="ad" type="date" />
+          <input id="ad" class="full-input" type="date" />
 
           <label for="ast">Start</label>
-          <input id="ast" />
+          <input id="ast" class="full-input" type="time" />
 
           <label for="ae">End</label>
-          <input id="ae" />
+          <input id="ae" class="full-input" type="time" />
+
+          <p id="aerr" class="error-text hidden">End must be after Start.</p>
 
           <label for="an">Note</label>
-          <input id="an" />
+          <input id="an" class="full-input" />
 
           <button id="addA" class="btn" type="button">Add slot</button>
         </div>
@@ -223,24 +263,39 @@
     <section id="res" class="screen hidden">
       <article class="card">
         <h2>Education hub</h2>
-        <div class="row">
+        <button
+          class="resource-row"
+          data-resource-title="Prehab basics"
+          data-resource-subtitle="Warm-up, progression, recovery pacing."
+          type="button"
+        >
           <div>
             <strong>Prehab basics</strong>
             <div class="muted">Warm-up, progression, recovery pacing.</div>
           </div>
-        </div>
-        <div class="row">
+        </button>
+        <button
+          class="resource-row"
+          data-resource-title="Risk response"
+          data-resource-subtitle="When to deload and when to contact PT."
+          type="button"
+        >
           <div>
             <strong>Risk response</strong>
             <div class="muted">When to deload and when to contact PT.</div>
           </div>
-        </div>
-        <div class="row">
+        </button>
+        <button
+          class="resource-row"
+          data-resource-title="Privacy and ownership"
+          data-resource-subtitle="Role-based access for dancer/PT only."
+          type="button"
+        >
           <div>
             <strong>Privacy and ownership</strong>
             <div class="muted">Role-based access for dancer/PT only.</div>
           </div>
-        </div>
+        </button>
       </article>
     </section>
   </main>
@@ -253,6 +308,17 @@
       <button class="tab" data-s="msg" data-r="pt,dancer" type="button">Messages</button>
       <button class="tab" data-s="res" data-r="pt,dancer" type="button">Resources</button>
     </nav>
+  </div>
+
+  <div id="resourceModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+    <div class="modal-content">
+      <div class="row row-head">
+        <h3 id="resourceModalTitle">Resource</h3>
+        <button id="resourceModalClose" class="pill" type="button">Close</button>
+      </div>
+      <p id="resourceModalSubtitle" class="muted subtitle"></p>
+      <p class="muted">Content coming soon.</p>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>

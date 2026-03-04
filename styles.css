@@ -50,6 +50,8 @@
 html,
 body {
   height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -79,6 +81,8 @@ body::after { content: none; }
 .appShell {
   min-height: 100dvh;
   background: transparent;
+  width: 100%;
+  overflow-x: clip;
 }
 
 main.app-content {
@@ -87,6 +91,8 @@ main.app-content {
   padding: var(--screenGap) var(--s4)
     calc(var(--navH) + var(--tabBarPadBottom) + var(--s4));
   background: transparent;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Header */
@@ -121,6 +127,8 @@ main.app-content {
 .screen {
   display: grid;
   gap: var(--screenGap);
+  width: 100%;
+  min-width: 0;
 }
 
 .stack {
@@ -138,6 +146,8 @@ main.app-content {
   box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
+  width: 100%;
+  min-width: 0;
 }
 
 .card::before {
@@ -281,7 +291,8 @@ textarea:focus {
 .auth-screen {
   min-height: 100vh;
   min-height: calc(100dvh - var(--safeTop) - var(--safeBottom));
-  width: min(92vw, 430px);
+  width: 100%;
+  max-width: 430px;
   margin: 0 auto;
   align-content: center;
   justify-items: center;
@@ -331,13 +342,15 @@ textarea:focus {
   font-family: "Playfair Display", "Times New Roman", serif;
   font-size: clamp(22px, 6vw, 30px);
   letter-spacing: 0.12em;
+  color: #4f2f34;
 }
 
 .auth-subtitle {
-  font-size: 14px;
-  letter-spacing: 0.32em;
-  font-weight: 600;
-  color: var(--accent);
+  font-family: "Playfair Display", "Times New Roman", serif;
+  font-size: clamp(18px, 5vw, 24px);
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #4f2f34;
 }
 
 .auth-tagline {
@@ -346,10 +359,12 @@ textarea:focus {
 }
 
 .auth-form {
-  width: min(92vw, 360px);
+  width: 100%;
+  max-width: 360px;
   display: grid;
   gap: var(--s3);
   text-align: center;
+  margin: 0 auto;
 }
 
 .auth-form .label {
@@ -420,6 +435,11 @@ body.auth-mode main.app-content {
   min-height: 100dvh;
   padding-top: var(--safeTop);
   padding-bottom: var(--safeBottom);
+  padding-left: var(--s4);
+  padding-right: var(--s4);
+  display: grid;
+  place-items: center;
+  width: 100%;
 }
 
 /* Tabs */
@@ -651,10 +671,19 @@ body.auth-mode main.app-content {
   padding: 10px 14px;
 }
 
+input.full-input {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 input[type="date"],
 input[type="time"] {
   max-width: 100%;
   min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .calendar,
@@ -702,6 +731,97 @@ input[type="time"] {
   margin-top: var(--s2);
 }
 
+.error-text {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s2);
+  align-items: center;
+}
+
+.range-field {
+  display: grid;
+  gap: var(--s2);
+}
+
+.range-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2);
+}
+
+.range-head output {
+  color: var(--text);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  min-width: 46px;
+  text-align: center;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 0;
+  min-height: auto;
+  border-radius: 999px;
+  border: 1px solid rgba(54, 36, 40, 0.18);
+  padding: 10px 12px;
+  background: rgba(240, 247, 255, 0.78);
+}
+
+.resource-row {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding: var(--rowPad) 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s2);
+  cursor: pointer;
+}
+
+.resource-row:first-of-type {
+  border-top: 0;
+}
+
+.resource-row:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.resource-row > div {
+  min-width: 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(26, 26, 26, 0.35);
+  display: grid;
+  place-items: center;
+  padding: var(--s4);
+}
+
+.modal-content {
+  width: min(100%, 520px);
+  background: var(--card-solid);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: var(--cardPad);
+}
+
 /* Focus */
 .pill:focus-visible,
 .btn:focus-visible,
@@ -730,6 +850,10 @@ textarea:focus-visible {
     grid-auto-columns: max-content;
     justify-content: end;
     align-items: center;
+  }
+
+  .inline-form {
+    grid-template-columns: 1fr;
   }
 }
 
