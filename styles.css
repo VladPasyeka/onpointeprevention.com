@@ -111,10 +111,32 @@ main.app-content {
   backdrop-filter: blur(12px);
 }
 
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .topbar strong {
   font-family: "Playfair Display", "Times New Roman", serif;
   font-size: clamp(16px, 4vw, 20px);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.topbar-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  background-color: #fff;
+  background-image: url("logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: 0 4px 10px rgba(94, 68, 68, 0.18);
+  flex: 0 0 auto;
 }
 
 .topbar .pill {
@@ -684,6 +706,19 @@ input[type="time"] {
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
+  text-align: center;
+  text-align-last: center;
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  text-align: center;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: center;
+  min-height: 1.2em;
 }
 
 .calendar,
@@ -854,6 +889,11 @@ textarea:focus-visible {
 
   .inline-form {
     grid-template-columns: 1fr;
+  }
+
+  .topbar-logo {
+    width: 26px;
+    height: 26px;
   }
 }
 
