@@ -289,7 +289,7 @@ async function ensureLinkedPairAndThread(uid, otherUid) {
   return { role, ptUid, dancerUid, threadId: tid };
 }
 
-exports.generatePtCode = onRequest(async (req, res) => {
+exports.generatePtCode = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -315,7 +315,7 @@ exports.generatePtCode = onRequest(async (req, res) => {
   }
 });
 
-exports.linkWithPtCode = onRequest(async (req, res) => {
+exports.linkWithPtCode = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -323,6 +323,8 @@ exports.linkWithPtCode = onRequest(async (req, res) => {
 
     const role = await getUserRole(dancerUid);
     if (role !== ROLE.DANCER) throw new Error("Only dancer users can link to a PT.");
+    const existingPt = await getLinkedPtId(dancerUid);
+    if (existingPt) throw new Error("You are already linked to a PT.");
 
     const code = String(req.query.code || req.body?.code || "").trim().toUpperCase();
     if (!code) throw new Error("Missing code");
@@ -371,7 +373,7 @@ exports.linkWithPtCode = onRequest(async (req, res) => {
   }
 });
 
-exports.getMyPt = onRequest(async (req, res) => {
+exports.getMyPt = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -395,7 +397,7 @@ exports.getMyPt = onRequest(async (req, res) => {
   }
 });
 
-exports.unlinkFromPt = onRequest(async (req, res) => {
+exports.unlinkFromPt = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -419,7 +421,7 @@ exports.unlinkFromPt = onRequest(async (req, res) => {
   }
 });
 
-exports.getMyDancers = onRequest(async (req, res) => {
+exports.getMyDancers = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -447,7 +449,7 @@ exports.getMyDancers = onRequest(async (req, res) => {
   }
 });
 
-exports.getDancerRecentCheckins = onRequest(async (req, res) => {
+exports.getDancerRecentCheckins = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -474,7 +476,7 @@ exports.getDancerRecentCheckins = onRequest(async (req, res) => {
   }
 });
 
-exports.setMyAvailability = onRequest(async (req, res) => {
+exports.setMyAvailability = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -508,7 +510,7 @@ exports.setMyAvailability = onRequest(async (req, res) => {
   }
 });
 
-exports.getMyAvailability = onRequest(async (req, res) => {
+exports.getMyAvailability = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -533,7 +535,7 @@ exports.getMyAvailability = onRequest(async (req, res) => {
   }
 });
 
-exports.deleteMyAvailability = onRequest(async (req, res) => {
+exports.deleteMyAvailability = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -558,7 +560,7 @@ exports.deleteMyAvailability = onRequest(async (req, res) => {
   }
 });
 
-exports.getLinkedPtAvailability = onRequest(async (req, res) => {
+exports.getLinkedPtAvailability = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -584,7 +586,7 @@ exports.getLinkedPtAvailability = onRequest(async (req, res) => {
   }
 });
 
-exports.ensureThread = onRequest(async (req, res) => {
+exports.ensureThread = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -599,7 +601,7 @@ exports.ensureThread = onRequest(async (req, res) => {
   }
 });
 
-exports.getMyThreads = onRequest(async (req, res) => {
+exports.getMyThreads = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -669,7 +671,7 @@ exports.getMyThreads = onRequest(async (req, res) => {
   }
 });
 
-exports.sendMessage = onRequest(async (req, res) => {
+exports.sendMessage = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -710,7 +712,7 @@ exports.sendMessage = onRequest(async (req, res) => {
   }
 });
 
-exports.markThreadRead = onRequest(async (req, res) => {
+exports.markThreadRead = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -739,7 +741,7 @@ exports.markThreadRead = onRequest(async (req, res) => {
   }
 });
 
-exports.markAlertReviewed = onRequest(async (req, res) => {
+exports.markAlertReviewed = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -764,7 +766,7 @@ exports.markAlertReviewed = onRequest(async (req, res) => {
   }
 });
 
-exports.seedDemoData = onRequest(async (req, res) => {
+exports.seedDemoData = onRequest({ region: "us-central1", invoker: "public" }, async (req, res) => {
   if (withCors(req, res)) return;
   try {
     const token = await requireAuth(req);
@@ -852,23 +854,27 @@ exports.onCheckinWrite = onDocumentWritten(
     const entry = change.after.data() || {};
     const uid = event.params.uid;
     const entryId = event.params.checkinId;
+    const legacyRisk = !entry?.risk && entry?.redFlag ? entry.redFlag : null;
 
     const history = await fetchRecentCheckins(uid, entry?.date || entryId);
     const combined = history.filter((e) => e?.date !== entry?.date).concat([entry]);
     const result = evaluateFlags(entry, combined);
 
-    await change.after.ref.set(
-      {
-        risk: {
-          severity: result.severity,
-          reasons: result.reasons,
-          score: result.score,
-          acwr: result.acwr || null,
-          load: result.load,
-        },
-      },
-      { merge: true }
-    );
+    const normalizedRisk = {
+      ...(legacyRisk || {}),
+      severity: result.severity,
+      reasons:
+        result.reasons?.length
+          ? result.reasons
+          : Array.isArray(legacyRisk?.reasons)
+            ? legacyRisk.reasons
+            : [],
+      score: result.score,
+      acwr: result.acwr || null,
+      load: result.load,
+    };
+
+    await change.after.ref.set({ risk: normalizedRisk }, { merge: true });
 
     const ptId = await getLinkedPtId(uid);
     if (!ptId || result.severity === "green") return null;
@@ -906,3 +912,4 @@ exports.onCheckinWrite = onDocumentWritten(
     return null;
   }
 );
+

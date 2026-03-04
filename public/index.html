@@ -1,57 +1,330 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>OnPointe Prevention</title>
-<style>
-:root{--bg:#0b0b0d;--card:#15161a;--tx:#f4f5f7;--mut:#a0a6ad;--ln:rgba(255,255,255,.1)}*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui;background:#12080c;color:var(--tx)}
-.top{position:sticky;top:0;display:flex;justify-content:space-between;padding:12px 14px;background:#0b0b0dd9;border-bottom:1px solid var(--ln)}main{max-width:1000px;margin:0 auto;padding:14px 12px 88px}
-.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:10px}.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--ln)}.row:first-child{border-top:0}
-input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--ln);background:#00000040;color:var(--tx)}textarea{min-height:72px}
-.btn,.pill{border:1px solid var(--ln);border-radius:10px;padding:10px 12px;background:#fff;color:#111;font-weight:700;cursor:pointer}.pill{background:#ffffff10;color:var(--tx)}.mut{color:var(--mut);font-size:13px}.hid{display:none!important}
-.tabs{position:fixed;left:0;right:0;bottom:0;padding:8px;background:#0b0b0dee;border-top:1px solid var(--ln);display:flex;gap:6px;flex-wrap:wrap;justify-content:center}.tab{border:1px solid var(--ln);background:#ffffff10;color:var(--tx);padding:8px 10px;border-radius:999px;cursor:pointer}.tab.on{background:#ffffff2a}
-.sev{padding:4px 8px;border-radius:999px;border:1px solid var(--ln);font-size:12px;font-weight:800}.green{color:#39d98a}.yellow{color:#ffb020}.orange{color:#ffb48a}.red{color:#ff5c5c}
-.split{display:grid;gap:10px;grid-template-columns:1fr}.thread{border:1px solid var(--ln);border-radius:10px;padding:9px;margin:8px 0;cursor:pointer;background:#00000030}.thread.on{background:#ffffff20}
-.chat{height:300px;overflow:auto;border:1px solid var(--ln);border-radius:10px;padding:8px}.b{max-width:78%;padding:8px 10px;border:1px solid var(--ln);border-radius:12px;margin:6px 0}.me{margin-left:auto;background:#ffffff20}.ts{font-size:11px;color:var(--mut)}
-@media(min-width:900px){.split{grid-template-columns:320px 1fr}}
-</style></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#c3a5a5" />
+  <title>OnPointe Prevention</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
 <body>
-<div class="top"><b>OnPointe Prevention</b><button id="out" class="pill hid">Sign out</button></div>
-<main>
-<section id="auth"><div class="card"><h3>Sign in</h3><p class="mut">Use email + password.</p><label>Email</label><input id="em" type="email"/><label>Password</label><input id="pw" type="password"/><button id="in" class="btn">Sign in</button><button id="up" class="pill">Create account</button><p id="am" class="mut"></p></div></section>
-<section id="role" class="hid"><div class="card"><h3>Choose role</h3><label>Role</label><select id="rv"><option value="dancer">Dancer</option><option value="pt">PT</option></select><label>Name</label><input id="nm"/><button id="saveRole" class="btn">Save role</button><p id="rm" class="mut"></p></div></section>
-<section id="check" class="hid"><div class="card"><h3>Daily check-in</h3><label>Date</label><input id="cd" type="date"/><label>Minutes</label><input id="cm" type="number"/><label>RPE</label><input id="cr" type="number"/><label>Fatigue</label><input id="cf" type="number"/><label>Soreness</label><input id="cs" type="number"/><label>Sleep</label><input id="csl" type="number" step="0.5"/><label>Notes</label><textarea id="cn"></textarea><button id="saveC" class="btn">Save check-in</button><p id="cmg" class="mut"></p></div><div class="card"><h3>Load monitoring</h3><div id="loads"></div></div></section>
-<section id="pt" class="hid"><div class="card"><h3>PT linking tools</h3><p class="mut">Generate a code and share with dancers.</p><button id="gen" class="btn">Generate link code</button><div class="row"><div><b>Current code</b></div><b id="code">--</b></div><button id="seed" class="pill">Seed demo dancer + chat</button><p id="plm" class="mut"></p></div><div class="card"><div class="row"><div><b>My Dancers</b></div><button id="rr" class="pill">Refresh</button></div><div id="roster"></div><p id="rmsg" class="mut"></p></div><div class="card"><h3 id="dt">Dancer detail</h3><p id="ds" class="mut">Select a dancer.</p><div id="detail"></div></div><div class="card"><h3>Risk alerts</h3><div id="alerts"></div></div></section>
-<section id="avail" class="hid"><div class="card"><h3>Availability</h3><p id="asub" class="mut"></p><div id="aform" class="hid"><label>Date</label><input id="ad" type="date"/><label>Start</label><input id="ast"/><label>End</label><input id="ae"/><label>Note</label><input id="an"/><button id="addA" class="btn">Add slot</button></div><div id="alist"></div><p id="amsg" class="mut"></p></div></section>
-<section id="msg" class="hid"><div class="split"><div class="card"><h3>Conversations</h3><div id="threads"></div><p id="tmsg" class="mut"></p></div><div class="card"><h3 id="ct">Select a conversation</h3><p id="csub" class="mut">Messages are private to participants.</p><div id="chatE" class="mut">Select a thread to chat.</div><div id="chatB" class="hid"><div id="chat" class="chat"></div><div style="display:flex;gap:8px;margin-top:8px"><input id="txt" placeholder="Type..."/><button id="send" class="pill">Send</button></div></div></div></div></section>
-<section id="res" class="hid"><div class="card"><h3>Education hub</h3><div class="row"><div><b>Prehab basics</b><div class="mut">Warm-up, progression, recovery pacing.</div></div></div><div class="row"><div><b>Risk response</b><div class="mut">When to deload and when to contact PT.</div></div></div><div class="row"><div><b>Privacy and ownership</b><div class="mut">Role-based access for dancer/PT only.</div></div></div></div></section>
-</main>
-<nav id="tabs" class="tabs hid"><button class="tab" data-s="check" data-r="dancer">Check-in</button><button class="tab" data-s="pt" data-r="pt">PT Portal</button><button class="tab" data-s="avail" data-r="pt">Availability</button><button class="tab" data-s="msg" data-r="pt,dancer">Messages</button><button class="tab" data-s="res" data-r="pt,dancer">Resources</button></nav>
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";import{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut}from"https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";import{getFirestore,doc,getDoc,setDoc,collection,query,orderBy,limit,onSnapshot,getDocs}from"https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyBmgTapl6qs29Cdr_WlNOKTq_yttO9kqW8",authDomain:"on-pointe-prevention.firebaseapp.com",projectId:"on-pointe-prevention",storageBucket:"on-pointe-prevention.firebasestorage.app",messagingSenderId:"235349964683",appId:"1:235349964683:web:0b1a3b3e494bd86fc0a18e"};
-const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);const ROLE={PT:"pt",D:"dancer"},SC={pt:"pt",dancer:"check"},ALLOW={pt:["pt","avail","msg","res"],dancer:["check","msg","res"]};
-const st={u:null,r:null,tid:null,ths:[],uch:null,ual:null,sending:false};const FN=(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"http://127.0.0.1:5001/on-pointe-prevention/us-central1":"https://us-central1-on-pointe-prevention.cloudfunctions.net";
-const screens=["auth","role","check","pt","avail","msg","res"],ts=v=>{if(!v)return 0;if(v.toMillis)return v.toMillis();if(v.seconds)return v.seconds*1000;return 0},esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])),today=()=>new Date().toISOString().slice(0,10),load=e=>Math.round((+e?.minutes||0)*(+e?.rpe||0));
-function show(s){screens.forEach(x=>$(x).classList.add("hid"));$(s).classList.remove("hid");document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.s===s));}
-function navVis(v){$("tabs").classList.toggle("hid",!v)} function ok(s){return !!st.r&&ALLOW[st.r]?.includes(s)} function stop(u){if(typeof u==="function")u();return null}
-function roleUI(r){st.r=r;navVis(!!r);document.querySelectorAll(".tab").forEach(t=>{const rr=t.dataset.r.split(",");t.classList.toggle("hid",!rr.includes(r))});$("aform").classList.toggle("hid",r!==ROLE.PT)}
-async function fn(path,m="GET",b=null,q=null){if(!auth.currentUser)throw new Error("Not logged in");const tok=await auth.currentUser.getIdToken();let url=`${FN}/${path}`;if(q){const u=new URLSearchParams();Object.entries(q).forEach(([k,v])=>v!=null&&u.set(k,v));const s=u.toString();if(s)url+=(url.includes("?")?"&":"?")+s}const r=await fetch(url,{method:m,headers:{"Content-Type":"application/json",Authorization:`Bearer ${tok}`},body:b?JSON.stringify(b):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Failed (${r.status})`);return d}
-function signedOut(){st.u=null;st.r=null;st.tid=null;st.ths=[];st.uch=stop(st.uch);st.ual=stop(st.ual);$("out").classList.add("hid");navVis(false);show("auth")}
-async function initRoleData(){if(st.r===ROLE.PT){roster();alerts()}else st.ual=stop(st.ual);avail();threads();loads()}
-function go(s){if(!ok(s))s=SC[st.r];show(s);if(s==="msg")threads();if(s==="avail")avail();if(s==="check")loads();if(s==="pt")roster()}
-async function loads(){if(st.r!==ROLE.D)return;try{const sp=await getDocs(query(collection(db,"users",st.u.uid,"checkins"),orderBy("date","desc"),limit(7)));if(sp.empty){$("loads").innerHTML='<div class="mut">No check-ins yet.</div>';return}$("loads").innerHTML=sp.docs.map(d=>{const i=d.data(),sv=i?.risk?.severity||"green",ld=i?.risk?.load??load(i),rs=Array.isArray(i?.risk?.reasons)?i.risk.reasons.join(", "):"No active risk flags";return`<div class="row"><div><b>${esc(i.date)} � Load ${ld}</b><div class="mut">${esc(rs)}</div></div><div class="sev ${sv}">${sv.toUpperCase()}</div></div>`}).join("")}catch(e){$("loads").innerHTML=`<div class="mut">${esc(e.message)}</div>`}}
-async function roster(){if(st.r!==ROLE.PT)return;$("rmsg").textContent="";$("roster").innerHTML="";try{const r=await fn("getMyDancers");const ds=Array.isArray(r.dancers)?r.dancers:[];if(!ds.length){$("rmsg").textContent="No dancers linked yet.";return}$("roster").innerHTML=ds.map(d=>`<div class="row"><div><b>${esc(d.name||d.email||d.dancerId)}</b><div class="mut">${esc(d.dancerId)}</div></div><button class="pill" data-d="${esc(d.dancerId)}">Open</button></div>`).join("");$("roster").querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>detail(b.dataset.d))}catch(e){$("rmsg").textContent=e.message}}
-async function detail(id){$("dt").textContent=id;$("ds").textContent="Loading...";try{const r=await fn("getDancerRecentCheckins","GET",null,{dancerId:id,limit:14}),it=Array.isArray(r.items)?r.items:[];if(!it.length){$("ds").textContent="No check-ins yet.";$("detail").innerHTML='<div class="mut">No entries.</div>';return}$("ds").textContent="Recent check-ins and risk.";$("detail").innerHTML=it.map(x=>{const sv=x?.risk?.severity||"green",ld=x?.risk?.load??load(x),a=x?.risk?.acwr?`ACWR ${Number(x.risk.acwr).toFixed(2)}`:"";return`<div class="row"><div><b>${esc(x.date)} � ${+x.minutes||0} min � RPE ${+x.rpe||0} � Load ${ld}</b><div class="mut">${esc((x.notes||"").slice(0,100))}</div><div class="mut">${a}</div></div><div class="sev ${sv}">${sv.toUpperCase()}</div></div>`}).join("")}catch(e){$("ds").textContent=e.message||"Failed"}}
-async function avail(){$("amsg").textContent="";$("alist").innerHTML="";if(!st.r)return;try{const r=st.r===ROLE.PT?await fn("getMyAvailability"):await fn("getLinkedPtAvailability"),s=Array.isArray(r.slots)?r.slots:[];$("asub").textContent=st.r===ROLE.PT?"Your upcoming slots":"Your PT's upcoming slots";if(!s.length){$("alist").innerHTML='<div class="mut">No slots yet.</div>';return}s.sort((a,b)=>(a.date+a.start).localeCompare(b.date+b.start));$("alist").innerHTML=s.map(x=>`<div class="row"><div><b>${esc(x.date)} � ${esc(x.start)}-${esc(x.end)}</b><div class="mut">${esc(x.note||"")}</div></div>${st.r===ROLE.PT?`<button class="pill" data-del="${esc(x.slotId)}">Delete</button>`:""}</div>`).join("");$("alist").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{try{await fn("deleteMyAvailability","POST",{slotId:b.dataset.del});avail()}catch(e){$("amsg").textContent=e.message}})}catch(e){$("amsg").textContent=e.message}}
-async function threads(){if(!st.u||!st.r)return;$("threads").innerHTML="";$("tmsg").textContent="";try{const r=await fn("getMyThreads"),ts=Array.isArray(r.threads)?r.threads:[];st.ths=ts;if(!ts.length){$("tmsg").textContent=st.r===ROLE.D?"No thread yet. Ask your PT for a link code.":"No linked dancers yet.";closeThread();return}$("threads").innerHTML=ts.map(t=>`<div class="thread ${st.tid===t.threadId?"on":""}" data-t="${esc(t.threadId)}"><div class="row" style="padding:0;border-top:0"><b>${esc(t.peerName||t.peerUid)}</b>${t.unreadCount?`<span class="sev orange">${t.unreadCount} new</span>`:""}</div><div class="mut">${esc(t.lastMessageText||"No messages yet")}</div><div class="mut">${esc(new Date(t.lastMessageAt||0).toLocaleString())}</div></div>`).join("");$("threads").querySelectorAll("[data-t]").forEach(el=>el.onclick=()=>{const th=st.ths.find(x=>x.threadId===el.dataset.t);openThread(el.dataset.t,th?.peerName||"Chat")});if(!st.tid){const f=ts[0];openThread(f.threadId,f.peerName||"Chat")}}catch(e){$("tmsg").textContent=e.message}}
-function closeThread(){st.tid=null;st.uch=stop(st.uch);$("chatB").classList.add("hid");$("chatE").classList.remove("hid");$("chat").innerHTML="";$("ct").textContent="Select a conversation"}
-async function openThread(id,title){st.tid=id;st.uch=stop(st.uch);$("ct").textContent=title;$("chatB").classList.remove("hid");$("chatE").classList.add("hid");document.querySelectorAll(".thread").forEach(t=>t.classList.toggle("on",t.dataset.t===id));const q=query(collection(db,"threads",id,"messages"),orderBy("createdAt","asc"),limit(120));st.uch=onSnapshot(q,s=>{$("chat").innerHTML=s.docs.map(d=>{const m=d.data(),mine=m.senderUid===st.u.uid;return`<div class="${mine?"me":""} b"><div>${esc(m.text||"")}</div><div class="ts">${esc(new Date(ts(m.createdAt)).toLocaleString())}</div></div>`}).join("");$("chat").scrollTop=$("chat").scrollHeight});try{await fn("markThreadRead","POST",{threadId:id});threads()}catch(_){}}
-async function send(){const text=$("txt").value.trim();if(!text||!st.tid||st.sending)return;st.sending=true;$("send").disabled=true;try{await fn("sendMessage","POST",{threadId:st.tid,text});$("txt").value="";threads()}catch(e){$("tmsg").textContent=e.message}finally{st.sending=false;$("send").disabled=false}}
-function alerts(){st.ual=stop(st.ual);st.ual=onSnapshot(query(collection(db,"alerts",st.u.uid,"items"),orderBy("createdAt","desc"),limit(20)),s=>{const a=s.docs.map(d=>({id:d.id,...d.data()}));if(!a.length){$("alerts").innerHTML='<div class="mut">No alerts yet.</div>';return}$("alerts").innerHTML=a.map(x=>`<div class="row"><div><b>${esc(x.dancerUid)} � ${esc((x.snapshot?.date||x.id)+" � Load "+(x.snapshot?.load??"--"))}</b><div class="mut">${esc((x.reasons||[]).join(", "))}</div></div><div><span class="sev ${(x.severity||"orange")}">${esc((x.severity||"orange").toUpperCase())}</span><button class="pill" data-rv="${esc(x.id)}">Reviewed</button></div></div>`).join("");$("alerts").querySelectorAll("[data-rv]").forEach(b=>b.onclick=()=>fn("markAlertReviewed","POST",{alertId:b.dataset.rv}).catch(()=>{}))})}
-$("in").onclick=()=>signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value).catch(e=>$("am").textContent=e.message);$("up").onclick=()=>createUserWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value).catch(e=>$("am").textContent=e.message);$("out").onclick=()=>signOut(auth);
-$("saveRole").onclick=async()=>{try{await setDoc(doc(db,"users",auth.currentUser.uid),{role:$("rv").value,name:$("nm").value.trim()||null,email:auth.currentUser.email||null},{merge:true});roleUI($("rv").value);go(SC[$("rv").value]);initRoleData()}catch(e){$("rm").textContent=e.message}};
-$("saveC").onclick=async()=>{try{const e={date:$("cd").value||today(),minutes:+$("cm").value||0,rpe:+$("cr").value||0,fatigue:+$("cf").value||0,sore:+$("cs").value||0,sleep:+$("csl").value||0,notes:$("cn").value.trim()};await setDoc(doc(db,"users",auth.currentUser.uid,"checkins",e.date),e,{merge:true});loads()}catch(err){$("cmg").textContent=err.message}};
-$("gen").onclick=async()=>{try{const r=await fn("generatePtCode","POST",{});$("code").textContent=r.code||"--"}catch(e){$("plm").textContent=e.message}};$("seed").onclick=async()=>{try{const r=await fn("seedDemoData","POST",{});$("plm").textContent=`Seeded ${r.demoDancerId}`;roster();threads()}catch(e){$("plm").textContent=e.message}};
-$("rr").onclick=roster;$("addA").onclick=async()=>{try{await fn("setMyAvailability","POST",{date:$("ad").value||today(),start:$("ast").value.trim(),end:$("ae").value.trim(),note:$("an").value.trim()});avail()}catch(e){$("amsg").textContent=e.message}};
-$("send").onclick=send;$("txt").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>go(t.dataset.s));
-onAuthStateChanged(auth,async u=>{if(!u){signedOut();return}st.u=u;$("out").classList.remove("hid");$("cd").value=today();$("ad").value=today();let r=null;try{const s=await getDoc(doc(db,"users",u.uid));r=s.exists()?s.data().role:null}catch(_){}if(!r){roleUI(null);show("role");return}roleUI(r);go(SC[r]);initRoleData()});
-</script></body></html>
+  <div class="appShell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <span class="topbar-logo" aria-hidden="true"></span>
+        <strong>OnPointe Prevention</strong>
+      </div>
+      <button id="out" class="pill hidden" type="button">Sign out</button>
+    </header>
+
+    <main class="app-content">
+    <section id="auth" class="screen auth-screen">
+      <div class="auth-hero">
+        <div class="auth-logo" role="img" aria-label="OnPointe logo"></div>
+        <div class="auth-title">ONPOINTE</div>
+        <div class="auth-subtitle">LOGIN</div>
+        <div class="auth-tagline">Your leap, safely landed.</div>
+      </div>
+
+      <div class="auth-form">
+        <label class="label" for="em">Username</label>
+        <input id="em" class="input under" type="email" autocomplete="email" placeholder="" />
+
+        <label class="label" for="pw">Password</label>
+        <input id="pw" class="input under" type="password" autocomplete="current-password" placeholder="" />
+
+        <button id="in" class="btn auth-btn" type="button">Log in</button>
+        <button class="link auth-link" type="button">FORGOT PASSWORD</button>
+        <button id="up" class="btn secondary auth-btn" type="button">Create account</button>
+        <div class="auth-note muted">Don't have an account?</div>
+        <div class="auth-site muted">www.onpointeprevention.com</div>
+        <p id="am" class="muted"></p>
+      </div>
+    </section>
+
+    <section id="register" class="screen auth-screen hidden">
+      <div class="auth-hero">
+        <div class="auth-logo" role="img" aria-label="OnPointe logo"></div>
+        <div class="auth-title">ONPOINTE</div>
+        <div class="auth-subtitle">REGISTER</div>
+        <div class="auth-tagline">Create your professional account.</div>
+      </div>
+
+      <div class="auth-form">
+        <label class="label" for="rname">Full name</label>
+        <input id="rname" class="input under" type="text" autocomplete="name" />
+
+        <label class="label" for="rem">Email</label>
+        <input id="rem" class="input under" type="email" autocomplete="email" />
+
+        <label class="label" for="rpw">Password</label>
+        <input id="rpw" class="input under" type="password" autocomplete="new-password" />
+
+        <label class="label">Role</label>
+        <div class="role-picker" role="radiogroup" aria-label="Role">
+          <label class="role-option">
+            <input type="radio" name="rrole" value="dancer" checked />
+            <span>Dancer</span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="rrole" value="pt" />
+            <span>PT</span>
+          </label>
+        </div>
+
+        <div id="ptCodeWrap" class="hidden">
+          <label class="label" for="ptCode">PT Registration Code</label>
+          <input id="ptCode" class="input under" type="text" autocomplete="off" />
+        </div>
+
+        <button id="createAccount" class="btn auth-btn" type="button">Create</button>
+        <button id="backToLogin" class="link auth-link" type="button">Back to login</button>
+        <p id="rmAuth" class="muted"></p>
+      </div>
+    </section>
+
+    <section id="role" class="screen hidden">
+      <article class="card">
+        <h2>Choose role</h2>
+
+        <label for="rv">Role</label>
+        <select id="rv">
+          <option value="dancer">Dancer</option>
+          <option value="pt">PT</option>
+        </select>
+
+        <label for="nm">Name</label>
+        <input id="nm" />
+
+        <button id="saveRole" class="btn" type="button">Save role</button>
+        <p id="rm" class="muted"></p>
+      </article>
+    </section>
+
+    <section id="check" class="screen hidden">
+      <article class="card">
+        <h2>Daily check-in</h2>
+
+        <label for="cd">Date</label>
+        <input id="cd" class="full-input" type="date" />
+
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cm">Minutes</label>
+            <output id="cmv" for="cm">0</output>
+          </div>
+          <input id="cm" type="range" min="0" max="120" step="1" value="0" />
+        </div>
+
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cr">RPE</label>
+            <output id="crv" for="cr">0</output>
+          </div>
+          <input id="cr" type="range" min="0" max="10" step="1" value="0" />
+        </div>
+
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cf">Fatigue</label>
+            <output id="cfv" for="cf">0</output>
+          </div>
+          <input id="cf" type="range" min="0" max="10" step="1" value="0" />
+        </div>
+
+        <div class="range-field">
+          <div class="range-head">
+            <label for="cs">Soreness</label>
+            <output id="csv" for="cs">0</output>
+          </div>
+          <input id="cs" type="range" min="0" max="10" step="1" value="0" />
+        </div>
+
+        <div class="range-field">
+          <div class="range-head">
+            <label for="csl">Sleep</label>
+            <output id="cslv" for="csl">0</output>
+          </div>
+          <input id="csl" type="range" min="0" max="12" step="0.5" value="0" />
+        </div>
+
+        <label for="cn">Notes</label>
+        <textarea id="cn"></textarea>
+
+        <button id="saveC" class="btn" type="button">Save check-in</button>
+        <p id="cmg" class="muted"></p>
+      </article>
+
+      <article id="ptLinkCard" class="card hidden">
+        <h2>PT link</h2>
+        <p class="muted subtitle">Link to your PT (enter code once)</p>
+        <div id="ptLinkForm" class="inline-form">
+          <input id="dancerPtCode" type="text" autocomplete="off" placeholder="PT code" />
+          <button id="linkPtBtn" class="pill" type="button">Link</button>
+        </div>
+        <div id="ptLinkedStatus" class="hidden">
+          <strong id="ptLinkedText">Linked</strong>
+        </div>
+        <p id="ptLinkMsg" class="muted"></p>
+      </article>
+
+      <article class="card">
+        <h2>Load monitoring</h2>
+        <div id="loads"></div>
+      </article>
+    </section>
+
+    <section id="pt" class="screen hidden">
+      <article class="card pt-tools">
+        <h2>PT linking tools</h2>
+        <p class="muted subtitle">Generate a code and share with dancers.</p>
+
+        <button id="gen" class="btn" type="button">Generate link code</button>
+
+        <div class="row current-code">
+          <div><strong>Current code</strong></div>
+          <strong id="code">--</strong>
+        </div>
+
+        <button id="seed" class="pill" type="button">Seed demo dancer + chat</button>
+        <p id="plm" class="muted"></p>
+      </article>
+
+      <article class="card dancers-card">
+        <div class="row row-head">
+          <div><strong>My Dancers</strong></div>
+          <button id="rr" class="pill" type="button">Refresh</button>
+        </div>
+        <div id="roster"></div>
+        <p id="rmsg" class="muted"></p>
+      </article>
+
+      <article class="card">
+        <h2 id="dt">Dancer detail</h2>
+        <p id="ds" class="muted subtitle">Select a dancer.</p>
+        <div id="detail"></div>
+      </article>
+
+      <article class="card">
+        <h2>Risk alerts</h2>
+        <div id="alerts"></div>
+      </article>
+    </section>
+
+    <section id="avail" class="screen hidden">
+      <article class="card">
+        <h2>Availability</h2>
+        <p id="asub" class="muted subtitle"></p>
+
+        <div id="aform" class="hidden">
+          <label for="ad">Date</label>
+          <input id="ad" class="full-input" type="date" />
+
+          <label for="ast">Start</label>
+          <input id="ast" class="full-input" type="time" />
+
+          <label for="ae">End</label>
+          <input id="ae" class="full-input" type="time" />
+
+          <p id="aerr" class="error-text hidden">End must be after Start.</p>
+
+          <label for="an">Note</label>
+          <input id="an" class="full-input" />
+
+          <button id="addA" class="btn" type="button">Add slot</button>
+        </div>
+
+        <div id="alist"></div>
+        <p id="amsg" class="muted"></p>
+      </article>
+    </section>
+
+    <section id="msg" class="screen hidden">
+      <div class="split">
+        <article class="card">
+          <h2>Conversations</h2>
+          <div id="threads"></div>
+          <p id="tmsg" class="muted"></p>
+        </article>
+
+        <article class="card">
+          <h2 id="ct">Select a conversation</h2>
+          <p id="csub" class="muted subtitle">Messages are private to participants.</p>
+          <div id="chatE" class="muted">Select a thread to chat.</div>
+
+          <div id="chatB" class="hidden">
+            <div id="chat" class="chat"></div>
+            <div class="chat-input-row">
+              <input id="txt" placeholder="Type..." />
+              <button id="send" class="pill" type="button">Send</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="res" class="screen hidden">
+      <article class="card">
+        <h2>Education hub</h2>
+        <button
+          class="resource-row"
+          data-resource-title="Prehab basics"
+          data-resource-subtitle="Warm-up, progression, recovery pacing."
+          type="button"
+        >
+          <div>
+            <strong>Prehab basics</strong>
+            <div class="muted">Warm-up, progression, recovery pacing.</div>
+          </div>
+        </button>
+        <button
+          class="resource-row"
+          data-resource-title="Risk response"
+          data-resource-subtitle="When to deload and when to contact PT."
+          type="button"
+        >
+          <div>
+            <strong>Risk response</strong>
+            <div class="muted">When to deload and when to contact PT.</div>
+          </div>
+        </button>
+        <button
+          class="resource-row"
+          data-resource-title="Privacy and ownership"
+          data-resource-subtitle="Role-based access for dancer/PT only."
+          type="button"
+        >
+          <div>
+            <strong>Privacy and ownership</strong>
+            <div class="muted">Role-based access for dancer/PT only.</div>
+          </div>
+        </button>
+      </article>
+    </section>
+  </main>
+
+
+    <nav id="tabs" class="tabs hidden">
+      <button class="tab" data-s="check" data-r="dancer" type="button">Check-in</button>
+      <button class="tab" data-s="pt" data-r="pt" type="button">Portal</button>
+      <button class="tab" data-s="avail" data-r="pt" type="button">Availability</button>
+      <button class="tab" data-s="msg" data-r="pt,dancer" type="button">Messages</button>
+      <button class="tab" data-s="res" data-r="pt,dancer" type="button">Resources</button>
+    </nav>
+  </div>
+
+  <div id="resourceModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+    <div class="modal-content">
+      <div class="row row-head">
+        <h3 id="resourceModalTitle">Resource</h3>
+        <button id="resourceModalClose" class="pill" type="button">Close</button>
+      </div>
+      <p id="resourceModalSubtitle" class="muted subtitle"></p>
+      <p class="muted">Content coming soon.</p>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
 
