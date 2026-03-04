@@ -67,7 +67,7 @@ const state = {
 };
 
 const screens = ["auth", "register", "role", "check", "pt", "avail", "msg", "res"];
-const PT_REG_CODE = "SECRET_CHANGE_ME";
+const PT_REG_CODE = "secret";
 
 const FN_BASE =
   location.hostname === "localhost" || location.hostname === "127.0.0.1"

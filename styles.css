@@ -693,6 +693,21 @@ body.auth-mode main.app-content {
   padding: 10px 14px;
 }
 
+#aform input[type="date"],
+#aform input[type="time"],
+#aform input[type="text"],
+#aform input:not([type]) {
+  min-height: 50px;
+  height: 50px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+
+#aform input[type="date"]::-webkit-date-and-time-value,
+#aform input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 input.full-input {
   width: 100%;
   max-width: 100%;
