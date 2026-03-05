@@ -82,6 +82,13 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function normalizePtRegistrationCode(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^['"]+|['"]+$/g, "");
+}
+
 function formatFriendlyDate(isoDate) {
   if (!isoDate) return "";
   const date = new Date(`${isoDate}T00:00:00`);
@@ -805,7 +812,7 @@ $("createAccount").addEventListener("click", async () => {
     const email = $("rem").value.trim();
     const password = $("rpw").value;
     const role = document.querySelector('input[name="rrole"]:checked')?.value || ROLE.DANCER;
-    const ptCode = $("ptCode").value.trim();
+    const ptCode = normalizePtRegistrationCode($("ptCode").value);
 
     if (!name) throw new Error("Full name is required.");
     if (!email) throw new Error("Email is required.");
