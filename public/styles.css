@@ -690,22 +690,17 @@ body.auth-mode main.app-content {
 }
 
 #aform input {
+  min-height: 44px;
+  height: 44px;
   padding: 10px 14px;
-}
-
-#aform input[type="date"],
-#aform input[type="time"],
-#aform input[type="text"],
-#aform input:not([type]) {
-  min-height: 50px;
-  height: 50px;
-  padding: 0 16px;
   border-radius: 999px;
+  box-sizing: border-box;
 }
 
 #aform input[type="date"]::-webkit-date-and-time-value,
 #aform input[type="time"]::-webkit-date-and-time-value {
   text-align: left;
+  line-height: 1.2;
 }
 
 input.full-input {
