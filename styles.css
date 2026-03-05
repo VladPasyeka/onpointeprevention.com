@@ -717,6 +717,26 @@ body.auth-mode main.app-content {
   line-height: 1.2;
 }
 
+#check .check-date-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  min-height: 44px;
+  height: 44px;
+  padding: 10px 14px;
+  display: block;
+  margin: 0;
+  border-radius: 999px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#check .check-date-input::-webkit-date-and-time-value {
+  text-align: left;
+  line-height: 1.2;
+}
+
 input.full-input {
   width: 100%;
   max-width: 100%;
