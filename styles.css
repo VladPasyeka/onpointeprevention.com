@@ -697,6 +697,20 @@ body.auth-mode main.app-content {
   box-sizing: border-box;
 }
 
+#aform .avail-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+  display: block;
+  margin: 0;
+}
+
+#aform input.avail-input[type="date"],
+#aform input.avail-input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 #aform input[type="date"]::-webkit-date-and-time-value,
 #aform input[type="time"]::-webkit-date-and-time-value {
   text-align: left;
