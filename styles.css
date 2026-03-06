@@ -806,30 +806,6 @@ input[type="time"]::-webkit-date-and-time-value {
   overflow-y: auto;
 }
 
-#resourceModalBody {
-  display: grid;
-  gap: var(--s2);
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-#resourceModalBody h4 {
-  margin: 0;
-  color: var(--text);
-  font-size: 16px;
-}
-
-#resourceModalBody p {
-  margin: 0;
-}
-
-#resourceModalBody ul {
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 6px;
-}
-
 #addA {
   margin-top: var(--s2);
 }

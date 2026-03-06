@@ -357,84 +357,11 @@ async function refreshPtLinkStatus() {
   }
 }
 
-const RESOURCE_MODAL_CONTENT = {
-  "prehab basics": `
-    <h4>What prehab means</h4>
-    <p>Prehab is training that helps your body handle dance demands before pain becomes an injury. Think of it as small, regular habits that keep you moving well and recovering better.</p>
-    <ul>
-      <li><strong>Warm-up (8-12 minutes):</strong> Start with a pulse raiser (brisk walk, easy jog, or marching), then dynamic mobility (ankle circles, leg swings, hip openers), then activation (glute bridge, calf raises, core brace).</li>
-      <li><strong>Progress slowly:</strong> Change one thing at a time. Increase class minutes, jumps, or intensity by about 5-10% per week.</li>
-      <li><strong>Listen to symptoms:</strong> Mild muscle tiredness can be normal. Pain that gets sharper, changes your movement, or lasts into the next day needs attention.</li>
-      <li><strong>Recovery pacing:</strong> Keep rest days in your week, protect sleep, and fuel with regular meals and hydration.</li>
-      <li><strong>Normal soreness vs warning pain:</strong> Normal soreness is diffuse and improves as you warm up. Warning pain is pinpoint, worsening, or causes limping.</li>
-    </ul>
-    <h4>Sample prehab routine</h4>
-    <ul>
-      <li>1 minute brisk walk or march in place</li>
-      <li>1 minute ankle and calf mobility</li>
-      <li>1 minute hip mobility and leg swings</li>
-      <li>2 sets of 10 glute bridges</li>
-      <li>2 sets of 10 slow calf raises</li>
-      <li>2 sets of 8 single-leg balance reaches each side</li>
-      <li>30 seconds plank with steady breathing</li>
-    </ul>
-    <p><strong>Quick tip:</strong> A short prehab routine done consistently beats a long routine done rarely.</p>
-  `,
-  "risk response": `
-    <h4>How to respond to risk signs</h4>
-    <p>Use a simple traffic-light approach to decide your next step. The goal is to adjust early, not push through warning signs.</p>
-    <ul>
-      <li><strong>Green:</strong> Mild soreness, no movement changes, symptoms settle within 24 hours. Continue training with normal progression.</li>
-      <li><strong>Yellow:</strong> Symptoms increase during class, linger more than 24 hours, or technique drops. Deload for 2-4 days.</li>
-      <li><strong>Red:</strong> Sharp pain, swelling, limping, inability to bear weight, numbness/tingling, night pain, or new joint instability. Stop high-load activity and contact your PT promptly.</li>
-      <li><strong>What deload means:</strong> Temporarily reduce volume or intensity by 30-50% for 2-4 days, then rebuild gradually as symptoms calm.</li>
-    </ul>
-    <h4>ACWR in plain language</h4>
-    <p>ACWR means how much you did this week compared to your recent normal. Example: if your recent normal is 4 classes (about 240 minutes) and this week jumps to 7 classes (about 420 minutes), that spike raises injury risk.</p>
-    <ul>
-      <li>Avoid big jumps. Aim for steady increases week to week.</li>
-      <li>If your app tracks minutes and RPE, those help estimate training load more accurately.</li>
-      <li>When load spikes and symptoms rise together, use a short deload early.</li>
-    </ul>
-    <p><strong>Quick tip:</strong> Your best progress usually comes from consistent weeks, not sudden huge weeks.</p>
-  `,
-  "privacy and ownership": `
-    <h4>Your information and control</h4>
-    <p>This app uses role-based access so your data is shared only with the right people for care and planning.</p>
-    <ul>
-      <li><strong>Role-based access:</strong> Dancers can view their own check-ins and messages. PTs can view only dancers who are linked to them.</li>
-      <li><strong>PT code linking:</strong> A one-time PT code links your account to your PT. It confirms the right connection without exposing private data publicly.</li>
-      <li><strong>Ownership and consent:</strong> Your training and symptom entries are yours. You control whether to link with a PT, and sharing is limited to that care relationship.</li>
-      <li><strong>No data selling:</strong> Your health and training information is not sold.</li>
-      <li><strong>Safety note:</strong> This app supports monitoring and communication, but it is not emergency care.</li>
-    </ul>
-    <p>If you feel unsafe, have severe symptoms, or think you have an urgent injury, seek immediate in-person medical help.</p>
-    <p><strong>Quick tip:</strong> Review your linked PT status anytime and ask questions whenever sharing settings are unclear.</p>
-  `,
-};
-
 function openResourceModal(title, subtitle) {
-  const normalizedTitle = String(title || "").trim().toLowerCase();
-  const modal = $("resourceModal");
-  const modalContent = modal?.querySelector(".modal-content");
-  const subtitleEl = $("resourceModalSubtitle");
-  let modalBody = $("resourceModalBody");
-  if (!modalBody) {
-    modalBody = document.createElement("div");
-    modalBody.id = "resourceModalBody";
-    modalBody.className = "muted";
-    if (subtitleEl) {
-      subtitleEl.insertAdjacentElement("afterend", modalBody);
-    } else if (modalContent) {
-      modalContent.appendChild(modalBody);
-    }
-  }
+  // Lightweight placeholder modal for Education hub rows.
   $("resourceModalTitle").textContent = title || "Resource";
-  if (subtitleEl) subtitleEl.textContent = subtitle || "";
-  modalBody.innerHTML =
-    RESOURCE_MODAL_CONTENT[normalizedTitle] ||
-    `<p><strong>${escapeHtml(title || "Resource")}:</strong> Education content is loading. Please reopen this topic.</p>`;
-  modal.classList.remove("hidden");
+  $("resourceModalSubtitle").textContent = subtitle || "";
+  $("resourceModal").classList.remove("hidden");
 }
 
 function closeResourceModal() {
