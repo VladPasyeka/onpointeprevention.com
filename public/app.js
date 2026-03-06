@@ -415,19 +415,26 @@ const RESOURCE_MODAL_CONTENT = {
 
 function openResourceModal(title, subtitle) {
   const normalizedTitle = String(title || "").trim().toLowerCase();
+  const modal = $("resourceModal");
+  const modalContent = modal?.querySelector(".modal-content");
+  const subtitleEl = $("resourceModalSubtitle");
   let modalBody = $("resourceModalBody");
   if (!modalBody) {
     modalBody = document.createElement("div");
     modalBody.id = "resourceModalBody";
     modalBody.className = "muted";
-    $("resourceModalSubtitle")?.insertAdjacentElement("afterend", modalBody);
+    if (subtitleEl) {
+      subtitleEl.insertAdjacentElement("afterend", modalBody);
+    } else if (modalContent) {
+      modalContent.appendChild(modalBody);
+    }
   }
   $("resourceModalTitle").textContent = title || "Resource";
-  $("resourceModalSubtitle").textContent = subtitle || "";
+  if (subtitleEl) subtitleEl.textContent = subtitle || "";
   modalBody.innerHTML =
     RESOURCE_MODAL_CONTENT[normalizedTitle] ||
-    '<p>Content for this topic will be added soon.</p>';
-  $("resourceModal").classList.remove("hidden");
+    `<p><strong>${escapeHtml(title || "Resource")}:</strong> Education content is loading. Please reopen this topic.</p>`;
+  modal.classList.remove("hidden");
 }
 
 function closeResourceModal() {
