@@ -415,9 +415,16 @@ const RESOURCE_MODAL_CONTENT = {
 
 function openResourceModal(title, subtitle) {
   const normalizedTitle = String(title || "").trim().toLowerCase();
+  let modalBody = $("resourceModalBody");
+  if (!modalBody) {
+    modalBody = document.createElement("div");
+    modalBody.id = "resourceModalBody";
+    modalBody.className = "muted";
+    $("resourceModalSubtitle")?.insertAdjacentElement("afterend", modalBody);
+  }
   $("resourceModalTitle").textContent = title || "Resource";
   $("resourceModalSubtitle").textContent = subtitle || "";
-  $("resourceModalBody").innerHTML =
+  modalBody.innerHTML =
     RESOURCE_MODAL_CONTENT[normalizedTitle] ||
     '<p>Content for this topic will be added soon.</p>';
   $("resourceModal").classList.remove("hidden");
