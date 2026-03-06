@@ -361,6 +361,16 @@ function openResourceModal(title, subtitle) {
   // Lightweight placeholder modal for Education hub rows.
   $("resourceModalTitle").textContent = title || "Resource";
   $("resourceModalSubtitle").textContent = subtitle || "";
+  const modalBody = $("resourceModalBody");
+  if (modalBody) {
+    modalBody.innerHTML = "";
+    modalBody.classList.add("hidden");
+  }
+  const placeholder = $("resourceModalComingSoon");
+  if (placeholder) {
+    placeholder.textContent = "Content coming soon.";
+    placeholder.classList.remove("hidden");
+  }
   $("resourceModal").classList.remove("hidden");
 }
 
